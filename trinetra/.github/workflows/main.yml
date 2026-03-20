@@ -1,0 +1,427 @@
+name: TriNetra — Build All Platforms & Release
+
+on:
+  push:
+    branches: [main, release]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create GitHub Release with artifacts'
+        required: false
+        default: 'false'
+
+env:
+  FLUTTER_VERSION: '3.41.0'
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # JOB 1: Build Web + Deploy to Firebase Hosting
+  # ─────────────────────────────────────────────────────────────
+  build-web:
+    name: Build Web (PWA) + Firebase Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Parse Firebase Config
+        run: |
+          echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/firebase_config.json
+          echo "FIREBASE_WEB_API_KEY=$(jq -r '.apiKey // empty' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_WEB_APP_ID=$(jq -r '.appId // empty' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_SENDER_ID=$(jq -r '.messagingSenderId // empty' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra"' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_DOMAIN=$(jq -r '.authDomain // "trinetra.firebaseapp.com"' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra.appspot.com"' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_MEASUREMENT_ID=$(jq -r '.measurementId // empty' /tmp/firebase_config.json)" >> $GITHUB_ENV
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Web (Release)
+        run: |
+          flutter build web --release \
+            --dart-define=FIREBASE_WEB_API_KEY=${{ env.FIREBASE_WEB_API_KEY }} \
+            --dart-define=FIREBASE_WEB_APP_ID=${{ env.FIREBASE_WEB_APP_ID }} \
+            --dart-define=FIREBASE_SENDER_ID=${{ env.FIREBASE_SENDER_ID }} \
+            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
+            --dart-define=FIREBASE_AUTH_DOMAIN=${{ env.FIREBASE_AUTH_DOMAIN }} \
+            --dart-define=FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
+            --dart-define=FIREBASE_MEASUREMENT_ID=${{ env.FIREBASE_MEASUREMENT_ID }} \
+            --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
+            --dart-define=STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }} \
+            --dart-define=PAYPAL_CLIENT_ID=${{ secrets.PAYPAL_CLIENT_ID }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=LOGROCKET_APP_ID=${{ secrets.LOGROCKET_APP_ID }} \
+            --dart-define=AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
+            --dart-define=AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+        working-directory: ./
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: ${{ env.FIREBASE_PROJECT_ID }}
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels
+
+      - name: Upload Web Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinetra-web
+          path: build/web/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 2: Build Android APK
+  # ─────────────────────────────────────────────────────────────
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Android Signing
+        run: |
+          echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 --decode > android/app/keystore.jks
+          echo "storeFile=keystore.jks" > android/key.properties
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+        continue-on-error: true # Unsigned APK will be built if keystore not configured
+
+      - name: Parse Firebase Config for Android
+        run: |
+          echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
+          echo "FIREBASE_ANDROID_API_KEY=$(jq -r '.android.apiKey // .apiKey // empty' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_ANDROID_APP_ID=$(jq -r '.android.appId // .appId // empty' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_SENDER_ID=$(jq -r '.messagingSenderId // empty' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra"' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra.appspot.com"' /tmp/fc.json)" >> $GITHUB_ENV
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Android APK (Release)
+        run: |
+          flutter build apk --release \
+            --dart-define=FIREBASE_ANDROID_API_KEY=${{ env.FIREBASE_ANDROID_API_KEY }} \
+            --dart-define=FIREBASE_ANDROID_APP_ID=${{ env.FIREBASE_ANDROID_APP_ID }} \
+            --dart-define=FIREBASE_SENDER_ID=${{ env.FIREBASE_SENDER_ID }} \
+            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
+            --dart-define=FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
+            --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      - name: Rename APK
+        run: |
+          mkdir -p release-artifacts
+          cp build/app/outputs/flutter-apk/app-release.apk release-artifacts/TriNetra-Android.apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinetra-android-apk
+          path: release-artifacts/TriNetra-Android.apk
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 3: Build iOS IPA
+  # ─────────────────────────────────────────────────────────────
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Parse Firebase Config for iOS
+        run: |
+          echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
+          echo "FIREBASE_IOS_API_KEY=$(jq -r '.ios.apiKey // .apiKey // empty' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_IOS_APP_ID=$(jq -r '.ios.appId // .appId // empty' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_SENDER_ID=$(jq -r '.messagingSenderId // empty' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra"' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra.appspot.com"' /tmp/fc.json)" >> $GITHUB_ENV
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build iOS (No Code Sign)
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define=FIREBASE_IOS_API_KEY=${{ env.FIREBASE_IOS_API_KEY }} \
+            --dart-define=FIREBASE_IOS_APP_ID=${{ env.FIREBASE_IOS_APP_ID }} \
+            --dart-define=FIREBASE_SENDER_ID=${{ env.FIREBASE_SENDER_ID }} \
+            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
+            --dart-define=FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
+            --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      - name: Create IPA
+        run: |
+          mkdir -p release-artifacts
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r release-artifacts/TriNetra-iOS.ipa Payload/
+        continue-on-error: true
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinetra-ios-ipa
+          path: release-artifacts/TriNetra-iOS.ipa
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 4: Build macOS DMG
+  # ─────────────────────────────────────────────────────────────
+  build-macos:
+    name: Build macOS DMG
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Enable macOS Desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build macOS App
+        run: |
+          flutter build macos --release \
+            --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=FIREBASE_PROJECT_ID=trinetra
+
+      - name: Create DMG
+        run: |
+          mkdir -p release-artifacts
+          hdiutil create -volname "TriNetra" \
+            -srcfolder "build/macos/Build/Products/Release/trinetra.app" \
+            -ov -format UDZO \
+            release-artifacts/TriNetra-macOS.dmg
+        continue-on-error: true
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinetra-macos-dmg
+          path: release-artifacts/TriNetra-macOS.dmg
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 5: Build Windows EXE
+  # ─────────────────────────────────────────────────────────────
+  build-windows:
+    name: Build Windows EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Windows App
+        run: |
+          flutter build windows --release `
+            --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} `
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} `
+            --dart-define=FIREBASE_PROJECT_ID=trinetra
+
+      - name: Package Windows Build
+        run: |
+          mkdir release-artifacts
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "release-artifacts\TriNetra-Windows.zip"
+        shell: pwsh
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinetra-windows-zip
+          path: release-artifacts/TriNetra-Windows.zip
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 6: Build Linux DEB
+  # ─────────────────────────────────────────────────────────────
+  build-linux:
+    name: Build Linux DEB
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev \
+            ruby ruby-dev dpkg
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Enable Linux Desktop
+        run: flutter config --enable-linux-desktop
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Linux App
+        run: |
+          flutter build linux --release \
+            --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=FIREBASE_PROJECT_ID=trinetra
+
+      - name: Package as DEB
+        run: |
+          mkdir -p trinetra-deb/DEBIAN
+          mkdir -p trinetra-deb/usr/local/bin/trinetra
+          mkdir -p trinetra-deb/usr/share/applications
+          mkdir -p trinetra-deb/usr/share/pixmaps
+
+          cp -r build/linux/x64/release/bundle/* trinetra-deb/usr/local/bin/trinetra/
+
+          cat > trinetra-deb/DEBIAN/control << EOF
+          Package: trinetra
+          Version: 1.0.0
+          Section: social
+          Priority: optional
+          Architecture: amd64
+          Maintainer: TriNetra Technologies <contact@trinetra.app>
+          Description: TriNetra - A Premium Social Super-App
+           Connect with friends and the world around you.
+          EOF
+
+          cat > trinetra-deb/usr/share/applications/trinetra.desktop << EOF
+          [Desktop Entry]
+          Name=TriNetra
+          Comment=A Premium Social Super-App
+          Exec=/usr/local/bin/trinetra/trinetra
+          Icon=trinetra
+          Terminal=false
+          Type=Application
+          Categories=Network;Social;
+          EOF
+
+          dpkg-deb --build trinetra-deb release-artifacts/TriNetra-Linux.deb
+
+      - name: Upload Linux DEB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinetra-linux-deb
+          path: release-artifacts/TriNetra-Linux.deb
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 7: Create GitHub Release (on push to main or manual trigger)
+  # ─────────────────────────────────────────────────────────────
+  create-release:
+    name: Create GitHub Release
+    needs: [build-web, build-android, build-macos, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event.inputs.create_release == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: TriNetra v${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+          body: |
+            # TriNetra v${{ steps.version.outputs.version }}
+
+            A Premium Social Super-App — 6 Platforms, One Codebase.
+
+            ## Downloads
+            | Platform | File |
+            |----------|------|
+            | Android  | TriNetra-Android.apk |
+            | iOS      | TriNetra-iOS.ipa |
+            | macOS    | TriNetra-macOS.dmg |
+            | Windows  | TriNetra-Windows.zip |
+            | Linux    | TriNetra-Linux.deb |
+            | Web (PWA)| Auto-deployed to https://trinetra.web.app |
+
+            ## What's New
+            - Splash Screen with animated TriNetra logo
+            - Firebase Phone OTP Login
+            - Dark/Light mode + Hindi/English localization
+            - Story Bar, Feed, 6 Animated Reactions
+            - AI Translation powered by Gemini
+
+            Built with Flutter ${{ env.FLUTTER_VERSION }}
+          files: |
+            release-artifacts/**/*.apk
+            release-artifacts/**/*.ipa
+            release-artifacts/**/*.dmg
+            release-artifacts/**/*.zip
+            release-artifacts/**/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

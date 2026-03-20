@@ -1,0 +1,122 @@
+# TriNetra Fastlane Configuration
+# Automates deployment to:
+#   - Google Play Store (Android)
+#   - Apple App Store (iOS)
+#   - Mac App Store (macOS)
+#   - Microsoft Store (via manual upload for now)
+
+default_platform(:ios)
+
+# ─────────────────────────────────────────────────────────────────
+# SHARED HELPERS
+# ─────────────────────────────────────────────────────────────────
+
+def flutter_build(platform, extra_defines = '')
+  defines = [
+    "GEMINI_API_KEY=#{ENV['GEMINI_API_KEY']}",
+    "SENTRY_DSN=#{ENV['SENTRY_DSN']}",
+    "FIREBASE_PROJECT_ID=#{ENV['FIREBASE_PROJECT_ID'] || 'trinetra'}",
+    extra_defines
+  ].reject(&:empty?).map { |d| "--dart-define=#{d}" }.join(' ')
+
+  sh("flutter build #{platform} --release #{defines}")
+end
+
+# ─────────────────────────────────────────────────────────────────
+# iOS PLATFORM
+# ─────────────────────────────────────────────────────────────────
+
+platform :ios do
+  desc 'Sync certificates and provisioning profiles'
+  lane :certificates do
+    match(
+      type: 'appstore',
+      app_identifier: 'com.trinetra.app',
+      readonly: ENV['CI'] == 'true',
+    )
+  end
+
+  desc 'Build and submit to TestFlight'
+  lane :beta do
+    certificates
+    flutter_build('ios', "FIREBASE_IOS_API_KEY=#{ENV['FIREBASE_IOS_API_KEY']}&FIREBASE_IOS_APP_ID=#{ENV['FIREBASE_IOS_APP_ID']}")
+    build_app(
+      workspace: 'ios/Runner.xcworkspace',
+      scheme: 'Runner',
+      export_method: 'app-store',
+      output_directory: './release-ios',
+      output_name: 'TriNetra.ipa',
+    )
+    upload_to_testflight(
+      api_key_path: ENV['APP_STORE_CONNECT_API_KEY_PATH'],
+      skip_waiting_for_build_processing: true,
+    )
+  end
+
+  desc 'Build and submit to App Store'
+  lane :release do
+    certificates
+    flutter_build('ios', "FIREBASE_IOS_API_KEY=#{ENV['FIREBASE_IOS_API_KEY']}")
+    build_app(
+      workspace: 'ios/Runner.xcworkspace',
+      scheme: 'Runner',
+      export_method: 'app-store',
+      output_directory: './release-ios',
+      output_name: 'TriNetra.ipa',
+    )
+    upload_to_app_store(
+      api_key_path: ENV['APP_STORE_CONNECT_API_KEY_PATH'],
+      submit_for_review: false,
+      automatic_release: false,
+      skip_screenshots: true,
+    )
+  end
+
+  desc 'Build and submit to Mac App Store'
+  lane :mac_release do
+    flutter_build('macos')
+    build_app(
+      workspace: 'macos/Runner.xcworkspace',
+      scheme: 'Runner',
+      destination: 'generic/platform=macOS',
+      export_method: 'mac-application',
+      output_directory: './release-macos',
+      output_name: 'TriNetra.app',
+    )
+    deliver(
+      platform: 'osx',
+      skip_screenshots: true,
+      skip_metadata: false,
+    )
+  end
+end
+
+# ─────────────────────────────────────────────────────────────────
+# ANDROID PLATFORM
+# ─────────────────────────────────────────────────────────────────
+
+platform :android do
+  desc 'Build and upload to Google Play Internal Testing'
+  lane :beta do
+    flutter_build('appbundle', "FIREBASE_ANDROID_API_KEY=#{ENV['FIREBASE_ANDROID_API_KEY']}&FIREBASE_ANDROID_APP_ID=#{ENV['FIREBASE_ANDROID_APP_ID']}&RAZORPAY_KEY_ID=#{ENV['RAZORPAY_KEY_ID']}")
+    upload_to_play_store(
+      track: 'internal',
+      aab: 'build/app/outputs/bundle/release/app-release.aab',
+      json_key: ENV['GOOGLE_PLAY_JSON_KEY'],
+      package_name: 'com.trinetra.app',
+      skip_upload_screenshots: true,
+    )
+  end
+
+  desc 'Promote Internal → Production on Google Play'
+  lane :release do
+    upload_to_play_store(
+      track: 'internal',
+      track_promote_to: 'production',
+      json_key: ENV['GOOGLE_PLAY_JSON_KEY'],
+      package_name: 'com.trinetra.app',
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false,
+    )
+  end
+end

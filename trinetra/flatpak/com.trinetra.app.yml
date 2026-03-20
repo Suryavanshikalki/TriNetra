@@ -1,0 +1,32 @@
+app-id: com.trinetra.app
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+
+command: trinetra/trinetra
+
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=home
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.portal.Desktop
+
+modules:
+  - name: trinetra
+    buildsystem: simple
+    build-commands:
+      - cp -r bundle /app/trinetra
+      - chmod +x /app/trinetra/trinetra
+      - install -Dm644 com.trinetra.app.desktop /app/share/applications/com.trinetra.app.desktop
+      - install -Dm644 com.trinetra.app.metainfo.xml /app/share/metainfo/com.trinetra.app.metainfo.xml
+      - install -Dm644 icons/512x512/com.trinetra.app.png /app/share/icons/hicolor/512x512/apps/com.trinetra.app.png
+      - install -Dm644 icons/256x256/com.trinetra.app.png /app/share/icons/hicolor/256x256/apps/com.trinetra.app.png
+      - install -Dm644 icons/128x128/com.trinetra.app.png /app/share/icons/hicolor/128x128/apps/com.trinetra.app.png
+    sources:
+      - type: dir
+        path: ./flatpak-bundle

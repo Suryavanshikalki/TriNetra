@@ -1,0 +1,55 @@
+name: trinetra
+version: '1.0.0'
+summary: TriNetra - A Premium Social Super-App
+description: |
+  TriNetra is a premium social super-app for Android, iOS, and desktop.
+  Connect with friends, share stories, watch reels, buy/sell on the marketplace,
+  and pay with TriNetra Pay — all in one place.
+  Powered by Firebase, Google AI (Gemini), and TriNetra Technologies.
+
+base: core24
+grade: stable
+confinement: strict
+
+parts:
+  trinetra:
+    plugin: dump
+    source: build/linux/x64/release/bundle/
+    stage-packages:
+      - libgtk-3-0
+      - libblkid1
+      - liblzma5
+      - libstdc++6
+      - libglib2.0-0
+      - libfontconfig1
+      - libx11-6
+      - libxext6
+      - libgl1
+
+apps:
+  trinetra:
+    command: trinetra
+    extensions:
+      - gnome
+    plugs:
+      - network
+      - network-status
+      - home
+      - desktop
+      - desktop-legacy
+      - x11
+      - wayland
+      - opengl
+      - audio-playback
+      - audio-record
+      - camera
+      - removable-media
+      - browser-support
+      - unity7
+      - gsettings
+
+slots:
+  trinetra-dbus:
+    interface: dbus
+    bus: session
+    name: com.trinetra.app
