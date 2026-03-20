@@ -10,6 +10,12 @@ import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/phone_input_screen.dart';
 import 'features/auth/screens/otp_verify_screen.dart';
 import 'features/home/screens/home_screen.dart';
+import 'features/messenger/screens/messenger_list_screen.dart';
+import 'features/messenger/screens/chat_screen.dart';
+import 'features/wallet/screens/wallet_screen.dart';
+import 'features/referral/screens/referral_screen.dart';
+import 'features/profile/screens/profile_screen.dart';
+import 'features/ai_assistant/screens/ai_chat_screen.dart';
 import 'l10n/app_localizations.dart';
 
 // ─── Theme Mode Provider ─────────────────────────────────────────
@@ -107,6 +113,39 @@ final _router = GoRouter(
     GoRoute(
       path: '/home',
       builder: (_, __) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/messenger',
+      builder: (_, __) => const MessengerListScreen(),
+    ),
+    GoRoute(
+      path: '/chat/:conversationId',
+      builder: (_, state) {
+        final convId = state.pathParameters['conversationId'] ?? '';
+        final extra = state.extra as Map<String, String>?;
+        return ChatScreen(
+          conversationId: convId,
+          otherName: extra?['otherName'] ?? '',
+          otherAvatar: extra?['otherAvatar'] ?? '',
+        );
+      },
+    ),
+    GoRoute(
+      path: '/wallet',
+      builder: (_, __) => const WalletScreen(),
+    ),
+    GoRoute(
+      path: '/referral',
+      builder: (_, __) => const ReferralScreen(),
+    ),
+    GoRoute(
+      path: '/profile/:userId',
+      builder: (_, state) =>
+          ProfileScreen(userId: state.pathParameters['userId']),
+    ),
+    GoRoute(
+      path: '/ai',
+      builder: (_, __) => const AIChatScreen(),
     ),
   ],
   redirect: (context, state) {

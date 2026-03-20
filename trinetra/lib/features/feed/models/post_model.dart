@@ -80,7 +80,7 @@ class PostModel {
   };
 
   int get totalReactions =>
-      reactions.values.fold(0, (sum, count) => sum + count);
+      reactions.values.fold(0, (acc, val) => acc + val);
 
   PostModel copyWith({
     Map<String, int>? reactions,

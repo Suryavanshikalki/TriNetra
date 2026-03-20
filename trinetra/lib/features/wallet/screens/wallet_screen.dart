@@ -123,7 +123,7 @@ class _WalletBalanceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -150,7 +150,7 @@ class _WalletBalanceCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
@@ -265,7 +265,7 @@ class _Action extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 24),
@@ -327,10 +327,10 @@ class _UpiAppsGrid extends StatelessWidget {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: Color(app['color'] as int).withOpacity(0.1),
+                        color: Color(app['color'] as int).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Color(app['color'] as int).withOpacity(0.3),
+                          color: Color(app['color'] as int).withValues(alpha: 0.3),
                         ),
                       ),
                       child: Icon(
@@ -438,7 +438,7 @@ class _TransactionRow extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               color: (isCredit ? AppColors.success : AppColors.error)
-                  .withOpacity(0.1),
+                  .withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

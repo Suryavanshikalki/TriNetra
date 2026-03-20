@@ -131,9 +131,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF0B1426).withOpacity(_bgOpacity.value),
-                  const Color(0xFF0A1628).withOpacity(_bgOpacity.value),
-                  const Color(0xFF061020).withOpacity(_bgOpacity.value),
+                  const Color(0xFF0B1426).withValues(alpha: _bgOpacity.value),
+                  const Color(0xFF0A1628).withValues(alpha: _bgOpacity.value),
+                  const Color(0xFF061020).withValues(alpha: _bgOpacity.value),
                 ],
               ),
             ),
@@ -231,7 +231,7 @@ class _TriNetraLogo extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.5),
+            color: AppColors.primary.withValues(alpha: 0.5),
             blurRadius: 40,
             spreadRadius: 8,
           ),

@@ -85,7 +85,7 @@ class LoginScreen extends ConsumerWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 blurRadius: 24,
                 spreadRadius: 4,
               ),
@@ -290,7 +290,7 @@ class _LanguageToggle extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(

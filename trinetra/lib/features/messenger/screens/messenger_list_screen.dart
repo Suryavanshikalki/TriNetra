@@ -158,7 +158,7 @@ class _ActiveUsersRow extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: AppColors.primary.withOpacity(0.2),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                     backgroundImage: CachedNetworkImageProvider(
                       'https://i.pravatar.cc/150?img=${i + 1}',
                     ),
@@ -228,7 +228,7 @@ class _ConversationTile extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: CircleAvatar(
         radius: 28,
-        backgroundColor: AppColors.primary.withOpacity(0.1),
+        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
         backgroundImage: avatar.isNotEmpty
             ? CachedNetworkImageProvider(avatar)
             : null,

@@ -60,7 +60,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   : _createPost,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                disabledBackgroundColor: AppColors.primary.withOpacity(0.4),
+                disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
                 minimumSize: const Size(80, 36),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -89,7 +89,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 children: [
                   CircleAvatar(
                     radius: 22,
-                    backgroundColor: AppColors.primary.withOpacity(0.2),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                     backgroundImage: user?.photoURL != null &&
                             user!.photoURL!.isNotEmpty
                         ? CachedNetworkImageProvider(user.photoURL!)
@@ -180,10 +180,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 margin: const EdgeInsets.all(12),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.05),
+                  color: AppColors.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Column(

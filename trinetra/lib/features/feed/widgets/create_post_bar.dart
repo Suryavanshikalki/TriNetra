@@ -23,7 +23,7 @@ class CreatePostBar extends ConsumerWidget {
               // User Avatar
               CircleAvatar(
                 radius: 20,
-                backgroundColor: AppColors.primary.withOpacity(0.2),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                 child: user?.photoURL != null && user!.photoURL!.isNotEmpty
                     ? ClipOval(
                         child: CachedNetworkImage(

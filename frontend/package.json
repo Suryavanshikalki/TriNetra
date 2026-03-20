@@ -1,0 +1,8 @@
+{
+  "name": "trinetra-web-server",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npx serve -s build -l 3000 --no-clipboard"
+  }
+}

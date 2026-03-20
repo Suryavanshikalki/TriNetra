@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
 import '../../app.dart';
+import '../../features/messenger/screens/messenger_list_screen.dart';
+import '../../features/ai_assistant/screens/ai_chat_screen.dart';
 
-/// TriNetra Top App Bar — Facebook-style with Messenger, Notifications, Search
+/// TriNetra Top App Bar — Facebook-style with AI Search, Messenger, Notifications
 class TriNetraAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const TriNetraAppBar({super.key});
 
@@ -34,19 +36,24 @@ class TriNetraAppBar extends ConsumerWidget implements PreferredSizeWidget {
           isDark: isDark,
         ),
         const SizedBox(width: 8),
-        // Search / AI
+        // AI Assistant (search)
         _CircleIconButton(
-          icon: Icons.search,
-          onTap: () {},
+          icon: Icons.auto_awesome,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AIChatScreen()),
+          ),
           isDark: isDark,
         ),
         const SizedBox(width: 8),
         // Messenger
         _CircleIconButton(
           icon: Icons.send_outlined,
-          onTap: () {},
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MessengerListScreen()),
+          ),
           isDark: isDark,
-          badge: 3,
         ),
         const SizedBox(width: 8),
         // Notifications
@@ -54,7 +61,6 @@ class TriNetraAppBar extends ConsumerWidget implements PreferredSizeWidget {
           icon: Icons.notifications_none,
           onTap: () {},
           isDark: isDark,
-          badge: 12,
         ),
         const SizedBox(width: 12),
       ],
@@ -92,7 +98,9 @@ class _CircleIconButton extends StatelessWidget {
             child: Icon(
               icon,
               size: 20,
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              color: isDark
+                  ? AppColors.textPrimaryDark
+                  : AppColors.textPrimaryLight,
             ),
           ),
         ),

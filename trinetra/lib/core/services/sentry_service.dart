@@ -54,9 +54,9 @@ class SentryService {
       stackTrace: stackTrace,
       withScope: (scope) {
         if (extras != null) {
-          extras.forEach((key, value) => scope.setExtra(key, value));
+          extras.forEach((key, value) => scope.setTag(key, value.toString()));
         }
-        if (hint != null) scope.setExtra('hint', hint);
+        if (hint != null) scope.setTag('hint', hint.toString());
       },
     );
   }

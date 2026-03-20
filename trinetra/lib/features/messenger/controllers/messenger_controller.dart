@@ -66,16 +66,17 @@ class MessengerController extends StateNotifier<MessengerState> {
     required String otherUserName,
     required String otherUserAvatar,
   }) async {
-    if (_currentUserId == null) return '';
+    final uid = _currentUserId;
+    if (uid == null) return '';
     try {
-      final userDoc = await _firestore.collection('users').doc(_currentUserId).get();
+      final userDoc = await _firestore.collection('users').doc(uid).get();
       final myName = userDoc.data()?['displayName'] ?? 'Me';
       final myAvatar = userDoc.data()?['photoUrl'] ?? '';
 
       // Check if conversation exists
       final existing = await _firestore
           .collection('conversations')
-          .where('participantIds', arrayContains: _currentUserId)
+          .where('participantIds', arrayContains: uid)
           .get();
 
       for (final doc in existing.docs) {
@@ -85,19 +86,19 @@ class MessengerController extends StateNotifier<MessengerState> {
 
       // Create new conversation
       final ref = await _firestore.collection('conversations').add({
-        'participantIds': [_currentUserId, otherUserId],
+        'participantIds': [uid, otherUserId],
         'participantNames': {
-          _currentUserId!: myName,
+          uid: myName,
           otherUserId: otherUserName,
         },
         'participantAvatars': {
-          _currentUserId!: myAvatar,
+          uid: myAvatar,
           otherUserId: otherUserAvatar,
         },
         'lastMessage': '',
         'lastMessageSenderId': '',
         'lastMessageTime': FieldValue.serverTimestamp(),
-        'unreadCounts': {_currentUserId!: 0, otherUserId: 0},
+        'unreadCounts': {uid: 0, otherUserId: 0},
         'isGroupChat': false,
       });
       return ref.id;

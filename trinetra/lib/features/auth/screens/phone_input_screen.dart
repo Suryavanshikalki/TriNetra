@@ -203,7 +203,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     disabledBackgroundColor:
-                        AppColors.primary.withOpacity(0.5),
+                        AppColors.primary.withValues(alpha: 0.5),
                     minimumSize: const Size(double.infinity, 52),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),

@@ -1,35 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/constants/app_colors.dart';
-import '../screens/feed_screen.dart';
+import '../../../core/services/ai_service.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../controllers/feed_controller.dart';
+import '../models/post_model.dart';
 import 'reaction_widget.dart';
 
-/// Facebook-style Post Card with 6 animated reactions,
-/// translate button, boost button, share, and comment.
-class PostCard extends StatefulWidget {
-  final PostData post;
+/// Facebook-style Post Card — uses PostModel with real Firebase reactions + AI translate
+class PostCard extends ConsumerStatefulWidget {
+  final PostModel post;
+
   const PostCard({super.key, required this.post});
 
   @override
-  State<PostCard> createState() => _PostCardState();
+  ConsumerState<PostCard> createState() => _PostCardState();
 }
 
-class _PostCardState extends State<PostCard> {
-  bool _isLiked = false;
+class _PostCardState extends ConsumerState<PostCard> {
   bool _showReactions = false;
-  String? _activeReaction;
   bool _isTranslated = false;
   bool _isTranslating = false;
   String? _translatedContent;
 
-  void _toggleReactions() => setState(() => _showReactions = !_showReactions);
+  String? get _myReaction {
+    final myUid = ref.read(currentUserProvider)?.uid ?? '';
+    return widget.post.userReactions[myUid];
+  }
 
-  void _onReaction(String reaction) {
-    setState(() {
-      _activeReaction = reaction;
-      _isLiked = true;
-      _showReactions = false;
-    });
+  bool get _isLiked => _myReaction != null;
+
+  void _toggleReactions() =>
+      setState(() => _showReactions = !_showReactions);
+
+  void _onReact(String reaction) {
+    setState(() => _showReactions = false);
+    ref.read(feedControllerProvider.notifier).reactToPost(
+      postId: widget.post.id,
+      reaction: reaction.toLowerCase(),
+    );
+  }
+
+  void _onLikeTap() {
+    if (_isLiked) {
+      // Toggle off (react with same = remove)
+      ref.read(feedControllerProvider.notifier).reactToPost(
+        postId: widget.post.id,
+        reaction: _myReaction!,
+      );
+    } else {
+      ref.read(feedControllerProvider.notifier).reactToPost(
+        postId: widget.post.id,
+        reaction: 'like',
+      );
+    }
   }
 
   Future<void> _onTranslate() async {
@@ -40,12 +66,21 @@ class _PostCardState extends State<PostCard> {
       });
       return;
     }
+
     setState(() => _isTranslating = true);
-    await Future.delayed(const Duration(milliseconds: 800));
+
+    // Detect language: if content has Devanagari → translate to English, else to Hindi
+    final isHindi = RegExp(r'[\u0900-\u097F]').hasMatch(widget.post.content);
+    final targetLang = isHindi ? 'English' : 'Hindi';
+
+    final translated = await AIService.instance.translateText(
+      text: widget.post.content,
+      targetLanguage: targetLang,
+    );
+
     if (mounted) {
       setState(() {
-        _translatedContent =
-            '[Hindi Translation] ${widget.post.content.substring(0, 40)}...';
+        _translatedContent = translated;
         _isTranslated = true;
         _isTranslating = false;
       });
@@ -61,6 +96,13 @@ class _PostCardState extends State<PostCard> {
     final subColor =
         isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
 
+    // Watch feed state to get updated reaction counts
+    final feedState = ref.watch(feedControllerProvider);
+    final livePost = feedState.posts.firstWhere(
+      (p) => p.id == widget.post.id,
+      orElse: () => widget.post,
+    );
+
     return Container(
       color: cardBg,
       child: Column(
@@ -71,31 +113,43 @@ class _PostCardState extends State<PostCard> {
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
             child: Row(
               children: [
-                // Avatar
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: AppColors.dividerLight,
-                  backgroundImage: CachedNetworkImageProvider(
-                    widget.post.userAvatar,
-                  ),
+                  backgroundImage: livePost.userAvatar.isNotEmpty
+                      ? CachedNetworkImageProvider(livePost.userAvatar)
+                      : null,
+                  child: livePost.userAvatar.isEmpty
+                      ? Text(
+                          livePost.userName.isNotEmpty
+                              ? livePost.userName[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 10),
-                // Name & Time
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(
-                            widget.post.userName,
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                          Flexible(
+                            child: Text(
+                              livePost.userName,
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (widget.post.isVerified) ...[
+                          if (livePost.isVerified) ...[
                             const SizedBox(width: 4),
                             const Icon(
                               Icons.verified,
@@ -106,13 +160,12 @@ class _PostCardState extends State<PostCard> {
                         ],
                       ),
                       Text(
-                        widget.post.timeAgo,
+                        timeago.format(livePost.createdAt),
                         style: TextStyle(color: subColor, fontSize: 12),
                       ),
                     ],
                   ),
                 ),
-                // Options Menu
                 IconButton(
                   icon: Icon(Icons.more_horiz, color: subColor),
                   onPressed: () => _showPostOptions(context),
@@ -132,19 +185,20 @@ class _PostCardState extends State<PostCard> {
                 Text(
                   _isTranslated && _translatedContent != null
                       ? _translatedContent!
-                      : widget.post.content,
+                      : livePost.content,
                   style: TextStyle(
                     color: textColor,
                     fontSize: 14,
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 // Translate Button
                 GestureDetector(
                   onTap: _onTranslate,
                   child: _isTranslating
                       ? Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             const SizedBox(
                               width: 12,
@@ -155,15 +209,17 @@ class _PostCardState extends State<PostCard> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Text('Translating...',
-                                style: TextStyle(
-                                    color: AppColors.primary, fontSize: 12)),
+                            Text(
+                              'Translating...',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         )
                       : Text(
-                          _isTranslated
-                              ? 'See original'
-                              : 'Translate',
+                          _isTranslated ? 'See original' : 'Translate',
                           style: const TextStyle(
                             color: AppColors.primary,
                             fontSize: 12,
@@ -176,29 +232,35 @@ class _PostCardState extends State<PostCard> {
           ),
 
           // ─── Post Images ──────────────────────────────────
-          if (widget.post.images.isNotEmpty) ...[
+          if (livePost.mediaUrls.isNotEmpty &&
+              livePost.mediaType == 'image') ...[
             const SizedBox(height: 8),
-            _PostImages(images: widget.post.images),
+            _PostImages(images: livePost.mediaUrls),
           ],
 
           const SizedBox(height: 8),
 
-          // ─── Like/Comment/Share Counts ────────────────────
+          // ─── Reaction Counts ──────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
-                // Reaction count
-                if (widget.post.likes > 0) ...[
-                  const Icon(Icons.thumb_up,
-                      size: 14, color: AppColors.reactionLike),
+                if (livePost.totalReactions > 0) ...[
+                  const Icon(
+                    Icons.thumb_up,
+                    size: 14,
+                    color: AppColors.reactionLike,
+                  ),
                   const SizedBox(width: 4),
-                  Text('${widget.post.likes}',
-                      style: TextStyle(color: subColor, fontSize: 12)),
+                  Text(
+                    '${livePost.totalReactions}',
+                    style: TextStyle(color: subColor, fontSize: 12),
+                  ),
                   const Spacer(),
                 ],
                 Text(
-                  '${widget.post.comments} comments · ${widget.post.shares} shares',
+                  '${livePost.commentsCount} comments · '
+                  '${livePost.sharesCount} shares',
                   style: TextStyle(color: subColor, fontSize: 12),
                 ),
               ],
@@ -207,7 +269,8 @@ class _PostCardState extends State<PostCard> {
 
           // ─── Divider ─────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Divider(
               height: 1,
               color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
@@ -219,22 +282,25 @@ class _PostCardState extends State<PostCard> {
             clipBehavior: Clip.none,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Like Button (long press = reaction picker)
+                    // Like (long press = reaction picker)
                     GestureDetector(
                       onLongPress: _toggleReactions,
                       child: _ActionButton(
                         icon: _isLiked
-                            ? _reactionIcon(_activeReaction)
+                            ? _reactionIcon(_myReaction)
                             : Icons.thumb_up_outlined,
-                        label: _activeReaction ?? 'Like',
+                        label: _myReaction != null
+                            ? _capitalize(_myReaction!)
+                            : 'Like',
                         color: _isLiked
-                            ? _reactionColor(_activeReaction)
+                            ? _reactionColor(_myReaction)
                             : subColor,
-                        onTap: () => setState(() => _isLiked = !_isLiked),
+                        onTap: _onLikeTap,
                       ),
                     ),
                     // Comment
@@ -251,7 +317,7 @@ class _PostCardState extends State<PostCard> {
                       color: subColor,
                       onTap: () {},
                     ),
-                    // Boost Post (Creator feature)
+                    // Boost Post
                     _ActionButton(
                       icon: Icons.rocket_launch_outlined,
                       label: 'Boost',
@@ -268,8 +334,9 @@ class _PostCardState extends State<PostCard> {
                   top: -60,
                   left: 12,
                   child: ReactionPicker(
-                    onReaction: _onReaction,
-                    onDismiss: () => setState(() => _showReactions = false),
+                    onReaction: _onReact,
+                    onDismiss: () =>
+                        setState(() => _showReactions = false),
                   ),
                 ),
             ],
@@ -281,25 +348,38 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
+  String _capitalize(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+
   IconData _reactionIcon(String? reaction) {
     switch (reaction) {
-      case 'Love': return Icons.favorite;
-      case 'Haha': return Icons.sentiment_very_satisfied;
-      case 'Wow': return Icons.sentiment_satisfied_alt;
-      case 'Sad': return Icons.sentiment_dissatisfied;
-      case 'Angry': return Icons.mood_bad;
-      default: return Icons.thumb_up;
+      case 'love':
+        return Icons.favorite;
+      case 'haha':
+        return Icons.sentiment_very_satisfied;
+      case 'wow':
+        return Icons.sentiment_satisfied_alt;
+      case 'sad':
+        return Icons.sentiment_dissatisfied;
+      case 'angry':
+        return Icons.mood_bad;
+      default:
+        return Icons.thumb_up;
     }
   }
 
   Color _reactionColor(String? reaction) {
     switch (reaction) {
-      case 'Love': return AppColors.reactionLove;
-      case 'Haha':
-      case 'Wow':
-      case 'Sad': return AppColors.reactionHaha;
-      case 'Angry': return AppColors.reactionAngry;
-      default: return AppColors.reactionLike;
+      case 'love':
+        return AppColors.reactionLove;
+      case 'haha':
+      case 'wow':
+      case 'sad':
+        return AppColors.reactionHaha;
+      case 'angry':
+        return AppColors.reactionAngry;
+      default:
+        return AppColors.reactionLike;
     }
   }
 
@@ -351,7 +431,7 @@ class _PostCardState extends State<PostCard> {
   }
 }
 
-// ─── Post Images Grid ────────────────────────────────────────────
+// ─── Post Images Grid ─────────────────────────────────────────────
 class _PostImages extends StatelessWidget {
   final List<String> images;
   const _PostImages({required this.images});
@@ -369,6 +449,11 @@ class _PostImages extends StatelessWidget {
           color: Colors.grey[200],
           child: const Center(child: CircularProgressIndicator()),
         ),
+        errorWidget: (_, __, ___) => Container(
+          height: 300,
+          color: Colors.grey[200],
+          child: const Icon(Icons.image_not_supported, size: 48),
+        ),
       );
     }
 
@@ -383,6 +468,8 @@ class _PostImages extends StatelessWidget {
                 imageUrl: img,
                 fit: BoxFit.cover,
                 height: 200,
+                errorWidget: (_, __, ___) =>
+                    Container(color: Colors.grey[200]),
               ),
             ),
           );
@@ -392,7 +479,7 @@ class _PostImages extends StatelessWidget {
   }
 }
 
-// ─── Action Button Widget ─────────────────────────────────────────
+// ─── Action Button ────────────────────────────────────────────────
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;

@@ -85,7 +85,7 @@ class _TransactionCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: (isCredit ? AppColors.success : AppColors.error)
-                  .withOpacity(0.1),
+                  .withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -128,7 +128,7 @@ class _TransactionCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(

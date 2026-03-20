@@ -162,7 +162,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -231,7 +231,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(

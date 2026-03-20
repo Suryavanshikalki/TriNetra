@@ -128,11 +128,12 @@ class FeedController extends StateNotifier<FeedState> {
     String mediaType = 'none',
     String? location,
   }) async {
-    if (_currentUserId == null) return false;
+    final uid = _currentUserId;
+    if (uid == null) return false;
     state = state.copyWith(isCreating: true);
 
     try {
-      final userDoc = await _firestore.collection('users').doc(_currentUserId).get();
+      final userDoc = await _firestore.collection('users').doc(uid).get();
       final userData = userDoc.data() ?? {};
 
       final List<String> mediaUrls = [];
@@ -141,7 +142,7 @@ class FeedController extends StateNotifier<FeedState> {
           final ref = _storage
               .ref()
               .child('posts')
-              .child(_currentUserId!)
+              .child(uid)
               .child('${DateTime.now().millisecondsSinceEpoch}');
           await ref.putFile(file);
           mediaUrls.add(await ref.getDownloadURL());
@@ -149,7 +150,7 @@ class FeedController extends StateNotifier<FeedState> {
       }
 
       await _firestore.collection('posts').add({
-        'userId': _currentUserId,
+        'userId': uid,
         'userName': userData['displayName'] ?? 'User',
         'userAvatar': userData['photoUrl'] ?? '',
         'isVerified': userData['isVerified'] ?? false,
@@ -168,7 +169,7 @@ class FeedController extends StateNotifier<FeedState> {
       // Update user post count
       await _firestore
           .collection('users')
-          .doc(_currentUserId)
+          .doc(uid)
           .update({'postsCount': FieldValue.increment(1)});
 
       state = state.copyWith(isCreating: false);
@@ -185,21 +186,22 @@ class FeedController extends StateNotifier<FeedState> {
     required String postId,
     required String reaction,
   }) async {
-    if (_currentUserId == null) return;
+    final uid = _currentUserId;
+    if (uid == null) return;
     try {
       final postRef = _firestore.collection('posts').doc(postId);
       final postIndex = state.posts.indexWhere((p) => p.id == postId);
       if (postIndex == -1) return;
 
       final post = state.posts[postIndex];
-      final existingReaction = post.userReactions[_currentUserId!];
+      final existingReaction = post.userReactions[uid];
       final newReactions = Map<String, int>.from(post.reactions);
       final newUserReactions = Map<String, String>.from(post.userReactions);
 
       // Remove existing reaction if same → toggle off
       if (existingReaction == reaction) {
         newReactions[reaction] = (newReactions[reaction] ?? 1) - 1;
-        newUserReactions.remove(_currentUserId);
+        newUserReactions.remove(uid);
       } else {
         // Remove old reaction count if different
         if (existingReaction != null) {
@@ -208,7 +210,7 @@ class FeedController extends StateNotifier<FeedState> {
         }
         // Add new reaction
         newReactions[reaction] = (newReactions[reaction] ?? 0) + 1;
-        newUserReactions[_currentUserId!] = reaction;
+        newUserReactions[uid] = reaction;
       }
 
       // Optimistic update

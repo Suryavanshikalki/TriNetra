@@ -43,10 +43,11 @@ class ReferralController extends StateNotifier<ReferralState> {
   }
 
   Future<void> _loadOrCreate() async {
-    if (_userId == null) return;
+    final uid = _userId;
+    if (uid == null) return;
     state = state.copyWith(isLoading: true);
     try {
-      final doc = await _firestore.collection('referrals').doc(_userId).get();
+      final doc = await _firestore.collection('referrals').doc(uid).get();
       if (doc.exists) {
         state = state.copyWith(
           data: ReferralModel.fromFirestore(doc),
@@ -54,16 +55,16 @@ class ReferralController extends StateNotifier<ReferralState> {
         );
       } else {
         // Create referral record for new user
-        final code = ReferralModel.generateCode(_userId!);
+        final code = ReferralModel.generateCode(uid);
         final newReferral = ReferralModel(
-          userId: _userId!,
+          userId: uid,
           referralCode: code,
           createdAt: DateTime.now(),
           coinsAvailable: 0,
         );
         await _firestore
             .collection('referrals')
-            .doc(_userId)
+            .doc(uid)
             .set(newReferral.toFirestore());
         state = state.copyWith(data: newReferral, isLoading: false);
       }
