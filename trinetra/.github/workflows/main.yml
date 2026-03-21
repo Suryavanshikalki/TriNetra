@@ -71,7 +71,9 @@ jobs:
         working-directory: ./trinetra
 
       # ─── Inject Google Search Console Verification Tag ───────────
-      # GOOGLE_VERIFICATION_TAG secret = full <meta name="google-site-verification" ...> tag
+      # GOOGLE_VERIFICATION_TAG secret accepts TWO formats:
+      #   1. Full meta tag: <meta name="google-site-verification" content="ABC123">
+      #   2. Just the code: ABC123  (script auto-wraps it into a meta tag)
       # We safely replace the placeholder in the built index.html via Python + env var
       # (env var approach avoids shell escaping issues with quotes in the tag)
       - name: Inject Google Search Console Verification Tag
@@ -84,6 +86,9 @@ jobs:
           if not tag:
               print("⚠️  GOOGLE_VERIFICATION_TAG secret not set — skipping injection.")
               sys.exit(0)
+          # Accept either the full <meta> tag OR just the verification code string
+          if not tag.startswith('<'):
+              tag = f'<meta name="google-site-verification" content="{tag}">'
           path = 'trinetra/build/web/index.html'
           with open(path, 'r', encoding='utf-8') as f:
               content = f.read()
@@ -92,9 +97,14 @@ jobs:
               content = content.replace(placeholder, tag)
               with open(path, 'w', encoding='utf-8') as f:
                   f.write(content)
-              print(f"✅ Google Search Console verification tag injected.")
+              print(f"✅ Google Search Console verification tag injected: {tag}")
           else:
-              print("ℹ️  Placeholder already replaced or not found — no change made.")
+              print("ℹ️  Placeholder not found — checking if tag already present...")
+              if 'google-site-verification' in content:
+                  print("✅ Verification tag already present in built index.html.")
+              else:
+                  print("❌ ERROR: Placeholder not found and tag not present. Check index.html source.")
+                  sys.exit(1)
           PYEOF
 
       # ─── Firebase Hosting Deploy (Dual-Domain Auto) ──────────────
