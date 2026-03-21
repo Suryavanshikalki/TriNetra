@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../app.dart';
+import '../../../shared/widgets/download_app_section.dart';
 
 /// TriNetra Login Screen — Facebook-style premium design
 class LoginScreen extends ConsumerWidget {
@@ -56,6 +57,13 @@ class LoginScreen extends ConsumerWidget {
 
                     // ─── Create Account ──────────────────────
                     _buildCreateAccount(context, isDark),
+
+                    const SizedBox(height: 24),
+
+                    // ─── Download App (Web only, hidden on native) ─
+                    const DownloadAppSection(),
+
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
