@@ -64,7 +64,8 @@ jobs:
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
             --dart-define=LOGROCKET_APP_ID=${{ secrets.LOGROCKET_APP_ID }} \
             --dart-define=AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
-            --dart-define=AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+            --dart-define=AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
+            --dart-define=GOOGLE_VERIFICATION_TAG=${{ secrets.GOOGLE_VERIFICATION_TAG }}
         working-directory: ./trinetra
 
       # ─── Inject Google Search Console Verification Tag ───────────
