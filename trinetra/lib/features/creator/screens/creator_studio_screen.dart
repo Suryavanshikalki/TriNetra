@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/config/app_config.dart';
 import '../controllers/creator_controller.dart';
+import '../widgets/boost_analytics_tab.dart';
 
 class CreatorStudioScreen extends ConsumerStatefulWidget {
   const CreatorStudioScreen({super.key});
@@ -12,13 +13,22 @@ class CreatorStudioScreen extends ConsumerStatefulWidget {
       _CreatorStudioScreenState();
 }
 
-class _CreatorStudioScreenState extends ConsumerState<CreatorStudioScreen> {
+class _CreatorStudioScreenState extends ConsumerState<CreatorStudioScreen>
+    with SingleTickerProviderStateMixin {
   final _upiController = TextEditingController();
+  late TabController _tabController;
   bool _showPayoutForm = false;
   String _payoutMethod = 'upi';
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
   void dispose() {
+    _tabController.dispose();
     _upiController.dispose();
     super.dispose();
   }
@@ -44,66 +54,87 @@ class _CreatorStudioScreenState extends ConsumerState<CreatorStudioScreen> {
                 ref.read(creatorControllerProvider.notifier).refresh(),
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.primary,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: isDark
+              ? AppColors.textSecondaryDark
+              : AppColors.textSecondaryLight,
+          tabs: const [
+            Tab(icon: Icon(Icons.dashboard_outlined, size: 20), text: 'Dashboard'),
+            Tab(icon: Icon(Icons.rocket_launch_outlined, size: 20), text: 'Boosts'),
+          ],
+        ),
       ),
       body: creatorState.isLoading && stats == null
           ? const Center(
               child: CircularProgressIndicator(color: AppColors.primary))
-          : RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(creatorControllerProvider.notifier).refresh(),
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // ─── Status Banner ──────────────────────────
-                  _StatusBanner(
-                      isCreatorPro: stats?.isCreatorPro ?? false,
-                      isDark: isDark),
-                  const SizedBox(height: 16),
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                // ─── Tab 1: Dashboard ──────────────────────
+                RefreshIndicator(
+                  onRefresh: () =>
+                      ref.read(creatorControllerProvider.notifier).refresh(),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      // ─── Status Banner ──────────────────────────
+                      _StatusBanner(
+                          isCreatorPro: stats?.isCreatorPro ?? false,
+                          isDark: isDark),
+                      const SizedBox(height: 16),
 
-                  // ─── Earnings Card ──────────────────────────
-                  _EarningsCard(stats: stats, isDark: isDark),
-                  const SizedBox(height: 12),
+                      // ─── Earnings Card ──────────────────────────
+                      _EarningsCard(stats: stats, isDark: isDark),
+                      const SizedBox(height: 12),
 
-                  // ─── Revenue Split ──────────────────────────
-                  _RevenueSplitCard(
-                      isCreatorPro: stats?.isCreatorPro ?? false,
-                      isDark: isDark),
-                  const SizedBox(height: 12),
+                      // ─── Revenue Split ──────────────────────────
+                      _RevenueSplitCard(
+                          isCreatorPro: stats?.isCreatorPro ?? false,
+                          isDark: isDark),
+                      const SizedBox(height: 12),
 
-                  // ─── Stats Grid ─────────────────────────────
-                  _StatsGrid(stats: stats, isDark: isDark),
-                  const SizedBox(height: 12),
+                      // ─── Stats Grid ─────────────────────────────
+                      _StatsGrid(stats: stats, isDark: isDark),
+                      const SizedBox(height: 12),
 
-                  // ─── Payout Section ─────────────────────────
-                  _PayoutSection(
-                    stats: stats,
-                    isDark: isDark,
-                    showForm: _showPayoutForm,
-                    payoutMethod: _payoutMethod,
-                    upiController: _upiController,
-                    onToggleForm: () =>
-                        setState(() => _showPayoutForm = !_showPayoutForm),
-                    onMethodChange: (m) =>
-                        setState(() => _payoutMethod = m),
-                    onRequestPayout: (amount) => _requestPayout(amount),
+                      // ─── Payout Section ─────────────────────────
+                      _PayoutSection(
+                        stats: stats,
+                        isDark: isDark,
+                        showForm: _showPayoutForm,
+                        payoutMethod: _payoutMethod,
+                        upiController: _upiController,
+                        onToggleForm: () =>
+                            setState(() => _showPayoutForm = !_showPayoutForm),
+                        onMethodChange: (m) =>
+                            setState(() => _payoutMethod = m),
+                        onRequestPayout: (amount) => _requestPayout(amount),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ─── Payout History ─────────────────────────
+                      if (stats?.payoutHistory.isNotEmpty == true)
+                        _PayoutHistory(
+                            history: stats!.payoutHistory, isDark: isDark),
+
+                      // ─── Error / Message ─────────────────────────
+                      if (creatorState.error != null)
+                        _MessageBanner(
+                            text: creatorState.error!, isError: true),
+                      if (creatorState.message != null)
+                        _MessageBanner(text: creatorState.message!),
+
+                      const SizedBox(height: 32),
+                    ],
                   ),
-                  const SizedBox(height: 12),
+                ),
 
-                  // ─── Payout History ─────────────────────────
-                  if (stats?.payoutHistory.isNotEmpty == true)
-                    _PayoutHistory(
-                        history: stats!.payoutHistory, isDark: isDark),
-
-                  // ─── Error / Message ─────────────────────────
-                  if (creatorState.error != null)
-                    _MessageBanner(
-                        text: creatorState.error!, isError: true),
-                  if (creatorState.message != null)
-                    _MessageBanner(text: creatorState.message!),
-
-                  const SizedBox(height: 32),
-                ],
-              ),
+                // ─── Tab 2: Boost Analytics ────────────────
+                const BoostAnalyticsTab(),
+              ],
             ),
     );
   }
@@ -174,7 +205,7 @@ class _StatusBanner extends StatelessWidget {
                 ),
                 Text(
                   isCreatorPro
-                      ? '100% revenue + Blue Verification Badge'
+                      ? '70% revenue share + Blue Verification Badge'
                       : '${(AppConfig.creatorRevenueCut * 100).toInt()}% ad revenue share',
                   style: const TextStyle(
                     color: Colors.white70,
@@ -265,8 +296,8 @@ class _RevenueSplitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final creatorPct = isCreatorPro ? 100.0 : 30.0;
-    final platformPct = isCreatorPro ? 0.0 : 70.0;
+    final creatorPct = isCreatorPro ? 70.0 : 30.0;
+    final platformPct = isCreatorPro ? 30.0 : 70.0;
 
     return _Card(
       isDark: isDark,
@@ -297,23 +328,22 @@ class _RevenueSplitCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (!isCreatorPro)
-                    Flexible(
-                      flex: platformPct.toInt(),
-                      child: Container(
-                        color: AppColors.primary,
-                        child: const Center(
-                          child: Text(
-                            '70% Platform',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
+                  Flexible(
+                    flex: platformPct.toInt(),
+                    child: Container(
+                      color: AppColors.primary,
+                      child: Center(
+                        child: Text(
+                          '${platformPct.toInt()}% Platform',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -321,8 +351,8 @@ class _RevenueSplitCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             isCreatorPro
-                ? 'Creator Pro: Keep 100% of ad revenue from your posts.'
-                : 'Free tier: You keep 30% of ad revenue from your posts. Upgrade to Pro for 100%.',
+                ? 'Creator Pro: You keep 70% of ad revenue. Platform takes 30%.'
+                : 'Free tier: You keep 30% of ad revenue from your posts. Upgrade to Pro for a 70% share.',
             style: TextStyle(
               fontSize: 12,
               color: isDark

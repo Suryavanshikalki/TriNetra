@@ -65,7 +65,9 @@ jobs:
             --dart-define=LOGROCKET_APP_ID=${{ secrets.LOGROCKET_APP_ID }} \
             --dart-define=AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
             --dart-define=AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
-            --dart-define=GOOGLE_VERIFICATION_TAG=${{ secrets.GOOGLE_VERIFICATION_TAG }}
+            --dart-define=GOOGLE_VERIFICATION_TAG=${{ secrets.GOOGLE_VERIFICATION_TAG }} \
+            --dart-define=APPLOVIN_SDK_KEY=${{ secrets.APPLOVIN_SDK_KEY }} \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID=${{ secrets.META_AUDIENCE_NETWORK_APP_ID }}
         working-directory: ./trinetra
 
       # ─── Inject Google Search Console Verification Tag ───────────
@@ -185,7 +187,9 @@ jobs:
             --dart-define=ADMOB_ANDROID_APP_ID=${{ secrets.ADMOB_ANDROID_APP_ID }} \
             --dart-define=ADMOB_BANNER_ANDROID=${{ secrets.ADMOB_BANNER_ANDROID }} \
             --dart-define=ADMOB_INTERSTITIAL_ANDROID=${{ secrets.ADMOB_INTERSTITIAL_ANDROID }} \
-            --dart-define=ADMOB_REWARDED_ANDROID=${{ secrets.ADMOB_REWARDED_ANDROID }}
+            --dart-define=ADMOB_REWARDED_ANDROID=${{ secrets.ADMOB_REWARDED_ANDROID }} \
+            --dart-define=APPLOVIN_SDK_KEY=${{ secrets.APPLOVIN_SDK_KEY }} \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID=${{ secrets.META_AUDIENCE_NETWORK_APP_ID }}
 
       - name: Rename APK
         run: |

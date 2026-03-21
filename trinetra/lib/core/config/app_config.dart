@@ -122,12 +122,23 @@ class AppConfig {
   );
 
   // ─── Creator Revenue Split ───────────────────────────────────
-  static const double platformRevenueCut = 0.70; // 70% to platform
-  static const double creatorRevenueCut = 0.30;  // 30% to creator (free tier)
-  static const double proCreatorRevenueCut = 1.0; // 100% for Premium tier
+  static const double platformRevenueCut = 0.70;    // 70% to platform (free tier)
+  static const double creatorRevenueCut = 0.30;     // 30% to creator (free tier)
+  static const double proCreatorRevenueCut = 0.70;  // 70% to creator Pro (30% to platform)
 
   // ─── Subscription ─────────────────────────────────────────────
   static const double creatorProMonthlyUsd = 9.99;
   static const double creatorProYearlyUsd = 99.99;
   static const double marketplaceFeePercent = 0.05; // 5% fee
+
+  // ─── AppLovin / Meta Audience Network (PLACEHOLDER) ──────────
+  // TODO: Replace with production keys when live.
+  static const String appLovinSdkKey = String.fromEnvironment(
+    'APPLOVIN_SDK_KEY',
+    defaultValue: '', // inject via --dart-define when live
+  );
+  static const String metaAudienceNetworkAppId = String.fromEnvironment(
+    'META_AUDIENCE_NETWORK_APP_ID',
+    defaultValue: '', // inject via --dart-define when live
+  );
 }

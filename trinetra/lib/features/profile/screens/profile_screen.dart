@@ -152,6 +152,8 @@ class _ProfileSliverAppBar extends StatelessWidget {
     final following = userData['following'] ?? 0;
     final postsCount = userData['postsCount'] ?? 0;
     final isVerified = userData['isVerified'] ?? false;
+    final boostBalance =
+        (userData['boostWalletBalance'] as num?)?.toDouble() ?? 0.0;
     final initial =
         displayName.isNotEmpty ? displayName[0].toUpperCase() : 'T';
 
@@ -319,6 +321,38 @@ class _ProfileSliverAppBar extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
+              // ─── Boost Wallet (self only) ─────────────────
+              if (isMe && boostBalance > 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3),
+                          width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.rocket_launch_outlined,
+                            size: 14, color: AppColors.primary),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Boost Wallet: ₹${boostBalance.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               // ─── Action Buttons ───────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

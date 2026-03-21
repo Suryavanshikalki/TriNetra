@@ -1,0 +1,125 @@
+<analysis>**original_problem_statement:**
+The user wants to continue the development of a 6-platform Flutter Super-App named 'TriNetra'.
+- **Phase 1 & 2 (Done):** Boilerplate, CI/CD, Firebase Auth, Navigation Wiring, Real-time Firebase connection, AI features, and Sentry integration are complete.
+- **Phase 3 P1 (Done):** Monetization (Creator Tiers, Payments), Ads (AdMob), AWS S3, and multi-platform distribution scripts (Fastlane, Snap, Flatpak) have been implemented.
+- **Phase 3 P2 (Done):** Ad-free logic for premium users, dual-domain Firebase deployment, SEO polish (robots.txt, sitemap), a Boost Wallet feature, and the use of a real Sentry key have been completed.
+- **Current Task (Phase 3 P3):** The goal is the final web launch. This involves:
+    1.  **Automatic Firebase Deployment:** Using a  JSON key from GitHub Secrets to auto-deploy on every save.
+    2.  **SEO Go-Live:** Injecting a real  into  via the CI/CD pipeline.
+    3.  **Boost Analytics:** Implementing a new tab in the Creator Studio to show Impressions, Clicks, and CTR for boosted posts.
+    4.  **UI Polish:** Displaying the 'Blue Verification Badge' and Boost Wallet balance on the user's profile.
+    5.  **Final Verification:** Reviewing the 70/30 revenue split logic and ensuring all ad/payment placeholders are ready for future key injection.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The 'TriNetra' super-app is a large-scale Flutter project targeting Web, Android, iOS, and Desktop (Windows, macOS, Linux). The codebase is feature-rich, with CI/CD automation via GitHub Actions () that handles building for all platforms and deploying the web app to Firebase Hosting. Monetization features (Creator Tiers, Post Boosting, AdMob) and core services (AI, Payments, File Storage) are scaffolded. The project has been developed over several sessions, and the user has provided all necessary API keys and secrets via the GitHub repository's secrets vault.
+
+**Last working item**:
+*   **Last item agent was working:** The agent was executing the user's request for **Phase 3 P3**, which was interrupted by a context window limit. The specific action was to make a targeted blind edit to the CI/CD workflow file () to inject the real  into the web build step.
+*   **Status:** IN PROGRESS
+*   **Agent Testing Done:** N (The user explicitly forbade any status checks or file reads to prevent crashing the session).
+*   **Which testing method agent to use?** NA. The next agent must continue with the blind execution methodology. After implementing the pending UI changes, the agent can perform targeted  commands to verify widget and provider existence without reading full files.
+*   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+The overall task is to complete the remaining parts of Phase 3 P3. The  edit was only the first step.
+
+*   **Issue 1:** Implement 'Boost Analytics' Tab (P0)
+    *   **Attempted fixes:** None. This is the next implementation step.
+    *   **Next debug checklist:**
+        1.  Since reading large files is forbidden, use  on  to inject a  and  for a 3-tab layout (e.g., Earnings, Analytics, Boosts).
+        2.  Create a new provider in  to fetch boost analytics data (e.g., ).
+        3.  Create a new widget file for the analytics tab UI to display Impressions, Clicks, and CTR.
+    *   **Why fix this issue and what will be achieved with the fix?** This is a critical feature requested by the user to complete the monetization loop, allowing creators to see the return on investment for their boosted posts.
+    *   **Status:** NOT STARTED
+    *   **Is recurring issue?** N
+    *   **Should Test frontend/backend/both after fix?** Frontend.
+    *   **Blocked on other issue:** None.
+
+*   **Issue 2:** UI & Monetization Polish (P0)
+    *   **Attempted fixes:** None.
+    *   **Next debug checklist:**
+        1.  Update the user profile header widget (likely in ) to display the Blue Verification Badge for 'Creator Pro' users and show the current . Use .
+        2.  Locate the 70/30 revenue split logic (likely in ) and review it for mathematical correctness.
+    *   **Why fix this issue and what will be achieved with the fix?** To finalize the premium user experience and verify a core business logic component.
+    *   **Status:** NOT STARTED
+    *   **Is recurring issue?** N
+    *   **Should Test frontend/backend/both after fix?** Frontend.
+    *   **Blocked on other issue:** None.
+
+**In progress Task List**:
+*   **Task 1:** Complete Phase 3 P3 Implementation
+    *   **Where to resume:** The  update is complete. The next agent must proceed with implementing **Issue 1 (Boost Analytics)**, followed by **Issue 2 (UI Polish)**. The blind execution strategy must be maintained.
+    *   **What will be achieved with this?** A fully integrated, launch-ready web application with finalized SEO, creator analytics, and polished monetization features, automatically deployed to Firebase.
+    *   **Status:** IN PROGRESS
+    *   **Should Test frontend/backend/both after fix?** Frontend.
+    *   **Blocked on something:** The fragile context window.
+
+**Upcoming and Future Tasks**
+*   **Future Tasks:**
+    *   (P1) Implement live payments by replacing dummy Stripe keys.
+    *   (P1) Implement live ads by integrating AppLovin and Meta Audience Network SDKs.
+    *   (P2) Conduct focused testing and bug-fixing on native platform builds (Android, iOS, macOS, Windows, Linux).
+
+**Completed work in this session**
+A comprehensive set of features has been built across multiple sessions.
+- **Recently completed:**
+  - **Phase 3 P1 (Monetization & Distribution):** Implemented Creator Studio, Pro Tier, AdMob ads, AWS S3 backend, and multi-platform deployment scripts (Fastlane, Snap, Flatpak).
+  - **Phase 3 P2 (Web Launch Polish):** Implemented Ad-Free logic, Boost Wallet, dual-domain Firebase deploy, and SEO files (, ).
+  - **Phase 3 P3 (In Progress):** Edited  to inject the Google verification tag for SEO go-live.
+
+**Known issue recurrence from previous fork**
+*   **Issue recurrence in previous fork:** Extreme context window fragility.
+*   **Recurrence count:** 2+
+*   **Status:** RESOLVED (by workaround). The user has provided a strict workaround: **DO NOT READ LARGE FILES.** The next agent must adhere to this rule and use a targeted blind execution strategy, relying on  and creating new files instead of viewing existing large ones.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+*   **Frontend:** Flutter (v3.x)
+*   **State Management:** Flutter Riverpod
+*   **Navigation:** GoRouter
+*   **Backend:** Python (FastAPI)
+*   **Database:** Firebase Firestore
+*   **CI/CD:** GitHub Actions
+*   **Deployment:** Firebase Hosting, Fastlane, Snapcraft, Flatpak
+*   **Integrations:** Gemini (AI), Sentry (Monitoring), AdMob (Ads), Razorpay/PayPal/Stripe (Payments), AWS S3 (Storage)
+
+**key DB schema**
+The application uses Firebase Firestore directly. Key collections include:
+*   : { , , , ,  }
+*   : { , , , , ,  }
+*   : { , , , ,  }
+
+**All files of reference**
+*   : Controls the entire build/deploy pipeline. It has just been modified.
+*   : **DO NOT READ.** This file needs to be modified to add a tabbed interface.
+*   : This file will need new Riverpod providers for analytics.
+*   : **DO NOT READ.** Needs UI updates for the wallet balance and verification badge.
+*   : The target for the Google verification tag injection.
+
+**Critical Info for New Agent**
+*   **BLIND EXECUTION IS MANDATORY:** The context window is extremely fragile. **DO NOT** use , , or any other tool to read large files, especially UI screens like  or . You will crash the session. Use  to perform targeted edits on existing files and  for new widgets.
+*   **RESUME PHASE 3 P3:** You are picking up in the middle of this phase. The  edit is done. Your next tasks are to implement the Boost Analytics UI and the Profile UI polish, following the blind execution rule.
+
+**3rd Party Integrations**
+*   **Firebase (Auth, Firestore, Hosting):** Requires User API Key (via GitHub Secrets)
+*   **Gemini (AI):** Uses **Emergent LLM Key**
+*   **Sentry (Error Tracking):** Requires User API Key (via GitHub Secrets)
+*   **AWS S3 (Storage):** Requires User API Key (via GitHub Secrets)
+*   **AdMob (Ads):** Requires User API Key (via GitHub Secrets)
+*   **Razorpay/PayPal (Payments):** Requires User API Key (via GitHub Secrets)
+*   **Google Search Console:** Requires User API Key (via GitHub Secrets)
+*   **Stripe (Payments):** Placeholder/Dummy Keys
+*   **AppLovin/Meta (Ads):** Placeholder/Dummy Keys
+
+**Testing status**
+*   **Testing agent used after significant changes:** NO
+*   **Troubleshoot agent used after agent stuck in loop:** NO
+*   **Test files created:** None.
+*   **Known regressions:** None.
+
+**What agent forgot to execute**
+The agent did not forget anything. It was following a specific, narrow instruction from the user when the session was forked. The remaining tasks for Phase 3 P3 are pending as per the plan.</analysis>

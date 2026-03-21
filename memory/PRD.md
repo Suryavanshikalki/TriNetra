@@ -279,15 +279,24 @@ SNAPCRAFT_STORE_CREDENTIALS [when Snap account ready]
 
 ---
 
+## Phase 3 P3 — COMPLETED (Feb 2026)
+- [x] **Automatic Firebase Deploy**: `main.yml` uses `FIREBASE_SERVICE_ACCOUNT` secret for auto-deploy on every push
+- [x] **SEO Go-Live**: `GOOGLE_VERIFICATION_TAG` injected into `web/index.html` via CI/CD python script
+- [x] **Boost Analytics Tab**: New "Boosts" tab in Creator Studio with real-time Firestore data — shows total Impressions, Clicks, CTR, per-post budget progress, and status badges
+- [x] **Profile UI Polish**: Boost Wallet balance badge shown on user's own profile; Blue Verification Badge (Icons.verified) already present
+- [x] **Revenue Split (70/30 corrected)**: Free tier 30%/70%, Pro tier 70%/30% — all display strings updated in `_RevenueSplitCard`, `_StatusBanner`, and `AppConfig`
+- [x] **Ad/Payment Placeholders**: `AppLovin` and `Meta Audience Network` keys scaffolded in `app_config.dart` and `main.yml` `--dart-define` lists for web and Android builds
+
 ## Phase 4 — Backlog (P2)
 - [ ] Friends/Social Graph (follow/unfollow)
 - [ ] Reels/Short Video feed
 - [ ] Live Streaming (WebRTC)
 - [ ] Full Marketplace implementation
 - [ ] Group Chat + Voice/Video Calls
-- [ ] Creator Pro subscription
+- [ ] Live Payments: Replace placeholder Stripe/Razorpay/PayPal keys with production keys
+- [ ] Live Ads: Integrate AppLovin and Meta Audience Network SDKs with real keys
+- [ ] Native platform testing/bug-fixing (Android, iOS, macOS, Windows, Linux)
 - [ ] Comments system + Share functionality
-- [ ] Post boost analytics
 
 ---
 
@@ -297,7 +306,8 @@ FIREBASE_PROJECT_ID, FIREBASE_WEB_API_KEY, FIREBASE_WEB_APP_ID,
 FIREBASE_AUTH_DOMAIN, FIREBASE_STORAGE_BUCKET, FIREBASE_SENDER_ID,
 FIREBASE_MEASUREMENT_ID, FIREBASE_ANDROID_API_KEY, FIREBASE_ANDROID_APP_ID,
 FIREBASE_IOS_API_KEY, FIREBASE_IOS_APP_ID, SENTRY_DSN,
-RAZORPAY_KEY_ID, STRIPE_PUBLISHABLE_KEY, API_BASE_URL
+RAZORPAY_KEY_ID, STRIPE_PUBLISHABLE_KEY, PAYPAL_CLIENT_ID, API_BASE_URL,
+GOOGLE_VERIFICATION_TAG, APPLOVIN_SDK_KEY, META_AUDIENCE_NETWORK_APP_ID
 
 ### Backend (.env)
 EMERGENT_LLM_KEY, MONGO_URL, DB_NAME

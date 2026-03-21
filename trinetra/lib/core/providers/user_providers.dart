@@ -46,3 +46,21 @@ final boostWalletBalanceProvider = Provider.autoDispose<double>((ref) {
     error: (_, __) => 0.0,
   );
 });
+
+/// ─── Boost Analytics ─────────────────────────────────────────────
+/// Real-time stream of the current user's boosted posts from Firestore.
+/// Each map contains: postId, content, impressions, clicks, status,
+/// budgetTotal, budgetSpent, createdAt.
+final boostAnalyticsProvider =
+    StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return Stream.value([]);
+  return FirebaseService.instance.firestore
+      .collection('boosted_posts')
+      .where('userId', isEqualTo: user.uid)
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((snap) => snap.docs
+          .map((d) => <String, dynamic>{...d.data(), 'id': d.id})
+          .toList());
+});
