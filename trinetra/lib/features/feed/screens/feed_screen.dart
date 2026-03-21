@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/config/ads_config.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/providers/user_providers.dart';
 import '../../../core/services/ads_service.dart';
 import '../../stories/widgets/story_bar.dart';
 import '../controllers/feed_controller.dart';
@@ -145,13 +146,16 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
 
 // ─── Feed Ad Slot ─────────────────────────────────────────────────
 /// Renders a banner ad inline in the feed on Android/iOS.
-/// Invisible on web (AdMob doesn't support Flutter Web).
-class _FeedAdSlot extends StatelessWidget {
+/// AUTOMATICALLY HIDDEN for Creator Pro subscribers (ad-free logic).
+/// Invisible on web — AdMob doesn't support Flutter Web.
+class _FeedAdSlot extends ConsumerWidget {
   const _FeedAdSlot();
 
   @override
-  Widget build(BuildContext context) {
-    if (kIsWeb || !AdsService.instance.isAvailable) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // ── Creator Pro = Zero Ads ────────────────────────────────────
+    final adsEnabled = ref.watch(adsEnabledProvider);
+    if (!adsEnabled || kIsWeb || !AdsService.instance.isAvailable) {
       return const SizedBox.shrink();
     }
     return Container(

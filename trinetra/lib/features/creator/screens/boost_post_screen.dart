@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/providers/user_providers.dart';
 import '../../../core/services/payment_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../wallet/controllers/payment_controller.dart';
 import '../controllers/creator_controller.dart';
+import 'boost_wallet_screen.dart';
 
 /// Boost Post — payment flow for promoting a post
 /// The postId is passed as a route argument.
@@ -185,6 +187,13 @@ class _BoostPostScreenState extends ConsumerState<BoostPostScreen> {
           }),
 
           const SizedBox(height: 20),
+
+          // ─── Boost Wallet Balance ──────────────────────────────
+          _BoostWalletBanner(
+            postId: widget.postId,
+            pkg: pkg,
+            isDark: isDark,
+          ),
 
           // ─── Payment Method ────────────────────────────────────
           Text(
@@ -421,4 +430,128 @@ class _PayMethod {
   final IconData icon;
   final String subtitle;
   const _PayMethod(this.id, this.label, this.icon, this.subtitle);
+}
+
+// ─── Boost Wallet Banner ──────────────────────────────────────────
+/// Shows current boost wallet balance and lets user pay from wallet
+/// if balance is sufficient. Otherwise shows a "Top-up" shortcut.
+class _BoostWalletBanner extends ConsumerWidget {
+  final String postId;
+  final _BoostPackage pkg;
+  final bool isDark;
+  const _BoostWalletBanner({
+    required this.postId,
+    required this.pkg,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final balance = ref.watch(boostWalletBalanceProvider);
+    final hasEnough = balance >= pkg.price;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: hasEnough
+            ? Colors.green.withValues(alpha: 0.08)
+            : (isDark ? AppColors.cardDark : Colors.white),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: hasEnough ? Colors.green : Colors.grey.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.account_balance_wallet_outlined,
+            color: hasEnough ? Colors.green : Colors.grey,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Boost Wallet: ₹${balance.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: hasEnough ? Colors.green : null,
+                  ),
+                ),
+                Text(
+                  hasEnough
+                      ? 'Tap below to pay instantly from wallet'
+                      : 'Insufficient balance — top up to pay instantly',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          if (hasEnough)
+            TextButton(
+              onPressed: () async {
+                final ok = await ref
+                    .read(paymentControllerProvider.notifier)
+                    .spendFromBoostWallet(
+                      postId: postId,
+                      amount: pkg.price,
+                      durationDays: pkg.days,
+                    );
+                if (ok && context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Post boosted from Wallet! Reach: ${pkg.reach} users.'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              ),
+              child: const Text(
+                'Use Wallet',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            )
+          else
+            TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const BoostWalletScreen(),
+                ),
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              ),
+              child: const Text(
+                'Top-up',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

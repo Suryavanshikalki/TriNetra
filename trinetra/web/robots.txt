@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Disallow internal Flutter build artifacts
+Disallow: /flutter.js
+Disallow: /flutter_service_worker.js
+Disallow: /flutter_bootstrap.js
+Disallow: /*.part.js$
+Disallow: /icons/
+
+# Sitemaps
+Sitemap: https://trinetra-8b846.web.app/sitemap.xml
+Sitemap: https://trinetra-8b846.firebaseapp.com/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 2

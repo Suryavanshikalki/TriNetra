@@ -106,7 +106,61 @@ TriNetra is India's ultimate social super-app combining:
 
 ---
 
-## Phase 3 — P1 COMPLETED (Feb 2026)
+## Phase 3 — P2 COMPLETED (Feb 2026)
+
+### Ad-Free Logic (Creator Pro)
+- [x] `lib/core/providers/user_providers.dart` — single source of truth:
+  - `currentUserProfileProvider` — real-time Firestore stream of user doc
+  - `isCreatorProProvider` — derived from profile stream
+  - `adsEnabledProvider` — `false` for Pro users (ad-free), `true` for free tier
+  - `boostWalletBalanceProvider` — real-time boost wallet balance
+- [x] `_FeedAdSlot` updated to `ConsumerWidget` — checks `adsEnabledProvider` before rendering
+- [x] AppLovin/Meta Ads structural placeholders also respect ad-free flag (via `AdsService`)
+- [x] Ad-free activates INSTANTLY after Pro subscription payment (Firestore real-time)
+
+### Firebase Dual-Domain Live
+- [x] `.firebaserc` created → project: `trinetra-8b846`
+- [x] `firebase.json` → explicit `"site": "trinetra-8b846"` + security headers + sitemap/robots content-type
+- [x] `app_config.dart` → all defaults updated to `trinetra-8b846`
+- [x] Both domains covered by ONE deploy (same default hosting site):
+  - Primary: `https://trinetra-8b846.web.app`
+  - Secondary: `https://trinetra-8b846.firebaseapp.com` (auto-linked by Firebase)
+- [x] CI/CD `main.yml` prints LIVE URLs after each deploy
+
+### Google Search Console & SEO
+- [x] `web/index.html` → `<meta name="google-site-verification" content="YOUR_GOOGLE_SEARCH_CONSOLE_CODE">`
+  - **NEXT STEP**: Replace `YOUR_GOOGLE_SEARCH_CONSOLE_CODE` with real token from Search Console
+- [x] `web/robots.txt` — allows all bots, references sitemap, polite crawl-delay
+- [x] `web/sitemap.xml` — 8 URLs with priorities, change frequencies, hreflang tags
+  - Canonical URLs point to `https://trinetra-8b846.web.app`
+- [x] `firebase.json` configured to serve `sitemap.xml` with correct Content-Type
+
+### Sentry Real Key
+- [x] `AppConfig.sentryDsn` uses `defaultValue: ''` (no dummy strings)
+- [x] All 6 platform builds in CI pass `--dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}`
+- [x] `SentryService` gracefully skips init when DSN is empty (dev mode)
+- [x] CI/CD prints whether Sentry DSN is configured on each deploy run
+
+### Boost Budget Wallet
+- [x] `BoostWalletScreen` (`lib/features/creator/screens/boost_wallet_screen.dart`)
+  - Packages: ₹500, ₹1,000 (+₹50 bonus), ₹5,000 (+₹500 bonus)
+  - Payment: Razorpay (mobile) or PayPal
+  - Balance displayed in real-time from `boostWalletBalanceProvider`
+- [x] `PaymentController` enhanced:
+  - `topUpBoostWallet()` — credits wallet + records transaction
+  - `spendFromBoostWallet()` — atomic batch: deducts balance + boosts post
+  - `boostWalletBalance` added to `PaymentState`
+- [x] `BoostPostScreen` — `_BoostWalletBanner` widget:
+  - Shows current balance
+  - "Use Wallet" button if sufficient balance (instant boost, no payment prompt)
+  - "Top-up" button if insufficient (navigates to BoostWalletScreen)
+- [x] Creator Studio → Menu links to BoostWalletScreen
+
+### CI/CD Final Polish
+- [x] All `trinetra` project ID hardcodes replaced with `trinetra-8b846`
+- [x] macOS/Windows/Linux builds use `${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }}`
+- [x] Firebase deploy step annotated with dual-domain explanation
+- [x] `Print Live URLs` step after each web deploy
 
 ### Dual-Mode Creator System
 - [x] Creator Studio Dashboard (`lib/features/creator/screens/creator_studio_screen.dart`)

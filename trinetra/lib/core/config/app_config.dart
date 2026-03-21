@@ -9,12 +9,12 @@ class AppConfig {
   static const String appPackageId = 'com.trinetra.app';
   static const String appVersion = '1.0.0';
   static const String appBuildNumber = '1';
-  static const String appWebUrl = 'https://trinetra.web.app';
+  static const String appWebUrl = 'https://trinetra-8b846.web.app';
 
   // ─── Firebase (injected via --dart-define) ──────────────────
   static const String firebaseProjectId = String.fromEnvironment(
     'FIREBASE_PROJECT_ID',
-    defaultValue: 'trinetra',
+    defaultValue: 'trinetra-8b846',
   );
   static const String firebaseWebApiKey = String.fromEnvironment(
     'FIREBASE_WEB_API_KEY',
@@ -26,11 +26,11 @@ class AppConfig {
   );
   static const String firebaseAuthDomain = String.fromEnvironment(
     'FIREBASE_AUTH_DOMAIN',
-    defaultValue: 'trinetra.firebaseapp.com',
+    defaultValue: 'trinetra-8b846.firebaseapp.com',
   );
   static const String firebaseStorageBucket = String.fromEnvironment(
     'FIREBASE_STORAGE_BUCKET',
-    defaultValue: 'trinetra.appspot.com',
+    defaultValue: 'trinetra-8b846.appspot.com',
   );
   static const String firebaseMessagingSenderId = String.fromEnvironment(
     'FIREBASE_SENDER_ID',

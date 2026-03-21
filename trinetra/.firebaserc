@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "trinetra-8b846"
+  },
+  "targets": {
+    "trinetra-8b846": {
+      "hosting": {
+        "web": [
+          "trinetra-8b846"
+        ]
+      }
+    }
+  }
+}

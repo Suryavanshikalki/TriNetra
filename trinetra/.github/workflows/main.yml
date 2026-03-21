@@ -38,9 +38,9 @@ jobs:
           echo "FIREBASE_WEB_API_KEY=$(jq -r '.apiKey // empty' /tmp/firebase_config.json)" >> $GITHUB_ENV
           echo "FIREBASE_WEB_APP_ID=$(jq -r '.appId // empty' /tmp/firebase_config.json)" >> $GITHUB_ENV
           echo "FIREBASE_SENDER_ID=$(jq -r '.messagingSenderId // empty' /tmp/firebase_config.json)" >> $GITHUB_ENV
-          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra"' /tmp/firebase_config.json)" >> $GITHUB_ENV
-          echo "FIREBASE_AUTH_DOMAIN=$(jq -r '.authDomain // "trinetra.firebaseapp.com"' /tmp/firebase_config.json)" >> $GITHUB_ENV
-          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra.appspot.com"' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra-8b846"' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_DOMAIN=$(jq -r '.authDomain // "trinetra-8b846.firebaseapp.com"' /tmp/firebase_config.json)" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra-8b846.appspot.com"' /tmp/firebase_config.json)" >> $GITHUB_ENV
           echo "FIREBASE_MEASUREMENT_ID=$(jq -r '.measurementId // empty' /tmp/firebase_config.json)" >> $GITHUB_ENV
 
       - name: Flutter pub get
@@ -66,6 +66,11 @@ jobs:
             --dart-define=AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
         working-directory: ./
 
+      # ─── Firebase Hosting Deploy (Dual-Domain) ──────────────────
+      # Deploys to BOTH domains simultaneously (same Firebase project = same site):
+      #   https://trinetra-8b846.web.app        (primary)
+      #   https://trinetra-8b846.firebaseapp.com (secondary — auto-linked)
+      # One deploy covers both. No extra step needed.
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -75,6 +80,12 @@ jobs:
           projectId: ${{ env.FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_CLI_PREVIEWS: hostingchannels
+
+      - name: Print Live URLs
+        run: |
+          echo "✅ LIVE on https://trinetra-8b846.web.app"
+          echo "✅ LIVE on https://trinetra-8b846.firebaseapp.com"
+          echo "Sentry DSN configured: ${{ secrets.SENTRY_DSN != '' && 'YES (real key)' || 'NO (disabled in this run)' }}"
 
       - name: Upload Web Build Artifact
         uses: actions/upload-artifact@v4
@@ -120,8 +131,8 @@ jobs:
           echo "FIREBASE_ANDROID_API_KEY=$(jq -r '.android.apiKey // .apiKey // empty' /tmp/fc.json)" >> $GITHUB_ENV
           echo "FIREBASE_ANDROID_APP_ID=$(jq -r '.android.appId // .appId // empty' /tmp/fc.json)" >> $GITHUB_ENV
           echo "FIREBASE_SENDER_ID=$(jq -r '.messagingSenderId // empty' /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra"' /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra.appspot.com"' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra-8b846"' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra-8b846.appspot.com"' /tmp/fc.json)" >> $GITHUB_ENV
 
       - name: Flutter pub get
         run: flutter pub get
@@ -180,8 +191,8 @@ jobs:
           echo "FIREBASE_IOS_API_KEY=$(jq -r '.ios.apiKey // .apiKey // empty' /tmp/fc.json)" >> $GITHUB_ENV
           echo "FIREBASE_IOS_APP_ID=$(jq -r '.ios.appId // .appId // empty' /tmp/fc.json)" >> $GITHUB_ENV
           echo "FIREBASE_SENDER_ID=$(jq -r '.messagingSenderId // empty' /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra"' /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra.appspot.com"' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra-8b846"' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra-8b846.appspot.com"' /tmp/fc.json)" >> $GITHUB_ENV
 
       - name: Flutter pub get
         run: flutter pub get
@@ -249,7 +260,7 @@ jobs:
           flutter build macos --release \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
-            --dart-define=FIREBASE_PROJECT_ID=trinetra
+            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }}
 
       - name: Create DMG
         run: |
@@ -294,7 +305,7 @@ jobs:
           flutter build windows --release `
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} `
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} `
-            --dart-define=FIREBASE_PROJECT_ID=trinetra
+            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }}
 
       - name: Package Windows Build
         run: |
@@ -343,7 +354,7 @@ jobs:
           flutter build linux --release \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
-            --dart-define=FIREBASE_PROJECT_ID=trinetra
+            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }}
 
       - name: Package as DEB
         run: |
@@ -492,7 +503,7 @@ jobs:
       - name: Flutter Build AAB
         run: |
           flutter build appbundle --release \
-            --dart-define=FIREBASE_PROJECT_ID=trinetra \
+            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }} \
             --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
 
@@ -584,7 +595,7 @@ jobs:
           flutter config --enable-linux-desktop
           flutter pub get
           flutter build linux --release \
-            --dart-define=FIREBASE_PROJECT_ID=trinetra \
+            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
 
       - name: Copy Bundle to Snap Source
