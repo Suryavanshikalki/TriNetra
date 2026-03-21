@@ -7,6 +7,8 @@ import '../../wallet/screens/wallet_screen.dart';
 import '../../referral/screens/referral_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../creator/screens/creator_studio_screen.dart';
+import '../../creator/screens/creator_pro_screen.dart';
 import '../../../shared/widgets/bottom_nav.dart';
 import '../../../shared/widgets/trinetra_app_bar.dart';
 import '../../../core/constants/app_colors.dart';
@@ -148,6 +150,30 @@ class _MenuScreen extends ConsumerWidget {
             _SectionHeader(title: 'Features', isDark: isDark),
             const SizedBox(height: 8),
 
+            _MenuTile(
+              icon: Icons.movie_creation_outlined,
+              iconColor: const Color(0xFFFFD700),
+              title: 'Creator Studio',
+              subtitle: 'Track earnings, payouts & analytics',
+              isDark: isDark,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const CreatorStudioScreen()),
+              ),
+            ),
+            _MenuTile(
+              icon: Icons.workspace_premium,
+              iconColor: Colors.deepPurple,
+              title: 'Creator Pro',
+              subtitle: 'Blue badge + 100% ad revenue',
+              isDark: isDark,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const CreatorProScreen()),
+              ),
+            ),
             _MenuTile(
               icon: Icons.account_balance_wallet_outlined,
               iconColor: AppColors.primary,

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import '../../../core/config/ads_config.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/ads_service.dart';
 import '../../stories/widgets/story_bar.dart';
 import '../controllers/feed_controller.dart';
 import '../models/post_model.dart';
@@ -91,14 +94,20 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             ),
           ),
 
-          // ─── Feed Posts ───────────────────────────────────
+          // ─── Feed Posts with inline Banner Ads ────────────
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                if (index >= posts.length) return null;
+                // Insert a banner ad slot every feedAdFrequency posts
+                final adFreq = AdsConfig.feedAdFrequency + 1;
+                if (!kIsWeb && index > 0 && index % adFreq == 0) {
+                  return const _FeedAdSlot();
+                }
+                final postIndex = index - (index ~/ adFreq);
+                if (postIndex >= posts.length) return null;
                 return Column(
                   children: [
-                    PostCard(post: posts[index]),
+                    PostCard(post: posts[postIndex]),
                     Divider(
                       height: 8,
                       thickness: 8,
@@ -109,7 +118,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   ],
                 );
               },
-              childCount: posts.length,
+              childCount: posts.length + (posts.length ~/ AdsConfig.feedAdFrequency),
             ),
           ),
 
@@ -128,6 +137,41 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             ),
 
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Feed Ad Slot ─────────────────────────────────────────────────
+/// Renders a banner ad inline in the feed on Android/iOS.
+/// Invisible on web (AdMob doesn't support Flutter Web).
+class _FeedAdSlot extends StatelessWidget {
+  const _FeedAdSlot();
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb || !AdsService.instance.isAvailable) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      color: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.cardDark
+          : Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: const Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: 8, bottom: 2),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Sponsored',
+                style: TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+            ),
+          ),
+          TriNetraBannerAd(),
         ],
       ),
     );

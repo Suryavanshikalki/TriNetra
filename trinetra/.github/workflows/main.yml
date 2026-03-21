@@ -136,7 +136,16 @@ jobs:
             --dart-define=FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
-            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            --dart-define=PAYPAL_CLIENT_ID=${{ secrets.PAYPAL_CLIENT_ID }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
+            --dart-define=AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
+            --dart-define=AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} \
+            --dart-define=AWS_REGION=${{ secrets.AWS_REGION }} \
+            --dart-define=ADMOB_ANDROID_APP_ID=${{ secrets.ADMOB_ANDROID_APP_ID }} \
+            --dart-define=ADMOB_BANNER_ANDROID=${{ secrets.ADMOB_BANNER_ANDROID }} \
+            --dart-define=ADMOB_INTERSTITIAL_ANDROID=${{ secrets.ADMOB_INTERSTITIAL_ANDROID }} \
+            --dart-define=ADMOB_REWARDED_ANDROID=${{ secrets.ADMOB_REWARDED_ANDROID }}
 
       - name: Rename APK
         run: |
@@ -186,7 +195,17 @@ jobs:
             --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }} \
             --dart-define=FIREBASE_STORAGE_BUCKET=${{ env.FIREBASE_STORAGE_BUCKET }} \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
-            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
+            --dart-define=PAYPAL_CLIENT_ID=${{ secrets.PAYPAL_CLIENT_ID }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
+            --dart-define=AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
+            --dart-define=AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} \
+            --dart-define=AWS_REGION=${{ secrets.AWS_REGION }} \
+            --dart-define=ADMOB_IOS_APP_ID=${{ secrets.ADMOB_IOS_APP_ID }} \
+            --dart-define=ADMOB_BANNER_IOS=${{ secrets.ADMOB_BANNER_IOS }} \
+            --dart-define=ADMOB_INTERSTITIAL_IOS=${{ secrets.ADMOB_INTERSTITIAL_IOS }} \
+            --dart-define=ADMOB_REWARDED_IOS=${{ secrets.ADMOB_REWARDED_IOS }}
 
       - name: Create IPA
         run: |
@@ -425,3 +444,196 @@ jobs:
             release-artifacts/**/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 8: Fastlane — Deploy Android to Play Store (Internal)
+  # Requires: ANDROID_KEYSTORE_BASE64, GOOGLE_PLAY_JSON_KEY secrets
+  # TODO: Enable when Google Play Developer account is ready
+  # ─────────────────────────────────────────────────────────────
+  deploy-android-playstore:
+    name: Deploy Android to Play Store (Internal)
+    needs: [build-android]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install Fastlane
+        run: gem install fastlane fastlane-plugin-supply
+
+      - name: Decode Keystore & Play Key
+        run: |
+          echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 --decode > android/app/keystore.jks
+          echo '${{ secrets.GOOGLE_PLAY_JSON_KEY }}' | base64 --decode > /tmp/play_key.json
+          echo "storeFile=keystore.jks" > android/key.properties
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+
+      - name: Flutter Build AAB
+        run: |
+          flutter build appbundle --release \
+            --dart-define=FIREBASE_PROJECT_ID=trinetra \
+            --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      - name: Fastlane Deploy to Internal Track
+        run: fastlane android deploy_internal
+        env:
+          GOOGLE_PLAY_JSON_KEY_PATH: /tmp/play_key.json
+          ANDROID_KEYSTORE_PATH: android/app/keystore.jks
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 9: Fastlane — Deploy iOS to TestFlight
+  # Requires: APP_STORE_CONNECT secrets, MATCH setup
+  # TODO: Enable when Apple Developer account is ready
+  # ─────────────────────────────────────────────────────────────
+  deploy-ios-testflight:
+    name: Deploy iOS to TestFlight
+    needs: [build-ios]
+    runs-on: macos-latest
+    if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      - name: Setup App Store Connect API Key
+        run: |
+          mkdir -p /tmp/asc
+          echo '${{ secrets.APP_STORE_CONNECT_KEY_CONTENT }}' | base64 --decode > /tmp/asc/api_key.p8
+          cat > /tmp/asc/api_key.json << EOF
+          {
+            "key_id": "${{ secrets.APP_STORE_CONNECT_KEY_ID }}",
+            "issuer_id": "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}",
+            "key": "/tmp/asc/api_key.p8",
+            "in_house": false
+          }
+          EOF
+
+      - name: Fastlane Deploy to TestFlight
+        run: fastlane ios deploy_testflight
+        env:
+          APP_STORE_CONNECT_API_KEY_PATH: /tmp/asc/api_key.json
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 10: Publish Linux to Snap Store
+  # Uses snapcraft.yaml — no Fastlane (Linux native approach)
+  # Requires: SNAPCRAFT_STORE_CREDENTIALS secret
+  # ─────────────────────────────────────────────────────────────
+  publish-linux-snap:
+    name: Publish to Snap Store
+    needs: [build-linux]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Build Linux Release
+        run: |
+          flutter config --enable-linux-desktop
+          flutter pub get
+          flutter build linux --release \
+            --dart-define=FIREBASE_PROJECT_ID=trinetra \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+
+      - name: Copy Bundle to Snap Source
+        run: |
+          cp -r build/linux/x64/release/bundle snap/flatpak-bundle 2>/dev/null || true
+
+      - name: Install Snapcraft
+        run: sudo snap install snapcraft --classic
+
+      - name: Build Snap Package
+        run: snapcraft --destructive-mode
+        working-directory: .
+
+      - name: Publish to Snap Store
+        run: snapcraft upload --release=stable *.snap
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 11: Prepare Flathub Submission (Linux)
+  # No Fastlane — Flathub uses PR workflow to flathub/flathub repo
+  # Requires: FLATHUB_GITHUB_TOKEN secret
+  # ─────────────────────────────────────────────────────────────
+  prepare-flathub-submission:
+    name: Prepare Flathub Submission
+    needs: [build-linux]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Linux DEB
+        uses: actions/download-artifact@v4
+        with:
+          name: trinetra-linux-deb
+          path: release-artifacts/
+
+      - name: Validate Flatpak Manifest & Metainfo
+        run: |
+          sudo apt-get install -y flatpak flatpak-builder appstream-util
+          appstream-util validate flatpak/com.trinetra.app.metainfo.xml
+          echo "Flatpak manifest (flatpak/com.trinetra.app.yml) ready for Flathub PR."
+          echo "NEXT STEP: Fork https://github.com/flathub/flathub"
+          echo "           Add flatpak/ contents to new app directory"
+          echo "           Submit PR per https://docs.flathub.org/docs/for-app-authors/submission"
+
+      - name: Upload Flatpak Manifest as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trinetra-flathub-manifest
+          path: flatpak/
+          retention-days: 30

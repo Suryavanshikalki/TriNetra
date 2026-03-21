@@ -105,6 +105,22 @@ class AppConfig {
     defaultValue: 'ap-south-1',
   );
 
+  // ─── AdMob (injected via --dart-define) ─────────────────────
+  static const String admobAndroidAppId = String.fromEnvironment(
+    'ADMOB_ANDROID_APP_ID',
+    defaultValue: 'ca-app-pub-3940256099942544~3347511713', // Google test
+  );
+  static const String admobIosAppId = String.fromEnvironment(
+    'ADMOB_IOS_APP_ID',
+    defaultValue: 'ca-app-pub-3940256099942544~1458002511', // Google test
+  );
+
+  // ─── API Base URL (native platforms) ─────────────────────────
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: '',
+  );
+
   // ─── Creator Revenue Split ───────────────────────────────────
   static const double platformRevenueCut = 0.70; // 70% to platform
   static const double creatorRevenueCut = 0.30;  // 30% to creator (free tier)

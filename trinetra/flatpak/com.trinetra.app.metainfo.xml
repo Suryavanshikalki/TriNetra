@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.trinetra.app</id>
+
+  <name>TriNetra</name>
+  <summary>India's Ultimate Social Super-App</summary>
+  <summary xml:lang="hi">भारत का अल्टीमेट सोशल सुपर-ऐप</summary>
+
+  <metadata_license>MIT</metadata_license>
+  <project_license>Proprietary</project_license>
+
+  <description>
+    <p>
+      TriNetra is India's premium social super-app that combines everything you need:
+      a real-time social feed with AI translation, end-to-end encrypted messenger,
+      TriNetra Pay (UPI-powered wallet), a marketplace, a refer-and-earn coin system,
+      and an AI assistant powered by Google Gemini.
+    </p>
+    <p>Built with Flutter for Android, iOS, Web, Windows, macOS, and Linux.</p>
+    <ul>
+      <li>Social Feed with AI-powered translation (English ↔ Hindi)</li>
+      <li>Real-time Messenger with Firestore sync</li>
+      <li>TriNetra Pay — send/receive money via UPI</li>
+      <li>Marketplace — buy and sell locally</li>
+      <li>Refer &amp; Earn — earn TriNetra Coins for every referral</li>
+      <li>Creator Studio — track earnings and request payouts</li>
+      <li>AI Chatbot — powered by Google Gemini</li>
+      <li>Creator Pro — Blue Verification Badge + 100% ad revenue</li>
+    </ul>
+    <p xml:lang="hi">
+      TriNetra भारत का प्रीमियम सोशल सुपर-ऐप है जो सोशल फीड, मैसेंजर, पेमेंट और AI असिस्टेंट को एक जगह लाता है।
+    </p>
+  </description>
+
+  <launchable type="desktop-id">com.trinetra.app.desktop</launchable>
+
+  <url type="homepage">https://trinetra.web.app</url>
+  <url type="bugtracker">https://github.com/trinetra-app/trinetra/issues</url>
+  <url type="help">https://trinetra.web.app/help</url>
+  <url type="translate">https://trinetra.web.app/translate</url>
+
+  <developer id="com.trinetra">
+    <name>TriNetra Technologies Pvt. Ltd.</name>
+  </developer>
+
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-chat">moderate</content_attribute>
+    <content_attribute id="social-info">mild</content_attribute>
+    <content_attribute id="social-audio">mild</content_attribute>
+    <content_attribute id="social-location">mild</content_attribute>
+    <content_attribute id="social-contacts">intense</content_attribute>
+    <content_attribute id="money-purchasing">intense</content_attribute>
+    <content_attribute id="money-advertising">moderate</content_attribute>
+  </content_rating>
+
+  <releases>
+    <release version="1.0.0" date="2026-02-01">
+      <description>
+        <p>Initial release of TriNetra Super-App for Linux.</p>
+        <ul>
+          <li>Social Feed with AI Translation</li>
+          <li>Real-time Messenger</li>
+          <li>TriNetra Pay Wallet</li>
+          <li>Creator Studio with 70/30 Revenue Split</li>
+          <li>Creator Pro subscription with Blue Badge</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Social Feed with AI Translation</caption>
+      <image>https://trinetra.web.app/screenshots/linux/feed.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Messenger — Real-time Chat</caption>
+      <image>https://trinetra.web.app/screenshots/linux/messenger.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Creator Studio — Earnings Dashboard</caption>
+      <image>https://trinetra.web.app/screenshots/linux/creator-studio.png</image>
+    </screenshot>
+  </screenshots>
+
+  <provides>
+    <binary>trinetra</binary>
+  </provides>
+
+  <categories>
+    <category>Network</category>
+    <category>Chat</category>
+    <category>Social</category>
+    <category>Finance</category>
+  </categories>
+
+  <keywords>
+    <keyword>social</keyword>
+    <keyword>messenger</keyword>
+    <keyword>payments</keyword>
+    <keyword>upi</keyword>
+    <keyword>india</keyword>
+    <keyword>creator</keyword>
+    <keyword>ai</keyword>
+    <keyword>gemini</keyword>
+  </keywords>
+
+  <requires>
+    <internet/>
+  </requires>
+</component>

@@ -1,0 +1,33 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=TriNetra
+Name[hi]=ट्राईनेत्रा
+GenericName=Social Super-App
+Comment=India's Ultimate Social Super-App — Connect, Share, Pay
+Comment[hi]=भारत का अल्टीमेट सोशल सुपर-ऐप — जुड़ें, शेयर करें, पेमेंट करें
+Exec=/app/trinetra/trinetra
+Icon=com.trinetra.app
+Terminal=false
+StartupNotify=true
+StartupWMClass=trinetra
+
+Categories=Network;Chat;Social;Finance;
+
+Keywords=social;messenger;payments;upi;india;creator;ai;feed;wallet;trinetra;
+Keywords[hi]=सोशल;मैसेंजर;पेमेंट;यूपीआई;भारत;
+
+MimeType=
+X-Flatpak-RatingAge=12+
+
+Actions=NewPost;OpenMessenger;
+
+[Desktop Action NewPost]
+Name=Create New Post
+Exec=/app/trinetra/trinetra --route=/create-post
+Icon=document-new
+
+[Desktop Action OpenMessenger]
+Name=Open Messenger
+Exec=/app/trinetra/trinetra --route=/messenger
+Icon=mail-message-new
