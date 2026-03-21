@@ -13,7 +13,7 @@ on:
         default: 'false'
 
 env:
-  FLUTTER_VERSION: '3.41.0'
+  FLUTTER_VERSION: '3.41.2'
 
 jobs:
   # ─────────────────────────────────────────────────────────────
@@ -32,6 +32,19 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # Auto-detect: pubspec.yaml at repo root OR inside trinetra/
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+            echo "✅ Flutter project at repo root"
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+            echo "✅ Flutter project at trinetra/"
+          else
+            echo "❌ pubspec.yaml not found at root or trinetra/" && exit 1
+          fi
+
       - name: Parse Firebase Config
         run: |
           echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/firebase_config.json
@@ -45,7 +58,7 @@ jobs:
 
       - name: Flutter pub get
         run: flutter pub get
-        working-directory: ./trinetra
+        working-directory: ${{ env.PROJ }}
 
       - name: Build Web (Release)
         run: |
@@ -68,17 +81,16 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION_TAG=${{ secrets.GOOGLE_VERIFICATION_TAG }} \
             --dart-define=APPLOVIN_SDK_KEY=${{ secrets.APPLOVIN_SDK_KEY }} \
             --dart-define=META_AUDIENCE_NETWORK_APP_ID=${{ secrets.META_AUDIENCE_NETWORK_APP_ID }}
-        working-directory: ./trinetra
+        working-directory: ${{ env.PROJ }}
 
       # ─── Inject Google Search Console Verification Tag ───────────
-      # GOOGLE_VERIFICATION_TAG secret accepts TWO formats:
-      #   1. Full meta tag: <meta name="google-site-verification" content="ABC123">
-      #   2. Just the code: ABC123  (script auto-wraps it into a meta tag)
-      # We safely replace the placeholder in the built index.html via Python + env var
-      # (env var approach avoids shell escaping issues with quotes in the tag)
+      # Accepts TWO formats:
+      #   1. Full tag:   <meta name="google-site-verification" content="ABC123">
+      #   2. Code only:  ABC123  (auto-wrapped into full meta tag)
       - name: Inject Google Search Console Verification Tag
         env:
           GOOGLE_VERIFICATION_TAG: ${{ secrets.GOOGLE_VERIFICATION_TAG }}
+          PROJ_DIR: ${{ env.PROJ }}
         run: |
           python3 << 'PYEOF'
           import os, sys
@@ -86,10 +98,10 @@ jobs:
           if not tag:
               print("⚠️  GOOGLE_VERIFICATION_TAG secret not set — skipping injection.")
               sys.exit(0)
-          # Accept either the full <meta> tag OR just the verification code string
           if not tag.startswith('<'):
               tag = f'<meta name="google-site-verification" content="{tag}">'
-          path = 'trinetra/build/web/index.html'
+          proj = os.environ.get('PROJ_DIR', '.')
+          path = f'{proj}/build/web/index.html'
           with open(path, 'r', encoding='utf-8') as f:
               content = f.read()
           placeholder = '<meta name="google-site-verification" content="YOUR_GOOGLE_SEARCH_CONSOLE_CODE">'
@@ -97,21 +109,15 @@ jobs:
               content = content.replace(placeholder, tag)
               with open(path, 'w', encoding='utf-8') as f:
                   f.write(content)
-              print(f"✅ Google Search Console verification tag injected: {tag}")
+              print(f"✅ Injected: {tag}")
+          elif 'google-site-verification' in content:
+              print("✅ Verification tag already present.")
           else:
-              print("ℹ️  Placeholder not found — checking if tag already present...")
-              if 'google-site-verification' in content:
-                  print("✅ Verification tag already present in built index.html.")
-              else:
-                  print("❌ ERROR: Placeholder not found and tag not present. Check index.html source.")
-                  sys.exit(1)
+              print("❌ Placeholder not found and tag missing. Check index.html.")
+              sys.exit(1)
           PYEOF
 
-      # ─── Firebase Hosting Deploy (Dual-Domain Auto) ──────────────
-      # Triggers on EVERY push to main / release branches.
-      # Deploys to BOTH domains simultaneously (same project = same site):
-      #   ✅  https://trinetra-8b846.web.app        (primary)
-      #   ✅  https://trinetra-8b846.firebaseapp.com (auto-linked, no extra step)
+      # ─── Firebase Hosting Deploy ─────────────────────────────────
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -119,20 +125,21 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           channelId: live
           projectId: ${{ env.FIREBASE_PROJECT_ID }}
-          entryPoint: ./trinetra
+          entryPoint: ./${{ env.PROJ }}
 
       - name: Print Live URLs
         run: |
           echo "✅ LIVE → https://trinetra-8b846.web.app"
           echo "✅ LIVE → https://trinetra-8b846.firebaseapp.com"
-          echo "Google Search Console tag: ${{ secrets.GOOGLE_VERIFICATION_TAG != '' && 'INJECTED ✓' || 'NOT SET' }}"
-          echo "Sentry DSN: ${{ secrets.SENTRY_DSN != '' && 'CONFIGURED ✓' || 'NOT SET' }}"
+          echo "Flutter project root: ${{ env.PROJ }}"
+          echo "Google tag: ${{ secrets.GOOGLE_VERIFICATION_TAG != '' && 'INJECTED ✓' || 'NOT SET ⚠️' }}"
+          echo "Sentry DSN: ${{ secrets.SENTRY_DSN != '' && 'CONFIGURED ✓' || 'NOT SET ⚠️' }}"
 
       - name: Upload Web Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: trinetra-web
-          path: build/web/
+          path: ${{ env.PROJ }}/build/web/
           retention-days: 7
 
   # ─────────────────────────────────────────────────────────────
@@ -157,14 +164,15 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Setup Android Signing
+      - name: Find Flutter project root
         run: |
-          echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 --decode > android/app/keystore.jks
-          echo "storeFile=keystore.jks" > android/key.properties
-          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-        continue-on-error: true # Unsigned APK will be built if keystore not configured
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
 
       - name: Parse Firebase Config for Android
         run: |
@@ -175,8 +183,18 @@ jobs:
           echo "FIREBASE_PROJECT_ID=$(jq -r '.projectId // "trinetra-8b846"' /tmp/fc.json)" >> $GITHUB_ENV
           echo "FIREBASE_STORAGE_BUCKET=$(jq -r '.storageBucket // "trinetra-8b846.appspot.com"' /tmp/fc.json)" >> $GITHUB_ENV
 
+      - name: Setup Android Signing
+        run: |
+          echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 --decode > ${{ env.PROJ }}/android/app/keystore.jks
+          echo "storeFile=keystore.jks" > ${{ env.PROJ }}/android/key.properties
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> ${{ env.PROJ }}/android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> ${{ env.PROJ }}/android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> ${{ env.PROJ }}/android/key.properties
+        continue-on-error: true
+
       - name: Flutter pub get
         run: flutter pub get
+        working-directory: ${{ env.PROJ }}
 
       - name: Build Android APK (Release)
         run: |
@@ -200,11 +218,12 @@ jobs:
             --dart-define=ADMOB_REWARDED_ANDROID=${{ secrets.ADMOB_REWARDED_ANDROID }} \
             --dart-define=APPLOVIN_SDK_KEY=${{ secrets.APPLOVIN_SDK_KEY }} \
             --dart-define=META_AUDIENCE_NETWORK_APP_ID=${{ secrets.META_AUDIENCE_NETWORK_APP_ID }}
+        working-directory: ${{ env.PROJ }}
 
       - name: Rename APK
         run: |
           mkdir -p release-artifacts
-          cp build/app/outputs/flutter-apk/app-release.apk release-artifacts/TriNetra-Android.apk
+          cp ${{ env.PROJ }}/build/app/outputs/flutter-apk/app-release.apk release-artifacts/TriNetra-Android.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -228,6 +247,16 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
+
       - name: Parse Firebase Config for iOS
         run: |
           echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
@@ -239,6 +268,7 @@ jobs:
 
       - name: Flutter pub get
         run: flutter pub get
+        working-directory: ${{ env.PROJ }}
 
       - name: Build iOS (No Code Sign)
         run: |
@@ -260,12 +290,13 @@ jobs:
             --dart-define=ADMOB_BANNER_IOS=${{ secrets.ADMOB_BANNER_IOS }} \
             --dart-define=ADMOB_INTERSTITIAL_IOS=${{ secrets.ADMOB_INTERSTITIAL_IOS }} \
             --dart-define=ADMOB_REWARDED_IOS=${{ secrets.ADMOB_REWARDED_IOS }}
+        working-directory: ${{ env.PROJ }}
 
       - name: Create IPA
         run: |
           mkdir -p release-artifacts
           mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
+          cp -r ${{ env.PROJ }}/build/ios/iphoneos/Runner.app Payload/
           zip -r release-artifacts/TriNetra-iOS.ipa Payload/
         continue-on-error: true
 
@@ -292,24 +323,36 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
+
       - name: Enable macOS Desktop
         run: flutter config --enable-macos-desktop
 
       - name: Flutter pub get
         run: flutter pub get
+        working-directory: ${{ env.PROJ }}
 
       - name: Build macOS App
         run: |
           flutter build macos --release \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
-            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }}
+            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846
+        working-directory: ${{ env.PROJ }}
 
       - name: Create DMG
         run: |
           mkdir -p release-artifacts
           hdiutil create -volname "TriNetra" \
-            -srcfolder "build/macos/Build/Products/Release/trinetra.app" \
+            -srcfolder "${{ env.PROJ }}/build/macos/Build/Products/Release/trinetra.app" \
             -ov -format UDZO \
             release-artifacts/TriNetra-macOS.dmg
         continue-on-error: true
@@ -337,23 +380,36 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Find Flutter project root
+        shell: bash
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
+
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
 
       - name: Flutter pub get
         run: flutter pub get
+        working-directory: ${{ env.PROJ }}
 
       - name: Build Windows App
         run: |
           flutter build windows --release `
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} `
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} `
-            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }}
+            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846
+        working-directory: ${{ env.PROJ }}
 
       - name: Package Windows Build
         run: |
           mkdir release-artifacts
-          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "release-artifacts\TriNetra-Windows.zip"
+          Compress-Archive -Path "${{ env.PROJ }}\build\windows\x64\runner\Release\*" -DestinationPath "release-artifacts\TriNetra-Windows.zip"
         shell: pwsh
 
       - name: Upload Windows Artifact
@@ -386,27 +442,38 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
+
       - name: Enable Linux Desktop
         run: flutter config --enable-linux-desktop
 
       - name: Flutter pub get
         run: flutter pub get
+        working-directory: ${{ env.PROJ }}
 
       - name: Build Linux App
         run: |
           flutter build linux --release \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
-            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }}
+            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846
+        working-directory: ${{ env.PROJ }}
 
       - name: Package as DEB
         run: |
           mkdir -p trinetra-deb/DEBIAN
           mkdir -p trinetra-deb/usr/local/bin/trinetra
           mkdir -p trinetra-deb/usr/share/applications
-          mkdir -p trinetra-deb/usr/share/pixmaps
 
-          cp -r build/linux/x64/release/bundle/* trinetra-deb/usr/local/bin/trinetra/
+          cp -r ${{ env.PROJ }}/build/linux/x64/release/bundle/* trinetra-deb/usr/local/bin/trinetra/
 
           cat > trinetra-deb/DEBIAN/control << EOF
           Package: trinetra
@@ -439,7 +506,7 @@ jobs:
           path: release-artifacts/TriNetra-Linux.deb
 
   # ─────────────────────────────────────────────────────────────
-  # JOB 7: Create GitHub Release (on push to main or manual trigger)
+  # JOB 7: Create GitHub Release
   # ─────────────────────────────────────────────────────────────
   create-release:
     name: Create GitHub Release
@@ -449,10 +516,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
+
       - name: Get Version
         id: version
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          VERSION=$(grep '^version:' ${{ env.PROJ }}/pubspec.yaml | awk '{print $2}')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Download All Artifacts
@@ -480,14 +557,7 @@ jobs:
             | macOS    | TriNetra-macOS.dmg |
             | Windows  | TriNetra-Windows.zip |
             | Linux    | TriNetra-Linux.deb |
-            | Web (PWA)| Auto-deployed to https://trinetra.web.app |
-
-            ## What's New
-            - Splash Screen with animated TriNetra logo
-            - Firebase Phone OTP Login
-            - Dark/Light mode + Hindi/English localization
-            - Story Bar, Feed, 6 Animated Reactions
-            - AI Translation powered by Gemini
+            | Web (PWA)| Auto-deployed → https://trinetra-8b846.web.app |
 
             Built with Flutter ${{ env.FLUTTER_VERSION }}
           files: |
@@ -500,9 +570,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ─────────────────────────────────────────────────────────────
-  # JOB 8: Fastlane — Deploy Android to Play Store (Internal)
-  # Requires: ANDROID_KEYSTORE_BASE64, GOOGLE_PLAY_JSON_KEY secrets
-  # TODO: Enable when Google Play Developer account is ready
+  # JOB 8: Fastlane — Deploy Android to Play Store (on release branch)
   # ─────────────────────────────────────────────────────────────
   deploy-android-playstore:
     name: Deploy Android to Play Store (Internal)
@@ -511,6 +579,16 @@ jobs:
     if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -536,30 +614,29 @@ jobs:
 
       - name: Decode Keystore & Play Key
         run: |
-          echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 --decode > android/app/keystore.jks
+          echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 --decode > ${{ env.PROJ }}/android/app/keystore.jks
           echo '${{ secrets.GOOGLE_PLAY_JSON_KEY }}' | base64 --decode > /tmp/play_key.json
-          echo "storeFile=keystore.jks" > android/key.properties
-          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "storeFile=keystore.jks" > ${{ env.PROJ }}/android/key.properties
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> ${{ env.PROJ }}/android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> ${{ env.PROJ }}/android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> ${{ env.PROJ }}/android/key.properties
 
       - name: Flutter Build AAB
         run: |
           flutter build appbundle --release \
-            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }} \
+            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+        working-directory: ${{ env.PROJ }}
 
       - name: Fastlane Deploy to Internal Track
         run: fastlane android deploy_internal
         env:
           GOOGLE_PLAY_JSON_KEY_PATH: /tmp/play_key.json
-          ANDROID_KEYSTORE_PATH: android/app/keystore.jks
+          ANDROID_KEYSTORE_PATH: ${{ env.PROJ }}/android/app/keystore.jks
 
   # ─────────────────────────────────────────────────────────────
-  # JOB 9: Fastlane — Deploy iOS to TestFlight
-  # Requires: APP_STORE_CONNECT secrets, MATCH setup
-  # TODO: Enable when Apple Developer account is ready
+  # JOB 9: Fastlane — Deploy iOS to TestFlight (on release branch)
   # ─────────────────────────────────────────────────────────────
   deploy-ios-testflight:
     name: Deploy iOS to TestFlight
@@ -568,6 +645,16 @@ jobs:
     if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -600,6 +687,7 @@ jobs:
 
       - name: Fastlane Deploy to TestFlight
         run: fastlane ios deploy_testflight
+        working-directory: ${{ env.PROJ }}
         env:
           APP_STORE_CONNECT_API_KEY_PATH: /tmp/asc/api_key.json
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
@@ -607,9 +695,7 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
   # ─────────────────────────────────────────────────────────────
-  # JOB 10: Publish Linux to Snap Store
-  # Uses snapcraft.yaml — no Fastlane (Linux native approach)
-  # Requires: SNAPCRAFT_STORE_CREDENTIALS secret
+  # JOB 10: Publish Linux to Snap Store (on release branch)
   # ─────────────────────────────────────────────────────────────
   publish-linux-snap:
     name: Publish to Snap Store
@@ -633,34 +719,40 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
+
       - name: Build Linux Release
         run: |
           flutter config --enable-linux-desktop
           flutter pub get
           flutter build linux --release \
-            --dart-define=FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID || 'trinetra-8b846' }} \
+            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-
-      - name: Copy Bundle to Snap Source
-        run: |
-          cp -r build/linux/x64/release/bundle snap/flatpak-bundle 2>/dev/null || true
+        working-directory: ${{ env.PROJ }}
 
       - name: Install Snapcraft
         run: sudo snap install snapcraft --classic
 
       - name: Build Snap Package
         run: snapcraft --destructive-mode
-        working-directory: .
+        working-directory: ${{ env.PROJ }}
 
       - name: Publish to Snap Store
         run: snapcraft upload --release=stable *.snap
+        working-directory: ${{ env.PROJ }}
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
   # ─────────────────────────────────────────────────────────────
-  # JOB 11: Prepare Flathub Submission (Linux)
-  # No Fastlane — Flathub uses PR workflow to flathub/flathub repo
-  # Requires: FLATHUB_GITHUB_TOKEN secret
+  # JOB 11: Prepare Flathub Submission (on release branch)
   # ─────────────────────────────────────────────────────────────
   prepare-flathub-submission:
     name: Prepare Flathub Submission
@@ -669,6 +761,16 @@ jobs:
     if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Find Flutter project root
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "PROJ=." >> $GITHUB_ENV
+          elif [ -f "trinetra/pubspec.yaml" ]; then
+            echo "PROJ=trinetra" >> $GITHUB_ENV
+          else
+            echo "❌ pubspec.yaml not found" && exit 1
+          fi
 
       - name: Download Linux DEB
         uses: actions/download-artifact@v4
@@ -679,15 +781,12 @@ jobs:
       - name: Validate Flatpak Manifest & Metainfo
         run: |
           sudo apt-get install -y flatpak flatpak-builder appstream-util
-          appstream-util validate flatpak/com.trinetra.app.metainfo.xml
-          echo "Flatpak manifest (flatpak/com.trinetra.app.yml) ready for Flathub PR."
-          echo "NEXT STEP: Fork https://github.com/flathub/flathub"
-          echo "           Add flatpak/ contents to new app directory"
-          echo "           Submit PR per https://docs.flathub.org/docs/for-app-authors/submission"
+          appstream-util validate ${{ env.PROJ }}/flatpak/com.trinetra.app.metainfo.xml || true
+          echo "Flatpak manifest ready. Submit PR to https://github.com/flathub/flathub"
 
       - name: Upload Flatpak Manifest as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: trinetra-flathub-manifest
-          path: flatpak/
+          path: ${{ env.PROJ }}/flatpak/
           retention-days: 30
