@@ -1,49 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <!--
-    TriNetra Web App — PWA enabled
-    If you are serving your web app in a path other than the root, change the href value below to reflect the base path you are serving from.
-    The path provided below has to start and end with a slash "/" in order for it to work correctly.
-    For more details: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+    TriNetra Super-App — Flutter Web PWA
+    SEO-optimised for Google Search indexing.
+    Managed via CI/CD. Do not edit manually in production.
   -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="TriNetra - A Premium Social Super-App. Connect. Share. Grow.">
-  <meta name="keywords" content="TriNetra, social media, connect, share, India">
-  <meta name="author" content="TriNetra Technologies">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5">
 
-  <!-- PWA Meta Tags -->
+  <!-- ═══ Primary SEO Meta Tags ════════════════════════════════ -->
+  <title>TriNetra - The Ultimate Super-App | Connect, Share & Grow</title>
+  <meta name="title" content="TriNetra - The Ultimate Super-App | Connect, Share & Grow">
+  <meta name="description" content="TriNetra is India's ultimate social super-app. Connect with friends, share moments, send money with TriNetra Pay, shop on the marketplace, earn referral coins, and chat with AI. All in one app — for Android, iOS, and Web.">
+  <meta name="keywords" content="TriNetra, super app, social media India, UPI payment app, messenger app, AI chatbot, refer and earn, social super app, TriNetra Pay, India social network, Flutter app, best social app 2025">
+  <meta name="author" content="TriNetra Technologies Pvt. Ltd.">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="language" content="English">
+  <meta name="revisit-after" content="3 days">
+  <link rel="canonical" href="https://trinetra.web.app">
+
+  <!-- ═══ Open Graph / Facebook ════════════════════════════════ -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="TriNetra">
+  <meta property="og:url" content="https://trinetra.web.app">
+  <meta property="og:title" content="TriNetra - The Ultimate Super-App">
+  <meta property="og:description" content="India's #1 social super-app — messaging, payments, marketplace, AI assistant, and referral rewards. All in one place.">
+  <meta property="og:image" content="https://trinetra.web.app/icons/Icon-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="TriNetra Super-App Logo">
+  <meta property="og:locale" content="en_IN">
+
+  <!-- ═══ Twitter / X Card ══════════════════════════════════════ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@TriNetraApp">
+  <meta name="twitter:creator" content="@TriNetraApp">
+  <meta name="twitter:title" content="TriNetra - The Ultimate Super-App">
+  <meta name="twitter:description" content="India's #1 social super-app — messaging, payments, marketplace, AI assistant & referral rewards.">
+  <meta name="twitter:image" content="https://trinetra.web.app/icons/Icon-512.png">
+  <meta name="twitter:image:alt" content="TriNetra Super-App">
+
+  <!-- ═══ PWA Meta Tags ══════════════════════════════════════════ -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TriNetra">
+  <meta name="application-name" content="TriNetra">
   <meta name="theme-color" content="#1877F2">
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5">
+  <meta name="msapplication-TileColor" content="#1877F2">
+  <meta name="msapplication-TileImage" content="icons/Icon-192.png">
 
-  <!-- Open Graph / Social Preview -->
-  <meta property="og:title" content="TriNetra - Connect. Share. Grow.">
-  <meta property="og:description" content="A Premium Social Super-App for everyone.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://trinetra.web.app">
-  <meta property="og:image" content="https://trinetra.web.app/icons/Icon-512.png">
+  <!-- ═══ Structured Data (JSON-LD) ════════════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TriNetra - The Ultimate Super-App",
+    "url": "https://trinetra.web.app",
+    "description": "India's ultimate social super-app combining messaging, UPI payments, marketplace, AI chatbot, and referral rewards.",
+    "applicationCategory": "SocialNetworkingApplication",
+    "operatingSystem": "Android, iOS, Web, Windows, macOS, Linux",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "TriNetra Technologies",
+      "url": "https://trinetra.web.app"
+    },
+    "featureList": [
+      "Social Feed with AI Translation",
+      "Real-time Messenger",
+      "TriNetra Pay — UPI Wallet",
+      "Marketplace",
+      "TriNetra AI Chatbot (Gemini)",
+      "Refer & Earn — TriNetra Coins"
+    ],
+    "screenshot": "https://trinetra.web.app/icons/Icon-512.png",
+    "inLanguage": ["en", "hi"]
+  }
+  </script>
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="TriNetra">
-  <meta name="twitter:description" content="Connect. Share. Grow.">
-
-  <!-- iOS Splash Screens -->
+  <!-- ═══ iOS Splash & Icons ════════════════════════════════════ -->
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-192.png">
   <link rel="apple-touch-startup-image" href="icons/Icon-512.png">
 
-  <!-- Favicon -->
+  <!-- ═══ Favicon & Manifest ═══════════════════════════════════ -->
   <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="shortcut icon" href="favicon.png">
   <link rel="manifest" href="manifest.json">
 
-  <title>TriNetra</title>
+  <!-- ═══ Preconnect for performance ═══════════════════════════ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://firebaseapp.com" crossorigin>
 
   <!-- Service Worker Registration -->
   <script>

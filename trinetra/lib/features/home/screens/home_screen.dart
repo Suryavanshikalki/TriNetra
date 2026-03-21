@@ -25,9 +25,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   late final List<Widget> _pages = const [
     FeedScreen(),
-    _PlaceholderPage(icon: Icons.people, label: 'Friends'),
-    _PlaceholderPage(icon: Icons.slow_motion_video, label: 'Reels'),
+    MessengerListScreen(),
     MarketplaceScreen(),
+    WalletScreen(),
     _MenuScreen(),
   ];
 
