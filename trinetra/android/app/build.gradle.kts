@@ -32,6 +32,10 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {
