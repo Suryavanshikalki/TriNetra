@@ -2,6 +2,13 @@
 cmake_minimum_required(VERSION 3.13)
 project(runner LANGUAGES CXX)
 
+# ── Sentry-native: disable CURL transport & native backend ──────────────────
+# The CI runner's libcurl lacks AsynchDNS. Setting these cache variables
+# BEFORE add_subdirectory propagates them into FetchContent(sentry-native).
+set(SENTRY_TRANSPORT "none" CACHE STRING "Sentry transport — none avoids libcurl dep" FORCE)
+set(SENTRY_BACKEND   "none" CACHE STRING "Sentry backend   — none avoids native crash libs" FORCE)
+# ────────────────────────────────────────────────────────────────────────────
+
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
 set(BINARY_NAME "trinetra")

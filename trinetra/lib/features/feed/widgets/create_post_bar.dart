@@ -6,7 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Create Post Bar shown on top of feed
 class CreatePostBar extends ConsumerWidget {
-  const CreatePostBar({super.key});
+  final VoidCallback? onTap;
+  const CreatePostBar({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +40,7 @@ class CreatePostBar extends ConsumerWidget {
               // Post Input
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: onTap ?? () {},
                   child: Container(
                     height: 40,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
