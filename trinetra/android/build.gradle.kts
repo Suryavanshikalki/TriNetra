@@ -1,7 +1,4 @@
 buildscript {
-    extra.apply {
-        set("kotlin_version", "1.9.24")
-    }
     repositories {
         google()
         mavenCentral()
@@ -9,7 +6,7 @@ buildscript {
     dependencies {
         classpath("com.google.gms:google-services:4.4.2")
         classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.3")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${extra["kotlin_version"]}")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
     }
 }
 
