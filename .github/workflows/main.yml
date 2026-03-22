@@ -116,12 +116,21 @@ jobs:
 
   deploy-web-firebase:
     runs-on: ubuntu-latest
+    needs: [build-android]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download Android APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Android-Release
+          path: android-artifact
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Build Web PWA & Deploy to Firebase
+
+      - name: Build Web PWA
         shell: bash
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
@@ -130,6 +139,19 @@ jobs:
           flutter pub get
           flutter build web --release
 
+      - name: Inject APK into web build downloads folder
+        shell: bash
+        run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          mkdir -p "$APP_DIR/build/web/downloads"
+          APK=$(find android-artifact -name "app-release.apk" | head -n 1)
+          cp "$APK" "$APP_DIR/build/web/downloads/trinetra_latest.apk"
+          echo "APK placed at: $APP_DIR/build/web/downloads/trinetra_latest.apk"
+          ls -lh "$APP_DIR/build/web/downloads/"
+
+      - name: Deploy to Firebase Hosting
+        shell: bash
+        run: |
           cd $GITHUB_WORKSPACE
           npm install -g firebase-tools
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > sa.json
