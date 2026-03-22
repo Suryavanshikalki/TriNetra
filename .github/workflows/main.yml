@@ -1,4 +1,4 @@
-name: TriNetra Auto-Update, All Stores & Web Release
+name: TriNetra Final - All 6 Platforms & Stores
 on:
   push:
     branches: [ main ]
@@ -18,7 +18,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Build Android (APK for Web Download & AAB for Play Store)
+      - name: Build Android (APK & Play Store AAB)
         shell: bash
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
@@ -27,10 +27,10 @@ jobs:
           flutter pub get
           flutter build apk --release
           flutter build appbundle --release
-      - name: Save Android Apps to GitHub
+      - name: Save Android Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Android-Apps
+          name: Android-Release
           path: |
             **/build/app/outputs/flutter-apk/app-release.apk
             **/build/app/outputs/bundle/release/app-release.aab
@@ -42,7 +42,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Build Windows (EXE for Web Download & Store Prep)
+      - name: Build Windows EXE
         shell: bash
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
@@ -55,15 +55,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Linux Packages
+      - name: Install Linux Dependencies (Fixed)
         run: |
           sudo apt-get update
           sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libsecret-1-dev
-
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Build Linux (App for Web Download & Store Prep)
+      - name: Build Linux App
         shell: bash
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
@@ -80,7 +79,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Build iOS & macOS (Apple Store Prep)
+      - name: Build iOS & macOS
         shell: bash
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
