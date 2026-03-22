@@ -145,6 +145,11 @@ jobs:
             > ${{ env.PROJ }}/android/key.properties
         continue-on-error: true
 
+      - name: Flutter clean
+        shell: bash
+        run: flutter clean
+        working-directory: ${{ env.PROJ }}
+
       - name: Flutter pub get
         shell: bash
         run: flutter pub get
@@ -192,7 +197,7 @@ jobs:
   build-ios:
     name: Build iOS (Unsigned)
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -216,6 +221,11 @@ jobs:
           else
             echo "pubspec.yaml not found" && exit 1
           fi
+
+      - name: Flutter clean
+        shell: bash
+        run: flutter clean
+        working-directory: ${{ env.PROJ }}
 
       - name: Flutter pub get
         shell: bash
@@ -253,7 +263,7 @@ jobs:
   build-macos:
     name: Build macOS (Unsigned)
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -277,6 +287,11 @@ jobs:
           else
             echo "pubspec.yaml not found" && exit 1
           fi
+
+      - name: Flutter clean
+        shell: bash
+        run: flutter clean
+        working-directory: ${{ env.PROJ }}
 
       - name: Flutter pub get
         shell: bash
