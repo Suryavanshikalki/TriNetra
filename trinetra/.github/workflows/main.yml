@@ -62,7 +62,7 @@ jobs:
 
       - name: Flutter pub get
         shell: bash
-        run: flutter pub get
+        run: flutter pub upgrade
         working-directory: ${{ env.PROJ }}
 
       - name: Flutter build web
@@ -152,7 +152,7 @@ jobs:
 
       - name: Flutter pub get
         shell: bash
-        run: flutter pub get
+        run: flutter pub upgrade
         working-directory: ${{ env.PROJ }}
 
       - name: Fix Gradle Permission
@@ -229,7 +229,7 @@ jobs:
 
       - name: Flutter pub get
         shell: bash
-        run: flutter pub get
+        run: flutter pub upgrade
         working-directory: ${{ env.PROJ }}
 
       - name: Flutter build iOS
@@ -295,7 +295,7 @@ jobs:
 
       - name: Flutter pub get
         shell: bash
-        run: flutter pub get
+        run: flutter pub upgrade
         working-directory: ${{ env.PROJ }}
 
       - name: flutter config --enable-macos-desktop
@@ -304,7 +304,7 @@ jobs:
       - name: Flutter build macOS
         shell: bash
         run: |
-          flutter build macos --release \
+          flutter build macos --release --no-codesign \
             --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
@@ -358,7 +358,7 @@ jobs:
 
       - name: Flutter pub get
         shell: bash
-        run: flutter pub get
+        run: flutter pub upgrade
         working-directory: ${{ env.PROJ }}
 
       - name: flutter config --enable-windows-desktop
@@ -422,7 +422,7 @@ jobs:
 
       - name: Flutter pub get
         shell: bash
-        run: flutter pub get
+        run: flutter pub upgrade
         working-directory: ${{ env.PROJ }}
 
       - name: flutter config --enable-linux-desktop
