@@ -123,9 +123,9 @@ class _CreatorStudioScreenState extends ConsumerState<CreatorStudioScreen>
                       // ─── Error / Message ─────────────────────────
                       if (creatorState.error != null)
                         _MessageBanner(
-                            text: creatorState.error!, isError: true),
+                            creatorState.error!, isError: true),
                       if (creatorState.message != null)
-                        _MessageBanner(text: creatorState.message!),
+                        _MessageBanner(creatorState.message!),
 
                       const SizedBox(height: 32),
                     ],
