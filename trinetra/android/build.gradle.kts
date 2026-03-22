@@ -33,3 +33,14 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+// Force JVM 17 target on all Kotlin compile tasks (prevents sentry_flutter mismatch)
+subprojects {
+    afterEvaluate {
+        if (project.hasProperty("android")) {
+            project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).configureEach {
+                kotlinOptions { jvmTarget = "17" }
+            }
+        }
+    }
+}
