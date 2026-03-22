@@ -95,12 +95,4 @@ flutter:
     - assets/lottie/
     - assets/icons/
 
-  fonts:
-    - family: Lato
-      fonts:
-        - asset: assets/fonts/Lato-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Lato-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Lato-Black.ttf
-          weight: 900
+  # Fonts are served via google_fonts package (no local font files needed)
