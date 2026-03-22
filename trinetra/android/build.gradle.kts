@@ -1,5 +1,5 @@
 buildscript {
-    extra["kotlin_version"] = "1.9.24"
+    extra["kotlin_version"] = "2.1.0"
     repositories {
         google()
         mavenCentral()
@@ -7,7 +7,7 @@ buildscript {
     dependencies {
         classpath("com.google.gms:google-services:4.4.2")
         classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.3")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
     }
 }
 
@@ -18,9 +18,9 @@ allprojects {
     }
     configurations.all {
         resolutionStrategy {
-            force("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
-            force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24")
-            force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24")
+            force("org.jetbrains.kotlin:kotlin-stdlib:2.1.0")
+            force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.0")
+            force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0")
         }
     }
 }

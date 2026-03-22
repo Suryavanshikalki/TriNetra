@@ -7,6 +7,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -22,12 +23,13 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Build Android (APK & Play Store AAB)
+      - name: Build Android (APK & AAB)
         shell: bash
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
+          flutter clean
           flutter pub get
           flutter build apk --release
           flutter build appbundle --release
@@ -52,6 +54,7 @@ jobs:
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
           flutter config --enable-windows-desktop
+          flutter clean
           flutter pub get
           flutter build windows --release
 
@@ -59,10 +62,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Linux Dependencies (Fixed Full Line)
+      - name: Install Linux Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libsecret-1-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libsecret-1-dev libcurl4-openssl-dev
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -72,26 +75,44 @@ jobs:
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
           flutter config --enable-linux-desktop
+          flutter clean
           flutter pub get
           flutter build linux --release
 
-  build-apple:
+  build-ios:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Build iOS & macOS
+      - name: Build iOS (No Codesign)
+        shell: bash
+        run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          cd "$APP_DIR"
+          flutter clean
+          flutter pub get
+          flutter build ios --release --no-codesign
+
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Build macOS
         shell: bash
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
           flutter config --enable-macos-desktop
+          flutter clean
           flutter pub get
-          flutter build ios --release --no-codesign || true
-          flutter build macos --release || true
+          flutter build macos --release
 
   deploy-web-firebase:
     runs-on: ubuntu-latest
@@ -105,14 +126,15 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
+          flutter clean
           flutter pub get
           flutter build web --release
-          
+
           cd $GITHUB_WORKSPACE
           npm install -g firebase-tools
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > sa.json
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/sa.json
-          
+
           FIREBASE_DIR=$(dirname $(find . -name "firebase.json" | head -n 1))
           cd "$FIREBASE_DIR"
           firebase deploy --only hosting
