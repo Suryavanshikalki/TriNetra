@@ -1,5 +1,7 @@
+// Root-level declaration — readable by Flutter's Gradle plugin upgrade mechanism
+extra["kotlin_version"] = "1.9.24"
+
 buildscript {
-    extra["kotlin_version"] = "1.9.24"
     repositories {
         google()
         mavenCentral()
