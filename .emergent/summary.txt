@@ -1,125 +1,408 @@
 <analysis>**original_problem_statement:**
-The user wants to continue the development of a 6-platform Flutter Super-App named 'TriNetra'.
-- **Phase 1 & 2 (Done):** Boilerplate, CI/CD, Firebase Auth, Navigation Wiring, Real-time Firebase connection, AI features, and Sentry integration are complete.
-- **Phase 3 P1 (Done):** Monetization (Creator Tiers, Payments), Ads (AdMob), AWS S3, and multi-platform distribution scripts (Fastlane, Snap, Flatpak) have been implemented.
-- **Phase 3 P2 (Done):** Ad-free logic for premium users, dual-domain Firebase deployment, SEO polish (robots.txt, sitemap), a Boost Wallet feature, and the use of a real Sentry key have been completed.
-- **Current Task (Phase 3 P3):** The goal is the final web launch. This involves:
-    1.  **Automatic Firebase Deployment:** Using a  JSON key from GitHub Secrets to auto-deploy on every save.
-    2.  **SEO Go-Live:** Injecting a real  into  via the CI/CD pipeline.
-    3.  **Boost Analytics:** Implementing a new tab in the Creator Studio to show Impressions, Clicks, and CTR for boosted posts.
-    4.  **UI Polish:** Displaying the 'Blue Verification Badge' and Boost Wallet balance on the user's profile.
-    5.  **Final Verification:** Reviewing the 70/30 revenue split logic and ensuring all ad/payment placeholders are ready for future key injection.
+The user's goal is the final web launch of their 6-platform Flutter Super-App, 'TriNetra'. This is Phase 3, Part 3 of the project. The core task has been to create a fully automated CI/CD pipeline using GitHub Actions () that can successfully build all platform versions (Web, Android, iOS, macOS, Windows, Linux) and deploy the web app to Firebase Hosting.
+
+The project has been plagued by a series of CI/CD failures, primarily due to permission errors (), dependency/configuration errors (), and outdated GitHub Actions causing deprecation warnings. The user has provided increasingly specific, brute-force instructions to fix the  file.
+
+The final request (Message 180) was a CRITICAL SYSTEM OVERRIDE, demanding a complete rewrite of  using exact, non-negotiable YAML blocks to fix all previous issues permanently.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The 'TriNetra' super-app is a large-scale Flutter project targeting Web, Android, iOS, and Desktop (Windows, macOS, Linux). The codebase is feature-rich, with CI/CD automation via GitHub Actions () that handles building for all platforms and deploying the web app to Firebase Hosting. Monetization features (Creator Tiers, Post Boosting, AdMob) and core services (AI, Payments, File Storage) are scaffolded. The project has been developed over several sessions, and the user has provided all necessary API keys and secrets via the GitHub repository's secrets vault.
+- A large-scale Flutter application ('TriNetra') with a  subdirectory containing the source code.
+- A  GitHub Actions workflow file, which has been rewritten multiple times. The latest version, created per the user's absolute final instructions, resides at both  and  to ensure discovery.
+- All UI code for Phase 3 P3 (Boost Analytics tab, profile UI polish, revenue split logic, and dynamic 'Download App' buttons for the web build) is complete.
+- The  file has been configured to serve downloadable application files.
 
 **Last working item**:
-*   **Last item agent was working:** The agent was executing the user's request for **Phase 3 P3**, which was interrupted by a context window limit. The specific action was to make a targeted blind edit to the CI/CD workflow file () to inject the real  into the web build step.
-*   **Status:** IN PROGRESS
-*   **Agent Testing Done:** N (The user explicitly forbade any status checks or file reads to prevent crashing the session).
-*   **Which testing method agent to use?** NA. The next agent must continue with the blind execution methodology. After implementing the pending UI changes, the agent can perform targeted  commands to verify widget and provider existence without reading full files.
-*   **User Testing Done:** N
+- **Last item agent was working:** The agent performed a complete rewrite of the  file based on the user's final, non-negotiable CRITICAL SYSTEM OVERRIDE instructions in Message 180. This was to fix recurring CI/CD failures related to permissions, dependencies, and outdated actions.
+- **Status:** USER VERIFICATION PENDING
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** NA. The user must push the latest  file to their GitHub repository to trigger the CI/CD pipeline. The agent must wait for the user to report the outcome (success or failure) of that pipeline run.
+- **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-The overall task is to complete the remaining parts of Phase 3 P3. The  edit was only the first step.
-
-*   **Issue 1:** Implement 'Boost Analytics' Tab (P0)
-    *   **Attempted fixes:** None. This is the next implementation step.
-    *   **Next debug checklist:**
-        1.  Since reading large files is forbidden, use  on  to inject a  and  for a 3-tab layout (e.g., Earnings, Analytics, Boosts).
-        2.  Create a new provider in  to fetch boost analytics data (e.g., ).
-        3.  Create a new widget file for the analytics tab UI to display Impressions, Clicks, and CTR.
-    *   **Why fix this issue and what will be achieved with the fix?** This is a critical feature requested by the user to complete the monetization loop, allowing creators to see the return on investment for their boosted posts.
-    *   **Status:** NOT STARTED
-    *   **Is recurring issue?** N
-    *   **Should Test frontend/backend/both after fix?** Frontend.
-    *   **Blocked on other issue:** None.
-
-*   **Issue 2:** UI & Monetization Polish (P0)
-    *   **Attempted fixes:** None.
-    *   **Next debug checklist:**
-        1.  Update the user profile header widget (likely in ) to display the Blue Verification Badge for 'Creator Pro' users and show the current . Use .
-        2.  Locate the 70/30 revenue split logic (likely in ) and review it for mathematical correctness.
-    *   **Why fix this issue and what will be achieved with the fix?** To finalize the premium user experience and verify a core business logic component.
-    *   **Status:** NOT STARTED
-    *   **Is recurring issue?** N
-    *   **Should Test frontend/backend/both after fix?** Frontend.
-    *   **Blocked on other issue:** None.
+- **Issue 1: The CI/CD Pipeline is Repeatedly Failing (P0)**
+  - This is a critical, recurring blocker that has consumed the entire session. The workflow fails with various exit codes (126, 1) and warnings. The latest attempt was a complete rewrite of  following the user's exact specifications.
+  - **Attempted fixes:** Numerous rewrites of  with different strategies (dynamic path detection,  variations, dependency installation orders, different deploy actions).
+  - **Next debug checklist:**
+    1. Wait for the user to push the latest  (from Message 181) and report the results from their GitHub Actions tab.
+    2. If it fails, obtain the **exact error log** from the user for the specific failed step.
+    3. The user's last instruction (Message 180) mandated using  for deployment. If the deploy step fails, the agent should remind the user that this secret must be generated by running 
+Error: Cannot run login:ci in non-interactive mode. locally and added to their GitHub repository secrets.
+  - **Why fix this issue and what will be achieved with the fix?** This is the final step for the project launch. A successful pipeline will auto-build all 6 app versions and deploy the live web app with downloadable clients.
+  - **Status:** USER VERIFICATION PENDING
+  - **Is recurring issue?** Y
+  - **Should Test frontend/backend/both after fix?** Backend (CI/CD Pipeline).
+  - **Blocked on other issue:** None. This is the main blocker.
 
 **In progress Task List**:
-*   **Task 1:** Complete Phase 3 P3 Implementation
-    *   **Where to resume:** The  update is complete. The next agent must proceed with implementing **Issue 1 (Boost Analytics)**, followed by **Issue 2 (UI Polish)**. The blind execution strategy must be maintained.
-    *   **What will be achieved with this?** A fully integrated, launch-ready web application with finalized SEO, creator analytics, and polished monetization features, automatically deployed to Firebase.
-    *   **Status:** IN PROGRESS
-    *   **Should Test frontend/backend/both after fix?** Frontend.
-    *   **Blocked on something:** The fragile context window.
+- **Task 1: Achieve a Successful CI/CD Pipeline Run**
+  - **Where to resume:** Awaiting user feedback on the latest pipeline execution.
+  - **What will be achieved with this?** The project's primary goal of a fully automated build and deploy system will be realized.
+  - **Status:** BLOCKED (Awaiting user action and feedback).
+  - **Should Test frontend/backend/both after fix?** Backend (CI/CD Pipeline).
+  - **Blocked on something:** User action (pushing to GitHub).
 
 **Upcoming and Future Tasks**
+*   **Upcoming Tasks:**
+    *   (P1) Once the main pipeline is stable, uncomment and implement the pre-written store deployment jobs in  for Google Play, Apple App Store, and Microsoft Store.
 *   **Future Tasks:**
     *   (P1) Implement live payments by replacing dummy Stripe keys.
     *   (P1) Implement live ads by integrating AppLovin and Meta Audience Network SDKs.
-    *   (P2) Conduct focused testing and bug-fixing on native platform builds (Android, iOS, macOS, Windows, Linux).
+    *   (P2) Conduct focused testing and bug-fixing on the generated native platform builds (Android, iOS, etc.).
 
 **Completed work in this session**
-A comprehensive set of features has been built across multiple sessions.
-- **Recently completed:**
-  - **Phase 3 P1 (Monetization & Distribution):** Implemented Creator Studio, Pro Tier, AdMob ads, AWS S3 backend, and multi-platform deployment scripts (Fastlane, Snap, Flatpak).
-  - **Phase 3 P2 (Web Launch Polish):** Implemented Ad-Free logic, Boost Wallet, dual-domain Firebase deploy, and SEO files (, ).
-  - **Phase 3 P3 (In Progress):** Edited  to inject the Google verification tag for SEO go-live.
+- **CI/CD Pipeline:** Iteratively developed and rewrote the  file multiple times based on user feedback to address build failures. The final version incorporates brute-force permissions, exact dependency versions, and updated actions.
+- **UI & Features:**
+  - Implemented the 'Boost Analytics' tab in the Creator Studio.
+  - Added the 'Blue Verification Badge' and 'Boost Wallet Balance' to the user profile screen.
+  - Corrected the 70/30 revenue split logic for Pro vs. Free creators.
+  - Created a  widget that conditionally appears only on the web build () to provide links to native app downloads.
+- **Configuration:**
+  - Updated  to correctly serve downloadable files from a  directory.
+  - Added placeholder configurations for future ad network integrations.
 
 **Known issue recurrence from previous fork**
-*   **Issue recurrence in previous fork:** Extreme context window fragility.
-*   **Recurrence count:** 2+
-*   **Status:** RESOLVED (by workaround). The user has provided a strict workaround: **DO NOT READ LARGE FILES.** The next agent must adhere to this rule and use a targeted blind execution strategy, relying on  and creating new files instead of viewing existing large ones.
+- **Issue recurrence in this fork:** Persistent GitHub Actions workflow failure.
+- **Recurrence count:** 10+
+- **Status:** IN PROGRESS. The latest attempt (Message 181) is the most robust yet, directly implementing the user's CRITICAL SYSTEM OVERRIDE instructions. Its success is pending user verification.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Frontend:** Flutter (v3.x)
-*   **State Management:** Flutter Riverpod
-*   **Navigation:** GoRouter
-*   **Backend:** Python (FastAPI)
-*   **Database:** Firebase Firestore
-*   **CI/CD:** GitHub Actions
-*   **Deployment:** Firebase Hosting, Fastlane, Snapcraft, Flatpak
-*   **Integrations:** Gemini (AI), Sentry (Monitoring), AdMob (Ads), Razorpay/PayPal/Stripe (Payments), AWS S3 (Storage)
+- **Frontend:** Flutter (v3.41.2)
+- **State Management:** Riverpod
+- **CI/CD:** GitHub Actions
+- **Deployment:** Firebase Hosting (via Usage:  [options] [command]
 
-**key DB schema**
-The application uses Firebase Firestore directly. Key collections include:
-*   : { , , , ,  }
-*   : { , , , , ,  }
-*   : { , , , ,  }
+Options:
+  -V, --version                                                                     output the version number
+  -P, --project <alias_or_project_id>                                               the Firebase project to use for this command
+  --account <email>                                                                 the Google account to use for authorization
+  -j, --json                                                                        output JSON instead of text, also triggers non-interactive mode
+  --token <token>                                                                   DEPRECATED - will be removed in a future major version - supply an auth token for this command
+  --non-interactive                                                                 error out of the command instead of waiting for prompts
+  -i, --interactive                                                                 force prompts to be displayed
+  --debug                                                                           print verbose debug output and keep a debug log file
+  -c, --config <path>                                                               path to the firebase.json file to use for configuration
+  -h, --help                                                                        display help for command
+
+Commands:
+  appdistribution:distribute [options] <release-binary-file>                        upload a release binary and optionally distribute it to testers and run automated tests
+  appdistribution:testers:list [group]                                              list testers in project
+  appdistribution:testers:add [options] [emails...]                                 add testers to project (and App Distribution group, if specified via flag)
+  appdistribution:testers:remove [options] [emails...]                              remove testers from a project (or App Distribution group, if specified via flag)
+  appdistribution:groups:list|appdistribution:group:list                            list App Distribution groups
+  appdistribution:groups:create|appdistribution:group:create <displayName> [alias]  create an App Distribution group
+  appdistribution:groups:delete|appdistribution:group:delete <alias>                delete an App Distribution group
+  appdistribution:testcases:export [options] <test-cases-yaml-file>                 export test cases as a YAML file
+  appdistribution:testcases:import [options] <test-cases-yaml-file>                 import test cases from YAML file
+  apptesting:execute [options] [release-binary-file]                                Run mobile automated tests written in natural language driven by AI
+  apps:create [options] [platform] [displayName]                                    create a new Firebase app. [platform] can be IOS, ANDROID or WEB (case insensitive)
+  apps:list [platform]                                                              list the registered apps of a Firebase project. Optionally filter apps by [platform]: IOS, ANDROID or WEB (case insensitive)
+  apps:init [options] [platform] [appId]                                            automatically download and create config of a Firebase app
+  apps:sdkconfig [options] [platform] [appId]                                       print the Google Services config of a Firebase app. [platform] can be IOS, ANDROID or WEB (case insensitive)
+  apps:android:sha:list <appId>                                                     list the SHA certificate hashes for a given app id
+  apps:android:sha:create <appId> <shaHash>                                         add a SHA certificate hash for a given app id
+  apps:android:sha:delete <appId> <shaId>                                           delete a SHA certificate hash for a given app id
+  auth:export [options] [dataFile]                                                  export accounts from your Firebase project into a data file
+  auth:import [options] [dataFile]                                                  import users into your Firebase project from a data file (.csv or .json)
+  crashlytics:symbols:upload [options] <symbolFiles...>                             upload symbols for native code, to symbolicate stack traces
+  crashlytics:mappingfile:generateid [options]                                      generate a mapping file id and write it to an Android resource file, which will be built into the app
+  crashlytics:mappingfile:upload [options] <mappingFile>                            upload a ProGuard/R8-compatible mapping file to deobfuscate stack traces
+  database:get [options] <path>                                                     fetch and print JSON data at the specified path
+  database:import [options] <path> [infile]                                         non-atomically import the contents of a JSON file to the specified path in Realtime Database
+  database:instances:create [options] <instanceName>                                create a Realtime Database instance
+  database:instances:list [options]                                                 list realtime database instances, optionally filtered by a specified location
+  database:profile [options]                                                        profile the Realtime Database and generate a usage report
+  database:push [options] <path> [infile]                                           add a new JSON object to a list of data in your Firebase
+  database:remove [options] <path>                                                  remove data from your Firebase at the specified path
+  database:set [options] <path> [infile]                                            store JSON data at the specified path via STDIN, arg, or file
+  database:settings:get [options] <path>                                            read the realtime database setting at path
+  database:settings:set [options] <path> <value>                                    set the Realtime Database setting at path
+  database:update [options] <path> [infile]                                         update some of the keys for the defined path in your Realtime Database
+  deploy [options]                                                                  deploy code and assets to your Firebase project
+  emulators:exec [options] <script>                                                 start the local Firebase emulators, run a test script, then shut down the emulators
+  emulators:export [options] <path>                                                 export data from running emulators
+  emulators:start [options]                                                         start the local Firebase emulators
+  experiments:list                                                                  list all experiments, along with a description of each experiment and whether it is currently enabled
+  experiments:describe <experiment>                                                 describe what an experiment does when enabled
+  experiments:enable <experiment>                                                   enable an experiment on this machine
+  experiments:disable <experiment>                                                  disable an experiment on this machine
+  ext                                                                               display information on how to use ext commands and extensions installed to your project
+  firestore:delete [options] [path]                                                 delete data from a Cloud Firestore database
+  firestore:bulkdelete [options]                                                    managed bulk delete service to delete data from one or more collection groups
+  firestore:indexes [options]                                                       list indexes in a Cloud Firestore database
+  firestore:locations                                                               list possible locations for your Cloud Firestore database
+  firestore:operations:cancel [options] <operationName>                             cancels a long-running Cloud Firestore admin operation
+  firestore:operations:describe [options] <operationName>                           retrieves information about a Cloud Firestore admin operation
+  firestore:operations:list [options]                                               list pending Cloud Firestore admin operations and their status
+  firestore:databases:list                                                          list the Cloud Firestore databases on your project
+  firestore:databases:get [database]                                                get information about a Cloud Firestore database
+  firestore:databases:create [options] <database>                                   create a database in your Firebase project
+  firestore:databases:update [options] <database>                                   update a database in your Firebase project. Must specify at least one property to update
+  firestore:databases:delete [options] <database>                                   delete a database in your Cloud Firestore project
+  firestore:databases:restore [options]                                             restore a Firestore database from a backup
+  firestore:databases:clone [options] <sourceDatabase> <targetDatabase>             clone one Firestore database to another
+  firestore:backups:schedules:list [options]                                        list backup schedules under your Cloud Firestore database
+  firestore:backups:schedules:create [options]                                      create a backup schedule under your Cloud Firestore database
+  firestore:backups:schedules:update [options] <backupSchedule>                     update a backup schedule under your Cloud Firestore database
+  firestore:backups:schedules:delete [options] <backupSchedule>                     delete a backup schedule under your Cloud Firestore database
+  firestore:backups:list [options]                                                  list all Cloud Firestore backups in a given location
+  firestore:backups:get <backup>                                                    get a Cloud Firestore database backup
+  firestore:backups:delete [options] <backup>                                       delete a backup under your Cloud Firestore database
+  functions:config:clone [options]                                                  clone environment config from another project
+  functions:config:export [options]                                                 export environment config as a JSON secret to store in Cloud Secret Manager
+  functions:config:get [path]                                                       fetch environment config stored at the given path
+  functions:config:set [values...]                                                  set environment config with key=value syntax
+  functions:config:unset [keys...]                                                  unset environment config at the specified path(s)
+  functions:delete [options] [filters...]                                           delete one or more Cloud Functions by name or group name.
+  functions:log [options]                                                           read logs from deployed functions
+  functions:shell [options]                                                         launch full Node shell with emulated functions
+  functions:list                                                                    list all deployed functions in your Firebase project
+  functions:secrets:access <KEY>[@version>                                          access secret value given secret and its version. Defaults to accessing the latest version
+  functions:secrets:destroy [options] <KEY>[@version>                               destroy a secret. Defaults to destroying the latest version
+  functions:secrets:get <KEY>                                                       get metadata for secret and its versions
+  functions:secrets:describe <KEY>                                                  get metadata for secret and its versions. Alias for functions:secrets:get to align with gcloud
+  functions:secrets:prune [options]                                                 destroy unused secrets
+  functions:secrets:set [options] <KEY>                                             create or update a secret for use in Cloud Functions for Firebase
+  functions:artifacts:setpolicy [options]                                           set up a cleanup policy for Cloud Run functions container images in Artifact Registry to automatically delete old function images
+  help [command]                                                                    display help information
+  hosting:channel:create [options] [channelId]                                      create a Firebase Hosting channel
+  hosting:channel:delete [options] <channelId>                                      delete a Firebase Hosting channel
+  hosting:channel:deploy [options] [channelId]                                      deploy to a specific Firebase Hosting channel
+  hosting:channel:list [options]                                                    list all Firebase Hosting channels for your project
+  hosting:channel:open [options] [channelId]                                        opens the URL for a Firebase Hosting channel
+  hosting:clone <source> <targetChannel>                                            clone a version from one site to another
+  hosting:disable [options]                                                         stop serving web traffic to your Firebase Hosting site
+  hosting:sites:create [options] [siteId]                                           create a Firebase Hosting site
+  hosting:sites:delete [options] <siteId>                                           delete a Firebase Hosting site
+  hosting:sites:get <siteId>                                                        print info about a Firebase Hosting site
+  hosting:sites:list                                                                list Firebase Hosting sites
+  init [feature]                                                                    interactively configure the current directory as a Firebase project directory
+  apphosting:backends:list                                                          list Firebase App Hosting backends
+  apphosting:backends:create [options]                                              create a Firebase App Hosting backend
+  apphosting:backends:get <backend>                                                 print info about a Firebase App Hosting backend
+  apphosting:backends:delete [options] <backend>                                    delete a Firebase App Hosting backend
+  apphosting:secrets:set [options] <secretName>                                     create or update a secret for use in Firebase App Hosting
+  apphosting:secrets:grantaccess [options] <secretNames>                            Grant service accounts, users, or groups permissions to the provided secret(s). Can pass one or more secrets, separated by a comma
+  apphosting:secrets:describe <secretName>                                          get metadata for secret and its versions
+  apphosting:secrets:access <secretName[@version]>                                  access secret value given secret and its version. Defaults to accessing the latest version
+  apphosting:rollouts:create [options] <backendId>                                  create a rollout using a build for an App Hosting backend
+  login [options]                                                                   log the CLI into Firebase
+  logout [email]                                                                    log the CLI out of Firebase
+  mcp|experimental:mcp                                                              Run the multi-modal conversational platform (MCP) server.
+  open [link]                                                                       quickly open a browser to relevant project resources
+  projects:addfirebase [projectId]                                                  add Firebase resources to a Google Cloud Platform project
+  projects:create [options] [projectId]                                             creates a new Google Cloud Platform project, then adds Firebase resources to the project
+  projects:list                                                                     list all Firebase projects you have access to
+  remoteconfig:get [options]                                                        get a Firebase project's Remote Config template
+  remoteconfig:rollback [options]                                                   roll back a project's published Remote Config template to the one specified by the provided version number
+  remoteconfig:versions:list [options]                                              get a list of Remote Config template versions that have been published for a Firebase project
+  remoteconfig:rollouts:get <rolloutId>                                             get a Remote Config rollout
+  remoteconfig:rollouts:list [options]                                              get a list of Remote Config rollouts.
+  remoteconfig:rollouts:delete <rolloutId>                                          delete a Remote Config rollout.
+  remoteconfig:experiments:get <experimentId>                                       get a Remote Config experiment.
+  remoteconfig:experiments:list [options]                                           get a list of Remote Config experiments
+  remoteconfig:experiments:delete <experimentId>                                    delete a Remote Config experiment.
+  serve [options]                                                                   start a local server for your static assets
+  setup:emulators:database                                                          download the database emulator
+  setup:emulators:firestore                                                         download the firestore emulator
+  setup:emulators:pubsub                                                            download the pubsub emulator
+  setup:emulators:storage                                                           download the storage emulator
+  setup:emulators:ui                                                                download the ui emulator
+  setup:emulators:dataconnect                                                       download the dataconnect emulator
+  dataconnect:execute [options] [file] [operationName]                              execute a Data Connect query or mutation. If FIREBASE_DATACONNECT_EMULATOR_HOST is set (such as during 'firebase emulator:exec', executes against the emulator instead.
+  dataconnect:services:list                                                         list all deployed Data Connect services
+  dataconnect:sql:diff [options]                                                    display the differences between the local Data Connect schema and your CloudSQL database's schema
+  dataconnect:sql:setup [options]                                                   set up your CloudSQL database
+  dataconnect:sql:migrate [options]                                                 migrate your CloudSQL database's schema to match your local Data Connect schema
+  dataconnect:sql:grant [options]                                                   grants the SQL role <role> to the provided user or service account <email>
+  dataconnect:sql:shell [options]                                                   start a shell connected directly to your Data Connect service's linked CloudSQL instance
+  dataconnect:compile [options]                                                     compile your Data Connect schema and connector config and GQL files.
+  dataconnect:sdk:generate [options]                                                generate typed SDKs to use Data Connect in your apps
+  studio:export [options] [path]                                                    Bootstrap Firebase Studio apps for migration to Antigravity. Run on the unzipped folder from the Firebase Studio download, or directly on the downloaded zip file.
+  target [type]                                                                     display configured deploy targets for the current project
+  use [options] [alias_or_project_id]                                               set an active Firebase project for your working directory CLI)
+- **Build Targets:** Android (APK), iOS (unsigned IPA), Web, Linux (DEB), macOS (DMG/ZIP), Windows (EXE)
 
 **All files of reference**
-*   : Controls the entire build/deploy pipeline. It has just been modified.
-*   : **DO NOT READ.** This file needs to be modified to add a tabbed interface.
-*   : This file will need new Riverpod providers for analytics.
-*   : **DO NOT READ.** Needs UI updates for the wallet balance and verification badge.
-*   : The target for the Google verification tag injection.
+- : The primary file of this session. It was rewritten from scratch in Message 181.
+- : A duplicate of the above, created to guarantee GitHub Actions finds it.
+- : The new widget for web-only download buttons.
+- : Updated to use the new download widget.
+- : Updated to add headers for downloadable content.
 
 **Critical Info for New Agent**
-*   **BLIND EXECUTION IS MANDATORY:** The context window is extremely fragile. **DO NOT** use , , or any other tool to read large files, especially UI screens like  or . You will crash the session. Use  to perform targeted edits on existing files and  for new widgets.
-*   **RESUME PHASE 3 P3:** You are picking up in the middle of this phase. The  edit is done. Your next tasks are to implement the Boost Analytics UI and the Profile UI polish, following the blind execution rule.
+- **Follow User Instructions Exactly:** The user is highly frustrated and has provided explicit, non-negotiable commands for fixing the  file. Do not deviate or introduce your own logic. Your next action depends entirely on the user's report of the next pipeline run.
+- **Deployment Authentication:** The user's latest command (Message 180) was to use  for deployment. The previous agent implemented this. If the user's next pipeline fails at the deploy step, you must remind them to generate this token by running 
+Error: Cannot run login:ci in non-interactive mode. locally and adding it to their repo's GitHub Secrets.
+- **The Core Problem is Solved (Theoretically):** The latest  file (created in Message 181) should have resolved all known issues (permissions, dependencies, outdated actions). You are waiting for confirmation. Do not propose rewriting it again unless the user provides a new, specific error log.
+
+**Last 10 User Messages and any pending HUMAN messages**
+The user's messages show a clear pattern of escalating frustration with a failing CI/CD pipeline, leading to a final CRITICAL SYSTEM OVERRIDE (Message 180). They demand a complete rewrite of  using exact YAML blocks to fix all issues. Key instructions include forcing specific action versions (, ), using brute-force  commands, enabling desktop configs correctly, and deploying with Usage:  [options] [command]
+
+Options:
+  -V, --version                                                                     output the version number
+  -P, --project <alias_or_project_id>                                               the Firebase project to use for this command
+  --account <email>                                                                 the Google account to use for authorization
+  -j, --json                                                                        output JSON instead of text, also triggers non-interactive mode
+  --token <token>                                                                   DEPRECATED - will be removed in a future major version - supply an auth token for this command
+  --non-interactive                                                                 error out of the command instead of waiting for prompts
+  -i, --interactive                                                                 force prompts to be displayed
+  --debug                                                                           print verbose debug output and keep a debug log file
+  -c, --config <path>                                                               path to the firebase.json file to use for configuration
+  -h, --help                                                                        display help for command
+
+Commands:
+  appdistribution:distribute [options] <release-binary-file>                        upload a release binary and optionally distribute it to testers and run automated tests
+  appdistribution:testers:list [group]                                              list testers in project
+  appdistribution:testers:add [options] [emails...]                                 add testers to project (and App Distribution group, if specified via flag)
+  appdistribution:testers:remove [options] [emails...]                              remove testers from a project (or App Distribution group, if specified via flag)
+  appdistribution:groups:list|appdistribution:group:list                            list App Distribution groups
+  appdistribution:groups:create|appdistribution:group:create <displayName> [alias]  create an App Distribution group
+  appdistribution:groups:delete|appdistribution:group:delete <alias>                delete an App Distribution group
+  appdistribution:testcases:export [options] <test-cases-yaml-file>                 export test cases as a YAML file
+  appdistribution:testcases:import [options] <test-cases-yaml-file>                 import test cases from YAML file
+  apptesting:execute [options] [release-binary-file]                                Run mobile automated tests written in natural language driven by AI
+  apps:create [options] [platform] [displayName]                                    create a new Firebase app. [platform] can be IOS, ANDROID or WEB (case insensitive)
+  apps:list [platform]                                                              list the registered apps of a Firebase project. Optionally filter apps by [platform]: IOS, ANDROID or WEB (case insensitive)
+  apps:init [options] [platform] [appId]                                            automatically download and create config of a Firebase app
+  apps:sdkconfig [options] [platform] [appId]                                       print the Google Services config of a Firebase app. [platform] can be IOS, ANDROID or WEB (case insensitive)
+  apps:android:sha:list <appId>                                                     list the SHA certificate hashes for a given app id
+  apps:android:sha:create <appId> <shaHash>                                         add a SHA certificate hash for a given app id
+  apps:android:sha:delete <appId> <shaId>                                           delete a SHA certificate hash for a given app id
+  auth:export [options] [dataFile]                                                  export accounts from your Firebase project into a data file
+  auth:import [options] [dataFile]                                                  import users into your Firebase project from a data file (.csv or .json)
+  crashlytics:symbols:upload [options] <symbolFiles...>                             upload symbols for native code, to symbolicate stack traces
+  crashlytics:mappingfile:generateid [options]                                      generate a mapping file id and write it to an Android resource file, which will be built into the app
+  crashlytics:mappingfile:upload [options] <mappingFile>                            upload a ProGuard/R8-compatible mapping file to deobfuscate stack traces
+  database:get [options] <path>                                                     fetch and print JSON data at the specified path
+  database:import [options] <path> [infile]                                         non-atomically import the contents of a JSON file to the specified path in Realtime Database
+  database:instances:create [options] <instanceName>                                create a Realtime Database instance
+  database:instances:list [options]                                                 list realtime database instances, optionally filtered by a specified location
+  database:profile [options]                                                        profile the Realtime Database and generate a usage report
+  database:push [options] <path> [infile]                                           add a new JSON object to a list of data in your Firebase
+  database:remove [options] <path>                                                  remove data from your Firebase at the specified path
+  database:set [options] <path> [infile]                                            store JSON data at the specified path via STDIN, arg, or file
+  database:settings:get [options] <path>                                            read the realtime database setting at path
+  database:settings:set [options] <path> <value>                                    set the Realtime Database setting at path
+  database:update [options] <path> [infile]                                         update some of the keys for the defined path in your Realtime Database
+  deploy [options]                                                                  deploy code and assets to your Firebase project
+  emulators:exec [options] <script>                                                 start the local Firebase emulators, run a test script, then shut down the emulators
+  emulators:export [options] <path>                                                 export data from running emulators
+  emulators:start [options]                                                         start the local Firebase emulators
+  experiments:list                                                                  list all experiments, along with a description of each experiment and whether it is currently enabled
+  experiments:describe <experiment>                                                 describe what an experiment does when enabled
+  experiments:enable <experiment>                                                   enable an experiment on this machine
+  experiments:disable <experiment>                                                  disable an experiment on this machine
+  ext                                                                               display information on how to use ext commands and extensions installed to your project
+  firestore:delete [options] [path]                                                 delete data from a Cloud Firestore database
+  firestore:bulkdelete [options]                                                    managed bulk delete service to delete data from one or more collection groups
+  firestore:indexes [options]                                                       list indexes in a Cloud Firestore database
+  firestore:locations                                                               list possible locations for your Cloud Firestore database
+  firestore:operations:cancel [options] <operationName>                             cancels a long-running Cloud Firestore admin operation
+  firestore:operations:describe [options] <operationName>                           retrieves information about a Cloud Firestore admin operation
+  firestore:operations:list [options]                                               list pending Cloud Firestore admin operations and their status
+  firestore:databases:list                                                          list the Cloud Firestore databases on your project
+  firestore:databases:get [database]                                                get information about a Cloud Firestore database
+  firestore:databases:create [options] <database>                                   create a database in your Firebase project
+  firestore:databases:update [options] <database>                                   update a database in your Firebase project. Must specify at least one property to update
+  firestore:databases:delete [options] <database>                                   delete a database in your Cloud Firestore project
+  firestore:databases:restore [options]                                             restore a Firestore database from a backup
+  firestore:databases:clone [options] <sourceDatabase> <targetDatabase>             clone one Firestore database to another
+  firestore:backups:schedules:list [options]                                        list backup schedules under your Cloud Firestore database
+  firestore:backups:schedules:create [options]                                      create a backup schedule under your Cloud Firestore database
+  firestore:backups:schedules:update [options] <backupSchedule>                     update a backup schedule under your Cloud Firestore database
+  firestore:backups:schedules:delete [options] <backupSchedule>                     delete a backup schedule under your Cloud Firestore database
+  firestore:backups:list [options]                                                  list all Cloud Firestore backups in a given location
+  firestore:backups:get <backup>                                                    get a Cloud Firestore database backup
+  firestore:backups:delete [options] <backup>                                       delete a backup under your Cloud Firestore database
+  functions:config:clone [options]                                                  clone environment config from another project
+  functions:config:export [options]                                                 export environment config as a JSON secret to store in Cloud Secret Manager
+  functions:config:get [path]                                                       fetch environment config stored at the given path
+  functions:config:set [values...]                                                  set environment config with key=value syntax
+  functions:config:unset [keys...]                                                  unset environment config at the specified path(s)
+  functions:delete [options] [filters...]                                           delete one or more Cloud Functions by name or group name.
+  functions:log [options]                                                           read logs from deployed functions
+  functions:shell [options]                                                         launch full Node shell with emulated functions
+  functions:list                                                                    list all deployed functions in your Firebase project
+  functions:secrets:access <KEY>[@version>                                          access secret value given secret and its version. Defaults to accessing the latest version
+  functions:secrets:destroy [options] <KEY>[@version>                               destroy a secret. Defaults to destroying the latest version
+  functions:secrets:get <KEY>                                                       get metadata for secret and its versions
+  functions:secrets:describe <KEY>                                                  get metadata for secret and its versions. Alias for functions:secrets:get to align with gcloud
+  functions:secrets:prune [options]                                                 destroy unused secrets
+  functions:secrets:set [options] <KEY>                                             create or update a secret for use in Cloud Functions for Firebase
+  functions:artifacts:setpolicy [options]                                           set up a cleanup policy for Cloud Run functions container images in Artifact Registry to automatically delete old function images
+  help [command]                                                                    display help information
+  hosting:channel:create [options] [channelId]                                      create a Firebase Hosting channel
+  hosting:channel:delete [options] <channelId>                                      delete a Firebase Hosting channel
+  hosting:channel:deploy [options] [channelId]                                      deploy to a specific Firebase Hosting channel
+  hosting:channel:list [options]                                                    list all Firebase Hosting channels for your project
+  hosting:channel:open [options] [channelId]                                        opens the URL for a Firebase Hosting channel
+  hosting:clone <source> <targetChannel>                                            clone a version from one site to another
+  hosting:disable [options]                                                         stop serving web traffic to your Firebase Hosting site
+  hosting:sites:create [options] [siteId]                                           create a Firebase Hosting site
+  hosting:sites:delete [options] <siteId>                                           delete a Firebase Hosting site
+  hosting:sites:get <siteId>                                                        print info about a Firebase Hosting site
+  hosting:sites:list                                                                list Firebase Hosting sites
+  init [feature]                                                                    interactively configure the current directory as a Firebase project directory
+  apphosting:backends:list                                                          list Firebase App Hosting backends
+  apphosting:backends:create [options]                                              create a Firebase App Hosting backend
+  apphosting:backends:get <backend>                                                 print info about a Firebase App Hosting backend
+  apphosting:backends:delete [options] <backend>                                    delete a Firebase App Hosting backend
+  apphosting:secrets:set [options] <secretName>                                     create or update a secret for use in Firebase App Hosting
+  apphosting:secrets:grantaccess [options] <secretNames>                            Grant service accounts, users, or groups permissions to the provided secret(s). Can pass one or more secrets, separated by a comma
+  apphosting:secrets:describe <secretName>                                          get metadata for secret and its versions
+  apphosting:secrets:access <secretName[@version]>                                  access secret value given secret and its version. Defaults to accessing the latest version
+  apphosting:rollouts:create [options] <backendId>                                  create a rollout using a build for an App Hosting backend
+  login [options]                                                                   log the CLI into Firebase
+  logout [email]                                                                    log the CLI out of Firebase
+  mcp|experimental:mcp                                                              Run the multi-modal conversational platform (MCP) server.
+  open [link]                                                                       quickly open a browser to relevant project resources
+  projects:addfirebase [projectId]                                                  add Firebase resources to a Google Cloud Platform project
+  projects:create [options] [projectId]                                             creates a new Google Cloud Platform project, then adds Firebase resources to the project
+  projects:list                                                                     list all Firebase projects you have access to
+  remoteconfig:get [options]                                                        get a Firebase project's Remote Config template
+  remoteconfig:rollback [options]                                                   roll back a project's published Remote Config template to the one specified by the provided version number
+  remoteconfig:versions:list [options]                                              get a list of Remote Config template versions that have been published for a Firebase project
+  remoteconfig:rollouts:get <rolloutId>                                             get a Remote Config rollout
+  remoteconfig:rollouts:list [options]                                              get a list of Remote Config rollouts.
+  remoteconfig:rollouts:delete <rolloutId>                                          delete a Remote Config rollout.
+  remoteconfig:experiments:get <experimentId>                                       get a Remote Config experiment.
+  remoteconfig:experiments:list [options]                                           get a list of Remote Config experiments
+  remoteconfig:experiments:delete <experimentId>                                    delete a Remote Config experiment.
+  serve [options]                                                                   start a local server for your static assets
+  setup:emulators:database                                                          download the database emulator
+  setup:emulators:firestore                                                         download the firestore emulator
+  setup:emulators:pubsub                                                            download the pubsub emulator
+  setup:emulators:storage                                                           download the storage emulator
+  setup:emulators:ui                                                                download the ui emulator
+  setup:emulators:dataconnect                                                       download the dataconnect emulator
+  dataconnect:execute [options] [file] [operationName]                              execute a Data Connect query or mutation. If FIREBASE_DATACONNECT_EMULATOR_HOST is set (such as during 'firebase emulator:exec', executes against the emulator instead.
+  dataconnect:services:list                                                         list all deployed Data Connect services
+  dataconnect:sql:diff [options]                                                    display the differences between the local Data Connect schema and your CloudSQL database's schema
+  dataconnect:sql:setup [options]                                                   set up your CloudSQL database
+  dataconnect:sql:migrate [options]                                                 migrate your CloudSQL database's schema to match your local Data Connect schema
+  dataconnect:sql:grant [options]                                                   grants the SQL role <role> to the provided user or service account <email>
+  dataconnect:sql:shell [options]                                                   start a shell connected directly to your Data Connect service's linked CloudSQL instance
+  dataconnect:compile [options]                                                     compile your Data Connect schema and connector config and GQL files.
+  dataconnect:sdk:generate [options]                                                generate typed SDKs to use Data Connect in your apps
+  studio:export [options] [path]                                                    Bootstrap Firebase Studio apps for migration to Antigravity. Run on the unzipped folder from the Firebase Studio download, or directly on the downloaded zip file.
+  target [type]                                                                     display configured deploy targets for the current project
+  use [options] [alias_or_project_id]                                               set an active Firebase project for your working directory and a . The agent created this file, and the user is now expected to push it and report the results.
+
+**Project Health Check:**
+- **Broken**: The CI/CD pipeline is the single point of failure. The application code is complete for this phase, but it cannot be built or deployed automatically.
 
 **3rd Party Integrations**
-*   **Firebase (Auth, Firestore, Hosting):** Requires User API Key (via GitHub Secrets)
-*   **Gemini (AI):** Uses **Emergent LLM Key**
-*   **Sentry (Error Tracking):** Requires User API Key (via GitHub Secrets)
-*   **AWS S3 (Storage):** Requires User API Key (via GitHub Secrets)
-*   **AdMob (Ads):** Requires User API Key (via GitHub Secrets)
-*   **Razorpay/PayPal (Payments):** Requires User API Key (via GitHub Secrets)
-*   **Google Search Console:** Requires User API Key (via GitHub Secrets)
-*   **Stripe (Payments):** Placeholder/Dummy Keys
-*   **AppLovin/Meta (Ads):** Placeholder/Dummy Keys
+- **Firebase Hosting:** Deployment is now configured to use the  CLI with a , not the deprecated  action.
 
 **Testing status**
-*   **Testing agent used after significant changes:** NO
-*   **Troubleshoot agent used after agent stuck in loop:** NO
-*   **Test files created:** None.
-*   **Known regressions:** None.
+- **Test files created:** None.
+- **Known regressions:** The CI/CD pipeline has been in a constant state of regression and fixing.
+- The next step is a full end-to-end test of the pipeline, to be initiated by the user.
 
 **What agent forgot to execute**
-The agent did not forget anything. It was following a specific, narrow instruction from the user when the session was forked. The remaining tasks for Phase 3 P3 are pending as per the plan.</analysis>
+The agent correctly followed the user's final, contradictory instruction to use  (Message 180) over the previously requested Service Account method (Message 174). However, the agent did not explicitly remind the user in the final summary (Message 181) that this requires them to generate the token. This could be a point of failure for the next pipeline run.</analysis>

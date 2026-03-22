@@ -24,11 +24,10 @@ jobs:
     name: Build Web PWA
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Master Permissions
-        run: sudo chmod -R 777 . || true
+      - name: Force permissions
+        run: chmod -R 777 . && chmod +x android/gradlew || true
 
       - name: Find project root
         run: |
@@ -43,24 +42,32 @@ jobs:
       - name: Parse Firebase config
         run: |
           echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
-          echo "FB_API_KEY=$(jq  -r '.apiKey            // empty'                             /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_APP_ID=$(jq   -r '.appId             // empty'                             /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_SENDER=$(jq   -r '.messagingSenderId // empty'                             /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_PROJECT=$(jq  -r '.projectId         // "trinetra-8b846"'                  /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_DOMAIN=$(jq   -r '.authDomain        // "trinetra-8b846.firebaseapp.com"'  /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_BUCKET=$(jq   -r '.storageBucket     // "trinetra-8b846.appspot.com"'      /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_MEASURE=$(jq  -r '.measurementId     // empty'                             /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_API_KEY=$(jq  -r '.apiKey            // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_APP_ID=$(jq   -r '.appId             // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_SENDER=$(jq   -r '.messagingSenderId // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_PROJECT=$(jq  -r '.projectId         // "trinetra-8b846"'                 /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_DOMAIN=$(jq   -r '.authDomain        // "trinetra-8b846.firebaseapp.com"' /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_BUCKET=$(jq   -r '.storageBucket     // "trinetra-8b846.appspot.com"'     /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_MEASURE=$(jq  -r '.measurementId     // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - name: Setup & Build Web
+      - name: Enable desktop targets
         run: |
-          flutter pub get
+          flutter config --enable-windows-desktop
+          flutter config --enable-macos-desktop
+          flutter config --enable-linux-desktop
+
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: ${{ env.PROJ }}
+
+      - name: Flutter build web
+        run: |
           flutter build web --release \
             --dart-define=FIREBASE_WEB_API_KEY=${{ env.FB_API_KEY }} \
             --dart-define=FIREBASE_WEB_APP_ID=${{ env.FB_APP_ID }} \
@@ -82,8 +89,7 @@ jobs:
             --dart-define=META_AUDIENCE_NETWORK_APP_ID=${{ secrets.META_AUDIENCE_NETWORK_APP_ID }}
         working-directory: ${{ env.PROJ }}
 
-      - name: Upload web build
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: ${{ env.PROJ }}/build/web/
@@ -96,11 +102,10 @@ jobs:
     name: Build Android APK
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Master Permissions
-        run: sudo chmod -R 777 . || true
+      - name: Force permissions
+        run: chmod -R 777 . && chmod +x android/gradlew || true
 
       - name: Find project root
         run: |
@@ -115,24 +120,28 @@ jobs:
       - name: Parse Firebase config (Android)
         run: |
           echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
-          echo "FB_AND_KEY=$(jq -r '.android.apiKey // .apiKey // empty'               /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_AND_APP=$(jq -r '.android.appId  // .appId  // empty'               /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_SENDER=$(jq  -r '.messagingSenderId // empty'                        /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_PROJECT=$(jq -r '.projectId       // "trinetra-8b846"'               /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_BUCKET=$(jq  -r '.storageBucket   // "trinetra-8b846.appspot.com"'   /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_AND_KEY=$(jq -r '.android.apiKey // .apiKey // empty'             /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_AND_APP=$(jq -r '.android.appId  // .appId  // empty'             /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_SENDER=$(jq  -r '.messagingSenderId // empty'                      /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_PROJECT=$(jq -r '.projectId       // "trinetra-8b846"'             /tmp/fc.json)" >> $GITHUB_ENV
+          echo "FB_BUCKET=$(jq  -r '.storageBucket   // "trinetra-8b846.appspot.com"' /tmp/fc.json)" >> $GITHUB_ENV
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: '17'
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+
+      - name: Enable desktop targets
+        run: |
+          flutter config --enable-windows-desktop
+          flutter config --enable-macos-desktop
+          flutter config --enable-linux-desktop
 
       - name: Setup Android signing
         run: |
@@ -142,9 +151,12 @@ jobs:
             > ${{ env.PROJ }}/android/key.properties
         continue-on-error: true
 
-      - name: Setup & Build Android
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: ${{ env.PROJ }}
+
+      - name: Flutter build APK
         run: |
-          flutter pub get
           flutter build apk --release \
             --dart-define=FIREBASE_ANDROID_API_KEY=${{ env.FB_AND_KEY }} \
             --dart-define=FIREBASE_ANDROID_APP_ID=${{ env.FB_AND_APP }} \
@@ -167,8 +179,7 @@ jobs:
           mkdir -p out
           cp ${{ env.PROJ }}/build/app/outputs/flutter-apk/app-release.apk out/TriNetra.apk
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: out/TriNetra.apk
@@ -181,11 +192,10 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Master Permissions
-        run: sudo chmod -R 777 . || true
+      - name: Force permissions
+        run: chmod -R 777 . && chmod +x android/gradlew || true
 
       - name: Find project root
         run: |
@@ -197,16 +207,24 @@ jobs:
             echo "pubspec.yaml not found" && exit 1
           fi
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - name: Setup & Build iOS
+      - name: Enable desktop targets
         run: |
-          flutter pub get
+          flutter config --enable-windows-desktop
+          flutter config --enable-macos-desktop
+          flutter config --enable-linux-desktop
+
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: ${{ env.PROJ }}
+
+      - name: Flutter build iOS
+        run: |
           flutter build ios --release --no-codesign \
             --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
@@ -221,8 +239,7 @@ jobs:
           zip -r out/TriNetra-iOS-Unsigned.ipa Payload/
         continue-on-error: true
 
-      - name: Upload iOS IPA
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
           path: out/TriNetra-iOS-Unsigned.ipa
@@ -236,11 +253,10 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Master Permissions
-        run: sudo chmod -R 777 . || true
+      - name: Force permissions
+        run: chmod -R 777 . && chmod +x android/gradlew || true
 
       - name: Find project root
         run: |
@@ -252,19 +268,24 @@ jobs:
             echo "pubspec.yaml not found" && exit 1
           fi
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - name: Setup & Build macOS
+      - name: Enable desktop targets
         run: |
-          flutter config --enable-windows-desktop || true
-          flutter config --enable-macos-desktop || true
-          flutter config --enable-linux-desktop || true
-          flutter pub get
+          flutter config --enable-windows-desktop
+          flutter config --enable-macos-desktop
+          flutter config --enable-linux-desktop
+
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: ${{ env.PROJ }}
+
+      - name: Flutter build macOS
+        run: |
           flutter build macos --release \
             --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
@@ -279,8 +300,7 @@ jobs:
             -ov -format UDZO out/TriNetra.dmg
         continue-on-error: true
 
-      - name: Upload macOS DMG
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
           path: out/TriNetra.dmg
@@ -293,12 +313,11 @@ jobs:
     name: Build Windows EXE
     runs-on: windows-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Master Permissions
+      - name: Force permissions
         shell: bash
-        run: sudo chmod -R 777 . || true
+        run: chmod -R 777 . && chmod +x android/gradlew || true
 
       - name: Find project root
         shell: bash
@@ -311,20 +330,26 @@ jobs:
             echo "pubspec.yaml not found" && exit 1
           fi
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - name: Setup & Build Windows
+      - name: Enable desktop targets
+        run: |
+          flutter config --enable-windows-desktop
+          flutter config --enable-macos-desktop
+          flutter config --enable-linux-desktop
+
+      - name: Flutter pub get
+        shell: bash
+        run: flutter pub get
+        working-directory: ${{ env.PROJ }}
+
+      - name: Flutter build Windows
         shell: bash
         run: |
-          flutter config --enable-windows-desktop || true
-          flutter config --enable-macos-desktop || true
-          flutter config --enable-linux-desktop || true
-          flutter pub get
           flutter build windows --release \
             --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
@@ -339,8 +364,7 @@ jobs:
             -Path "$env:PROJ\build\windows\x64\runner\Release\*" `
             -DestinationPath "out\TriNetra-Windows.zip" -Force
 
-      - name: Upload Windows ZIP
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-zip
           path: out/TriNetra-Windows.zip
@@ -352,14 +376,13 @@ jobs:
     name: Build Linux DEB
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Master Permissions
-        run: sudo chmod -R 777 . || true
+      - name: Force permissions
+        run: chmod -R 777 . && chmod +x android/gradlew || true
 
       - name: Install Linux build dependencies
-        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libglu1-mesa-dev
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
 
       - name: Find project root
         run: |
@@ -371,19 +394,24 @@ jobs:
             echo "pubspec.yaml not found" && exit 1
           fi
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - name: Setup & Build Linux
+      - name: Enable desktop targets
         run: |
-          flutter config --enable-windows-desktop || true
-          flutter config --enable-macos-desktop || true
-          flutter config --enable-linux-desktop || true
-          flutter pub get
+          flutter config --enable-windows-desktop
+          flutter config --enable-macos-desktop
+          flutter config --enable-linux-desktop
+
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: ${{ env.PROJ }}
+
+      - name: Flutter build Linux
+        run: |
           flutter build linux --release \
             --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
@@ -413,8 +441,7 @@ jobs:
           EOF
           dpkg-deb --build deb out/TriNetra.deb
 
-      - name: Upload Linux DEB
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: linux-deb
           path: out/TriNetra.deb
@@ -428,11 +455,10 @@ jobs:
     needs: [build-web, build-android, build-ios, build-macos, build-windows, build-linux]
     if: ${{ !cancelled() && needs.build-web.result == 'success' }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Master Permissions
-        run: sudo chmod -R 777 . || true
+      - name: Force permissions
+        run: chmod -R 777 . && chmod +x android/gradlew || true
 
       - name: Find project root
         run: |
@@ -449,42 +475,36 @@ jobs:
           echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
           echo "FB_PROJECT=$(jq -r '.projectId // "trinetra-8b846"' /tmp/fc.json)" >> $GITHUB_ENV
 
-      - name: Restore web build
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: web-build
           path: ${{ env.PROJ }}/build/web/
 
-      - name: Download Android APK
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: android-apk
           path: native/android/
         continue-on-error: true
 
-      - name: Download Windows ZIP
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: windows-zip
           path: native/windows/
         continue-on-error: true
 
-      - name: Download Linux DEB
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: linux-deb
           path: native/linux/
         continue-on-error: true
 
-      - name: Download macOS DMG
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: macos-dmg
           path: native/macos/
         continue-on-error: true
 
-      - name: Download iOS IPA
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: ios-ipa
           path: native/ios/
@@ -501,10 +521,9 @@ jobs:
             "native/ios/TriNetra-iOS-Unsigned.ipa"; do
             [ -f "$f" ] \
               && cp "$f" "${{ env.PROJ }}/build/web/downloads/" \
-              && echo "✅ $(basename $f)" \
-              || echo "⚠️  not found: $f"
+              && echo "copied: $(basename $f)" \
+              || echo "not found: $f"
           done
-          ls -lh ${{ env.PROJ }}/build/web/downloads/ || true
 
       - name: Inject Google verification tag
         env:
@@ -516,7 +535,7 @@ jobs:
           tag  = os.environ.get('GOOGLE_VERIFICATION_TAG', '').strip()
           proj = os.environ.get('PROJ_DIR', '.')
           if not tag:
-              print("⚠️  GOOGLE_VERIFICATION_TAG not set — skipping"); sys.exit(0)
+              print("GOOGLE_VERIFICATION_TAG not set — skipping"); sys.exit(0)
           if not tag.startswith('<'):
               tag = f'<meta name="google-site-verification" content="{tag}">'
           path = f'{proj}/build/web/index.html'
@@ -524,11 +543,11 @@ jobs:
           ph   = '<meta name="google-site-verification" content="YOUR_GOOGLE_SEARCH_CONSOLE_CODE">'
           if ph in txt:
               open(path, 'w').write(txt.replace(ph, tag))
-              print(f'✅ injected: {tag}')
+              print(f'injected: {tag}')
           elif 'google-site-verification' in txt:
-              print('✅ already present')
+              print('tag already present')
           else:
-              print('❌ placeholder not found'); sys.exit(1)
+              print('placeholder not found'); sys.exit(1)
           PYEOF
 
       - name: Deploy to Firebase
@@ -541,13 +560,13 @@ jobs:
 
       - name: Print live URLs
         run: |
-          echo "✅  https://trinetra-8b846.web.app"
-          echo "✅  https://trinetra-8b846.firebaseapp.com"
-          echo "APK → https://trinetra-8b846.web.app/downloads/TriNetra.apk"
-          echo "EXE → https://trinetra-8b846.web.app/downloads/TriNetra-Windows.zip"
-          echo "DEB → https://trinetra-8b846.web.app/downloads/TriNetra.deb"
-          echo "DMG → https://trinetra-8b846.web.app/downloads/TriNetra.dmg"
-          echo "IPA → https://trinetra-8b846.web.app/downloads/TriNetra-iOS-Unsigned.ipa"
+          echo "https://trinetra-8b846.web.app"
+          echo "https://trinetra-8b846.firebaseapp.com"
+          echo "APK -> https://trinetra-8b846.web.app/downloads/TriNetra.apk"
+          echo "EXE -> https://trinetra-8b846.web.app/downloads/TriNetra-Windows.zip"
+          echo "DEB -> https://trinetra-8b846.web.app/downloads/TriNetra.deb"
+          echo "DMG -> https://trinetra-8b846.web.app/downloads/TriNetra.dmg"
+          echo "IPA -> https://trinetra-8b846.web.app/downloads/TriNetra-iOS-Unsigned.ipa"
 
   # ─────────────────────────────────────────────────────────────────
   # 8. GitHub Release
@@ -558,8 +577,7 @@ jobs:
     needs: [deploy-firebase]
     if: github.ref == 'refs/heads/main' || github.event.inputs.create_release == 'true'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Find project root
         run: |
@@ -577,14 +595,12 @@ jobs:
           V=$(grep '^version:' ${{ env.PROJ }}/pubspec.yaml | awk '{print $2}' | head -1)
           echo "v=${V:-1.0.0}" >> $GITHUB_OUTPUT
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: all-artifacts/
         continue-on-error: true
 
-      - name: Create release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.ver.outputs.v }}
           name: TriNetra v${{ steps.ver.outputs.v }}
@@ -625,8 +641,8 @@ jobs:
 #    if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
 #    steps:
 #      - uses: actions/checkout@v4
-#      - name: Master Permissions
-#        run: sudo chmod -R 777 . || true
+#      - name: Force permissions
+#        run: chmod -R 777 . && chmod +x android/gradlew || true
 #      - name: Find project root
 #        run: |
 #          [ -f "pubspec.yaml" ] && echo "PROJ=." >> $GITHUB_ENV \
@@ -664,8 +680,8 @@ jobs:
 #    if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
 #    steps:
 #      - uses: actions/checkout@v4
-#      - name: Master Permissions
-#        run: sudo chmod -R 777 . || true
+#      - name: Force permissions
+#        run: chmod -R 777 . && chmod +x android/gradlew || true
 #      - name: Find project root
 #        run: |
 #          [ -f "pubspec.yaml" ] && echo "PROJ=." >> $GITHUB_ENV \
@@ -673,20 +689,14 @@ jobs:
 #      - uses: subosito/flutter-action@v2
 #        with: { flutter-version: '3.41.2', channel: stable }
 #      - run: gem install fastlane
-#      - name: Setup ASC key
-#        run: |
-#          mkdir -p /tmp/asc
-#          echo '${{ secrets.APP_STORE_CONNECT_KEY_CONTENT }}' | base64 --decode > /tmp/asc/key.p8
-#      - name: Build & upload to TestFlight
-#        run: |
-#          flutter pub get
-#          flutter build ipa --release --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846
-#          fastlane pilot upload --ipa "${{ env.PROJ }}/build/ios/ipa/trinetra.ipa"
+#      - run: flutter pub get
 #        working-directory: ${{ env.PROJ }}
+#      - run: flutter build ipa --release --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846
+#        working-directory: ${{ env.PROJ }}
+#      - run: fastlane pilot upload --ipa "${{ env.PROJ }}/build/ios/ipa/trinetra.ipa"
 #        env:
 #          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
 #          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-#          APP_STORE_CONNECT_API_KEY_FILEPATH: /tmp/asc/key.p8
 
 # ── MICROSOFT STORE ────────────────────────────────────────────────
 # Secrets: MICROSOFT_STORE_APP_ID
@@ -698,9 +708,9 @@ jobs:
 #    if: github.ref == 'refs/heads/release' && github.event_name == 'workflow_dispatch'
 #    steps:
 #      - uses: actions/checkout@v4
-#      - name: Master Permissions
+#      - name: Force permissions
 #        shell: bash
-#        run: sudo chmod -R 777 . || true
+#        run: chmod -R 777 . && chmod +x android/gradlew || true
 #      - name: Find project root
 #        shell: bash
 #        run: |
@@ -708,10 +718,9 @@ jobs:
 #            || echo "PROJ=trinetra" >> $GITHUB_ENV
 #      - uses: subosito/flutter-action@v2
 #        with: { flutter-version: '3.41.2', channel: stable }
-#      - name: Setup & Build
-#        shell: bash
-#        run: |
-#          flutter config --enable-windows-desktop || true
-#          flutter pub get
-#          flutter build windows --release --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846
+#      - run: flutter config --enable-windows-desktop
+#      - run: flutter pub get
+#        working-directory: ${{ env.PROJ }}
+#      - shell: bash
+#        run: flutter build windows --release --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846
 #        working-directory: ${{ env.PROJ }}
