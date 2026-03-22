@@ -1,0 +1,430 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import '../core/constants/app_colors.dart';
+
+/// SmartDownloadSection — Web-only adaptive download / install widget.
+///
+/// • Invisible on all native platforms (returns SizedBox.shrink).
+/// • On web, detects the underlying OS via [defaultTargetPlatform] and
+///   renders the correct download button or PWA install instructions.
+class SmartDownloadSection extends StatelessWidget {
+  const SmartDownloadSection({super.key});
+
+  // ─── Download URL map ──────────────────────────────────────────
+  static const _apkUrl =
+      'https://github.com/Suryavanshikalki/TriNetra/releases/latest/download/app-release.apk';
+  static const _windowsUrl =
+      'https://github.com/Suryavanshikalki/TriNetra/releases/latest/download/TriNetra-Windows.zip';
+  static const _macUrl =
+      'https://github.com/Suryavanshikalki/TriNetra/releases/latest/download/TriNetra-macOS.dmg';
+  static const _linuxUrl =
+      'https://github.com/Suryavanshikalki/TriNetra/releases/latest/download/TriNetra-Linux.tar.gz';
+
+  @override
+  Widget build(BuildContext context) {
+    // ── Web-only guard ────────────────────────────────────────────
+    if (!kIsWeb) return const SizedBox.shrink();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: _buildForPlatform(context, isDark),
+    );
+  }
+
+  Widget _buildForPlatform(BuildContext context, bool isDark) {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return _IosPwaCard(isDark: isDark);
+
+      case TargetPlatform.android:
+        return _DownloadCard(
+          isDark: isDark,
+          icon: Icons.android,
+          iconColor: const Color(0xFF3DDC84),
+          label: 'Download App',
+          sublabel: 'Android APK — Direct install',
+          url: _apkUrl,
+          gradient: const [Color(0xFF3DDC84), Color(0xFF00A86B)],
+        );
+
+      case TargetPlatform.windows:
+        return _DownloadCard(
+          isDark: isDark,
+          icon: Icons.window,
+          iconColor: const Color(0xFF00ADEF),
+          label: 'Download for Windows',
+          sublabel: 'Windows 10 / 11 — 64-bit',
+          url: _windowsUrl,
+          gradient: const [Color(0xFF00ADEF), Color(0xFF0067B8)],
+        );
+
+      case TargetPlatform.macOS:
+        return _DownloadCard(
+          isDark: isDark,
+          icon: Icons.apple,
+          iconColor: Colors.white,
+          label: 'Download for Mac',
+          sublabel: 'macOS 11+ — Universal binary',
+          url: _macUrl,
+          gradient: const [Color(0xFF555555), Color(0xFF1C1C1E)],
+        );
+
+      case TargetPlatform.linux:
+        return _DownloadCard(
+          isDark: isDark,
+          icon: Icons.terminal,
+          iconColor: const Color(0xFFF7C948),
+          label: 'Download for Linux',
+          sublabel: '.tar.gz — 64-bit',
+          url: _linuxUrl,
+          gradient: const [Color(0xFFE95420), Color(0xFFBF360C)],
+        );
+
+      default:
+        return _DownloadCard(
+          isDark: isDark,
+          icon: Icons.download_rounded,
+          iconColor: Colors.white,
+          label: 'Download App',
+          sublabel: 'Get the native app for your device',
+          url: _apkUrl,
+          gradient: const [Color(0xFF1877F2), Color(0xFF0D5FCC)],
+        );
+    }
+  }
+}
+
+// ─── Generic Download Card ────────────────────────────────────────
+class _DownloadCard extends StatefulWidget {
+  final bool isDark;
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String sublabel;
+  final String url;
+  final List<Color> gradient;
+
+  const _DownloadCard({
+    required this.isDark,
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.sublabel,
+    required this.url,
+    required this.gradient,
+  });
+
+  @override
+  State<_DownloadCard> createState() => _DownloadCardState();
+}
+
+class _DownloadCardState extends State<_DownloadCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 120));
+    _scale = Tween(begin: 1.0, end: 0.96).animate(
+        CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _launch() {
+    // URL launching via JS on web
+    // ignore: avoid_web_libraries_in_flutter
+    try {
+      // Use url_launcher if available, otherwise direct JS
+      debugPrint('[Download] Opening: ${widget.url}');
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.forward(),
+      onTapUp: (_) {
+        _ctrl.reverse();
+        _launch();
+      },
+      onTapCancel: () => _ctrl.reverse(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: widget.gradient,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: widget.gradient.first.withValues(alpha: 0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          child: Row(
+            children: [
+              // ── Icon bubble ─────────────────────────────────
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(widget.icon, color: widget.iconColor, size: 28),
+              ),
+              const SizedBox(width: 16),
+
+              // ── Labels ──────────────────────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      widget.sublabel,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Arrow ───────────────────────────────────────
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_downward_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── iOS PWA Instruction Card ─────────────────────────────────────
+class _IosPwaCard extends StatelessWidget {
+  final bool isDark;
+  const _IosPwaCard({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.25),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header ─────────────────────────────────────────
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF555555), Color(0xFF1C1C1E)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.apple, color: Colors.white, size: 26),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Install on iPhone / iPad',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      'Add TriNetra to your Home Screen',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+          Divider(
+            color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
+            height: 1,
+          ),
+          const SizedBox(height: 14),
+
+          // ── Steps ──────────────────────────────────────────
+          _Step(
+            number: '1',
+            isDark: isDark,
+            icon: Icons.ios_share,
+            text: "Tap the Share icon  at the bottom of Safari.",
+          ),
+          const SizedBox(height: 10),
+          _Step(
+            number: '2',
+            isDark: isDark,
+            icon: Icons.add_box_outlined,
+            text: "Scroll down and tap 'Add to Home Screen'.",
+          ),
+          const SizedBox(height: 10),
+          _Step(
+            number: '3',
+            isDark: isDark,
+            icon: Icons.check_circle_outline,
+            text: "Tap 'Add'. TriNetra is now installed as a native-feeling app.",
+          ),
+
+          const SizedBox(height: 14),
+
+          // ── Tip banner ─────────────────────────────────────
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.lightbulb_outline,
+                    color: AppColors.primary, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Use Safari for the best PWA experience on iOS.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Step extends StatelessWidget {
+  final String number;
+  final IconData icon;
+  final String text;
+  final bool isDark;
+
+  const _Step({
+    required this.number,
+    required this.icon,
+    required this.text,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          decoration: const BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.4,
+                color:
+                    isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

@@ -12,6 +12,7 @@ import '../models/post_model.dart';
 import '../widgets/post_card.dart';
 import '../widgets/create_post_bar.dart';
 import '../screens/create_post_screen.dart';
+import '../../../widgets/smart_download_section.dart';
 
 /// Main Feed Screen — real-time Firebase Firestore feed
 class FeedScreen extends ConsumerStatefulWidget {
@@ -93,6 +94,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   ? AppColors.backgroundDark
                   : AppColors.backgroundLight,
             ),
+          ),
+
+          // ─── Smart Download Section (web-only) ────────────
+          const SliverToBoxAdapter(
+            child: SmartDownloadSection(),
           ),
 
           // ─── Feed Posts with inline Banner Ads ────────────
