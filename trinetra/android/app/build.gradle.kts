@@ -39,10 +39,10 @@ android {
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {
-                keyAlias = keystoreProperties["keyAlias"]
-                keyPassword = keystoreProperties["keyPassword"]
-                storeFile = file(keystoreProperties["storeFile"])
-                storePassword = keystoreProperties["storePassword"]
+                keyAlias = keystoreProperties.getProperty("keyAlias") as String
+                keyPassword = keystoreProperties.getProperty("keyPassword") as String
+                storeFile = file(keystoreProperties.getProperty("storeFile") as String)
+                storePassword = keystoreProperties.getProperty("storePassword") as String
             }
         }
     }
