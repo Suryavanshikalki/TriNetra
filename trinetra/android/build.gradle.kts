@@ -1,10 +1,5 @@
-// Declare kotlin_version at buildscript scope so Flutter's legacy
-// Gradle scanner (regex) finds it AND Gradle resolves it correctly.
 buildscript {
     extra.set("kotlin_version", "1.9.24")
-}
-
-buildscript {
     repositories {
         google()
         mavenCentral()
