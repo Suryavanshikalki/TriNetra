@@ -148,39 +148,12 @@ jobs:
 
   deploy-web-firebase:
     runs-on: ubuntu-latest
-    needs: [build-android, build-windows, build-macos, build-linux]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download Android APK
-        uses: actions/download-artifact@v4
-        with:
-          name: Android-Release
-          path: artifacts/android
-
-      - name: Download Windows build
-        uses: actions/download-artifact@v4
-        with:
-          name: Windows-Release
-          path: artifacts/windows
-
-      - name: Download macOS build
-        uses: actions/download-artifact@v4
-        with:
-          name: macOS-Release
-          path: artifacts/macos
-
-      - name: Download Linux build
-        uses: actions/download-artifact@v4
-        with:
-          name: Linux-Release
-          path: artifacts/linux
-
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-
-      - name: Build Web PWA
+      - name: Build Web PWA & Deploy to Firebase
         shell: bash
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
@@ -189,32 +162,6 @@ jobs:
           flutter pub get
           flutter build web --release
 
-      - name: Inject all platform downloads into web build
-        shell: bash
-        run: |
-          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
-          DL="$APP_DIR/build/web/downloads"
-          mkdir -p "$DL"
-
-          # Android APK
-          APK=$(find artifacts/android -name "app-release.apk" | head -n 1)
-          cp "$APK" "$DL/trinetra_latest.apk"
-
-          # Windows ZIP
-          cp artifacts/windows/trinetra_windows.zip "$DL/trinetra_latest.exe"
-
-          # macOS ZIP
-          cp artifacts/macos/trinetra_macos.zip "$DL/trinetra_latest.dmg"
-
-          # Linux tar.gz
-          cp artifacts/linux/trinetra_linux.tar.gz "$DL/trinetra_latest_linux"
-
-          echo "Downloads folder contents:"
-          ls -lh "$DL/"
-
-      - name: Deploy to Firebase Hosting
-        shell: bash
-        run: |
           cd $GITHUB_WORKSPACE
           npm install -g firebase-tools
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > sa.json

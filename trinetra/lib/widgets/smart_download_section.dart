@@ -12,12 +12,13 @@ import '../core/constants/app_colors.dart';
 class SmartDownloadSection extends StatelessWidget {
   const SmartDownloadSection({super.key});
 
-  static const _base = 'https://trinetra-8b846.web.app/downloads';
+  static const _releases =
+      'https://github.com/Suryavanshikalki/TriNetra/releases/latest';
 
-  static const _androidUrl = '$_base/trinetra_latest.apk';
-  static const _windowsUrl = '$_base/trinetra_latest.exe';
-  static const _macUrl     = '$_base/trinetra_latest.dmg';
-  static const _linuxUrl   = '$_base/trinetra_latest_linux';
+  static const _androidUrl = _releases;
+  static const _windowsUrl = _releases;
+  static const _macUrl     = _releases;
+  static const _linuxUrl   = _releases;
 
   @override
   Widget build(BuildContext context) {
