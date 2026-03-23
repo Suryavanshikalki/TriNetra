@@ -1,0 +1,113 @@
+import 'package:flutter/material.dart';
+
+// ─── Mock Story ───────────────────────────────────────────────────
+class MockStory {
+  final String id;
+  final String name;
+  final Color avatarColor;
+  final String initial;
+  final bool isViewed;
+  final bool isOwn;
+
+  const MockStory({
+    required this.id,
+    required this.name,
+    required this.avatarColor,
+    required this.initial,
+    this.isViewed = false,
+    this.isOwn = false,
+  });
+}
+
+// ─── Mock Post ────────────────────────────────────────────────────
+class MockPost {
+  final String id;
+  final String userName;
+  final String userInitial;
+  final Color userColor;
+  final String timeAgo;
+  final String content;
+  final Color? mediaBgColor;     // null = text-only post
+  final int likeCount;
+  final int commentCount;
+  final int shareCount;
+  bool isLiked;
+
+  MockPost({
+    required this.id,
+    required this.userName,
+    required this.userInitial,
+    required this.userColor,
+    required this.timeAgo,
+    required this.content,
+    this.mediaBgColor,
+    this.likeCount = 0,
+    this.commentCount = 0,
+    this.shareCount = 0,
+    this.isLiked = false,
+  });
+}
+
+// ─── Mock Data ────────────────────────────────────────────────────
+final mockStories = <MockStory>[
+  MockStory(id: 'own', name: 'Your Story', avatarColor: const Color(0xFF1877F2),
+      initial: 'Y', isOwn: true),
+  MockStory(id: 's1', name: 'Priya',     avatarColor: const Color(0xFFE91E63), initial: 'P'),
+  MockStory(id: 's2', name: 'Rahul',     avatarColor: const Color(0xFF9C27B0), initial: 'R'),
+  MockStory(id: 's3', name: 'Sneha',     avatarColor: const Color(0xFFFF5722), initial: 'S'),
+  MockStory(id: 's4', name: 'Arjun',     avatarColor: const Color(0xFF009688), initial: 'A'),
+  MockStory(id: 's5', name: 'Kavya',     avatarColor: const Color(0xFF3F51B5), initial: 'K'),
+  MockStory(id: 's6', name: 'Dev',       avatarColor: const Color(0xFF795548), initial: 'D',
+      isViewed: true),
+];
+
+final mockPosts = <MockPost>[
+  MockPost(
+    id: 'p1',
+    userName: 'Priya Sharma',
+    userInitial: 'P',
+    userColor: const Color(0xFFE91E63),
+    timeAgo: '2 min ago',
+    content: 'Just launched the TriNetra Super-App! 🚀 The future of connected communities is here. Join us on this incredible journey.',
+    mediaBgColor: const Color(0xFF1877F2),
+    likeCount: 248,
+    commentCount: 34,
+    shareCount: 12,
+    isLiked: true,
+  ),
+  MockPost(
+    id: 'p2',
+    userName: 'Rahul Verma',
+    userInitial: 'R',
+    userColor: const Color(0xFF9C27B0),
+    timeAgo: '15 min ago',
+    content: 'Beautiful morning in Bangalore! The city never stops inspiring. What are you all up to today?',
+    mediaBgColor: const Color(0xFF43A047),
+    likeCount: 91,
+    commentCount: 17,
+    shareCount: 5,
+  ),
+  MockPost(
+    id: 'p3',
+    userName: 'Sneha Patel',
+    userInitial: 'S',
+    userColor: const Color(0xFFFF5722),
+    timeAgo: '1 hr ago',
+    content: 'Excited to be part of this TriNetra community! The payment visibility feature for agents is going to be a game changer for small businesses.',
+    likeCount: 56,
+    commentCount: 8,
+    shareCount: 3,
+  ),
+  MockPost(
+    id: 'p4',
+    userName: 'Arjun Nair',
+    userInitial: 'A',
+    userColor: const Color(0xFF009688),
+    timeAgo: '3 hr ago',
+    content: 'Just completed the Creator Studio onboarding. The tools here are amazing for independent content creators. Highly recommend!',
+    mediaBgColor: const Color(0xFFFF5722),
+    likeCount: 133,
+    commentCount: 22,
+    shareCount: 9,
+  ),
+];
