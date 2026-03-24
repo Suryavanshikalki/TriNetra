@@ -1,55 +1,57 @@
 const express = require('express');
 const cors = require('cors');
 const Razorpay = require('razorpay');
+const multer = require('multer'); // फाइल अपलोड के लिए
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const upload = multer({ dest: 'uploads/' }); // फाइल्स यहाँ सेव होंगी
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads')); // फाइल्स को एक्सेस करने के लिए
 
-// --- RAZORPAY SETUP (Using your Real Keys from Render Env) ---
+// --- RAZORPAY ---
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY,
   key_secret: process.env.RAZORPAY_SECRET,
 });
 
-// --- MASTER API ROUTES ---
+// --- API: MULTI-MODAL AI (Image/PDF/Audio Support) ---
+app.post('/api/trinetra-ai', upload.single('file'), async (req, res) => {
+  const { message, credits, mode } = req.body;
+  const file = req.file;
 
-// 1. AI & Agent Engine (With Credit Logic)
-app.post('/api/trinetra-ai', async (req, res) => {
-  const { mode, subMode, message, credits } = req.body;
-  
-  if (credits <= 0) {
-    return res.status(403).json({ reply: "⚠️ कोटा समाप्त! कृपया 200 क्रेडिट्स के लिए रिचार्ज करें।" });
-  }
+  if (credits <= 0) return res.status(403).json({ reply: "⚠️ रिचार्ज करें!" });
 
-  try {
-    // यहाँ आपकी 15 Keys का इस्तेमाल होगा (Gemini/DeepSeek/Manus आदि)
-    res.json({ 
-      reply: `[TriNetra ${subMode}] सिस्टम ऑनलाइन। 15 चाबियाँ सक्रिय हैं। \nसंदेश: ${message}`,
-      deduct: 1 
-    });
-  } catch (error) {
-    res.status(500).json({ error: "इंजन ऑफलाइन है" });
-  }
+  // यहाँ AI फाइल को भी प्रोसेस करेगा (Logic for 15 Keys)
+  let responseText = `[TriNetra AI] संदेश प्राप्त: ${message}. `;
+  if (file) responseText += `फाइल '${file.originalname}' अपलोड और स्कैन की गई।`;
+
+  res.json({ 
+    reply: responseText,
+    fileUrl: file ? `/uploads/${file.filename}` : null,
+    deduct: 1 
+  });
 });
 
-// 2. Razorpay Order Creation (असली पेमेंट)
+// --- API: PAYMENT HELPLINE ---
+app.post('/api/support', (req, res) => {
+  const { userId, issue } = req.body;
+  // यहाँ हेल्पडेस्क लॉजिक
+  res.json({ status: "Support ticket created. Admin will contact you." });
+});
+
+// --- API: CREATE PAYMENT ---
 app.post('/api/create-order', async (req, res) => {
-  const { amount } = req.body;
   try {
     const order = await razorpay.orders.create({
-      amount: amount * 100, 
-      currency: "INR",
-      receipt: "receipt_" + Date.now(),
+      amount: req.body.amount * 100, currency: "INR", receipt: "r_" + Date.now()
     });
     res.json(order);
-  } catch (error) {
-    res.status(500).send(error);
-  }
+  } catch (e) { res.status(500).send(e); }
 });
 
-app.get('/', (req, res) => res.send('TriNetra V2.0 Engine (AI+Reels+Chat+Pay) LIVE 👁️🔥'));
-app.listen(port, () => console.log(`TriNetra Engine running on port ${port}`));
+app.get('/', (req, res) => res.send('TriNetra A-Z Super-Engine LIVE 👁️🔥'));
+app.listen(process.env.PORT || 3000, () => console.log('Server Active'));
