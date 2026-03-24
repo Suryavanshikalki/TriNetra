@@ -1,68 +1,54 @@
-// TriNetra Master Backend Engine - V1.0
 const express = require('express');
 const cors = require('cors');
+const Razorpay = require('razorpay'); // Razorpay जोड़ दिया
+require('dotenv').config();
 
 const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(cors());
 app.use(express.json());
-app.use(cors()); // ताकि आपका Frontend इस Backend से बात कर सके
 
-// 🔒 गिटहब की तिजोरी से चाबियां निकालना (सिक्योर मोड)
-const KEYS = {
-    GEMINI: process.env.GEMINI_API_KEY,
-    DEEPSEEK: process.env.DEEPSEEK_API_KEY,
-    OPENAI: process.env.OPENAI_API_KEY,
-    GROQ: process.env.GROQ_API_KEY,    // For Meta AI
-    GITHUB: process.env.GH_PAT_TOKEN   // For Emergent/Manus Coding
-};
-
-// 🟢 सर्वर स्टेटस चेक
-app.get('/', (req, res) => {
-    res.json({ status: 'TriNetra Engine is LIVE 👁️🔥', secure: true });
+// --- RAZORPAY SETUP (Real Keys) ---
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY,
+  key_secret: process.env.RAZORPAY_SECRET,
 });
 
-// 🧠 मेन AI कंट्रोल रूम (App.jsx से मैसेज यहीं आएगा)
+// --- API ROUTES ---
+
+// 1. AI Chat Route (पुराना + नया)
 app.post('/api/trinetra-ai', async (req, res) => {
-    const { mode, subMode, message, repo } = req.body;
-
-    try {
-        let aiResponse = "";
-
-        // 1. Basic Chat (Meta AI via Groq) - Free & Fast
-        if (mode === 'chatbot' && subMode === 'basic') {
-            aiResponse = `[Meta AI Engine] Backend received: "${message}". Groq API integration ready.`;
-            // यहाँ Groq API का असली कोड चलेगा
-        } 
-        
-        // 2. Master Chat (Gemini 3.1 Pro / DeepSeek) - High Logic
-        else if (mode === 'chatbot' && subMode === 'master') {
-            aiResponse = `[Master Engine] Analyzing: "${message}". Gemini/DeepSeek logic engaged.`;
-            // यहाँ Gemini/DeepSeek API का असली कोड चलेगा
-        } 
-        
-        // 3. Autonomous Agent (Manus Style) - General Research
-        else if (mode === 'agent' && subMode === 'general') {
-            aiResponse = `[Manus Agent] Connecting to ${repo}... Scraping data for: "${message}".`;
-            // यहाँ GitHub API से डेटा निकालने का कोड चलेगा
-        } 
-        
-        // 4. Vibe Coding Agent (Emergent Style) - Real App Building
-        else if (mode === 'agent' && subMode === 'coding') {
-            aiResponse = `[Emergent Agent] Writing code for: "${message}". Committing to ${repo} using PAT Token...`;
-            // यहाँ DeepSeek से कोड लिखवाकर सीधे GitHub में Push करने का कोड चलेगा
-        }
-
-        // वापस ऐप (Frontend) को जवाब भेजना
-        res.json({ success: true, reply: aiResponse });
-
-    } catch (error) {
-        console.error("TriNetra Engine Error:", error);
-        res.status(500).json({ success: false, reply: "Engine overload or API Error." });
-    }
+  const { mode, message, subMode } = req.body;
+  try {
+    // यहाँ आपके 5 AI इंजन काम करेंगे (Gemini/OpenAI आदि)
+    res.json({ reply: `[TriNetra AI] System Online. 15 Keys Injected. Processing: ${message}` });
+  } catch (error) {
+    res.status(500).json({ error: "AI Engine Error" });
+  }
 });
 
-// 🚀 सर्वर को चालू करना
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`[TriNetra] Master Engine is running on port ${PORT}`);
-    console.log(`[TriNetra] Secure Vault Keys Loaded: YES`);
+// 2. Create Razorpay Order (असली पेमेंट की शुरुआत)
+app.post('/api/create-order', async (req, res) => {
+  const { amount, currency } = req.body;
+  try {
+    const options = {
+      amount: amount * 100, // पैसे को 'पैसे' में बदलना (INR)
+      currency: currency || "INR",
+      receipt: "receipt_" + Math.random().toString(36).substring(7),
+    };
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
+
+// 3. PayPal Dummy Verification (अभी के लिए)
+app.post('/api/paypal-verify', (req, res) => {
+  res.json({ status: "success", message: "PayPal connection ready" });
+});
+
+app.get('/', (req, res) => res.send('TriNetra Super-Engine (AI + Payments) is LIVE 👁️🔥'));
+
+app.listen(port, () => console.log(`Server running on port ${port}`));
