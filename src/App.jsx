@@ -32,10 +32,11 @@ export default function App() {
     { role: 'ai', text: 'TriNetra Master AI Online. [Engine: Meta/GPT/Gemini/DeepSeek/Manus/Emergent].\nReady for input.' }
   ]);
 
-  const handleAiSend = () => {
+  // === THE REAL CONNECTION (TriNetra Live Engine) ===
+  const handleAiSend = async () => {
     if (!aiInput.trim()) return;
     
-    // Limits
+    // Limits Check
     if (aiMainMode === 'chatbot' && aiSubMode === 'master' && masterChatCredits <= 0) {
       setShowProModal(true); return;
     }
@@ -47,35 +48,28 @@ export default function App() {
     setAiMessages(newMsgs);
     setAiInput('');
     
-    // Deduct
+    // Deduct Credits
     if (aiMainMode === 'chatbot' && aiSubMode === 'master') setMasterChatCredits(prev => prev - 1);
     if (aiMainMode === 'agent') setAgentCredits(prev => prev - 1);
 
-    // AI Response Simulation
-    setTimeout(() => {
-      let responseText = '';
-      if (aiMainMode === 'chatbot') {
-        if (aiSubMode === 'basic') {
-          responseText = '[Basic Chat | Meta AI Engine] Query resolved. (Lifetime Free)';
-        } else {
-          responseText = masterChatCredits - 1 === 0 
-            ? '⚠️ Master Chat Limit Reached. Upgrade for unlimited GPT/Gemini/DeepSeek power.' 
-            : '[Master Chat | ChatGPT/Gemini/DeepSeek Combined] Analyzing complex multi-layered query...';
-        }
-      } else {
-        const repoName = selectedRepo === 'github' ? 'GitHub' : selectedRepo === 'gitlab' ? 'GitLab' : 'Bitbucket';
-        if (aiSubMode === 'general') {
-          responseText = agentCredits - 1 === 0 
-            ? '⚠️ Agent Credits Exhausted. Upgrade to Pro.' 
-            : `[General Agent | Manus Engine] Executing autonomous task. Connecting to ${repoName} repository. Scraping data and writing backend logic...`;
-        } else {
-          responseText = agentCredits - 1 === 0 
-            ? '⚠️ Agent Credits Exhausted. Upgrade to Pro.' 
-            : `[Vibe Coding | Emergent Engine] Connected to ${repoName}. Generating App.jsx, committing changes, and triggering CI/CD pipeline...`;
-        }
-      }
-      setAiMessages([...newMsgs, { role: 'ai', text: responseText }]);
-    }, 1500);
+    try {
+      // आपका अपना Render का लाइव URL 
+      const response = await fetch('https://trinetra-7kj2.onrender.com/api/trinetra-ai', {  
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: aiMainMode,
+          subMode: aiSubMode,
+          message: aiInput,
+          repo: selectedRepo
+        })
+      });
+
+      const data = await response.json();
+      setAiMessages([...newMsgs, { role: 'ai', text: data.reply }]);
+    } catch (error) {
+      setAiMessages([...newMsgs, { role: 'ai', text: '⚠️ Connection Error: TriNetra Engine is waking up or unreachable.' }]);
+    }
   };
 
   return (
