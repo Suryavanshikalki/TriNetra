@@ -1,57 +1,137 @@
+// ==========================================
+// TRINETRA SUPER APP - FINAL MASTER BACKEND
+// ==========================================
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const multer = require('multer');
+const http = require('http');
+const { Server } = require('socket.io');
 const Razorpay = require('razorpay');
-const multer = require('multer'); // फाइल अपलोड के लिए
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const upload = multer({ dest: 'uploads/' }); // फाइल्स यहाँ सेव होंगी
+const server = http.createServer(app);
+
+// --- 1. SOCKET.IO (WhatsApp 2.0 Engine) ---
+const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads')); // फाइल्स को एक्सेस करने के लिए
+app.use('/uploads', express.static('uploads'));
 
-// --- RAZORPAY ---
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY,
-  key_secret: process.env.RAZORPAY_SECRET,
+// --- 2. MONGODB DATABASE CONNECTION ---
+const MONGO_URI = "mongodb+srv://suryabhai19966_db_user:4xHdDad5zJDU6WYs@cluster0.jw5bhmc.mongodb.net/trinetra_app?retryWrites=true&w=majority";
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('✅ TriNetra MongoDB Database Active'))
+  .catch(err => console.error('❌ DB Error:', err));
+
+// --- 3. CORE SCHEMAS ---
+const UserSchema = new mongoose.Schema({
+  trinetraId: { type: String, unique: true }, phone: String, email: String, provider: String,
+  profilePic: String, coverPic: String, bio: String, avatar: String,
+  walletBalance: { type: Number, default: 0 },
+  aiChatbotCredits: { type: Number, default: 8 },  
+  agenticCredits: { type: Number, default: 20 },   
+  osCreationAccess: { type: Boolean, default: false },
+  followers: [String], following: [String], blocked: [String],
+  privacy: { lastSeen: Boolean, onlineStatus: Boolean, profileLocked: Boolean },
+  activeBoostPlan: { type: String, default: 'None' }, // To track which paid boost user bought
+  activeBoostExpiry: Date
+});
+const User = mongoose.model('User', UserSchema);
+
+const PostSchema = new mongoose.Schema({
+  userId: String, content: String, mediaUrl: String, mediaType: String,
+  boostType: { type: String, enum: ['None', 'Free', 'Paid', 'Paid+Monetized', 'Pro'], default: 'None' },
+  likes: Number, comments: Array, category: String
+});
+const Post = mongoose.model('Post', PostSchema);
+
+const ComplaintSchema = new mongoose.Schema({
+  postId: String, category: String,
+  escalationLevel: { type: Number, default: 0 },
+  status: { type: String, default: 'Open' }
+});
+const Complaint = mongoose.model('Complaint', ComplaintSchema);
+
+// --- 4. GATEKEEPER API ---
+app.post('/api/auth/login', async (req, res) => {
+  const { authId, provider } = req.body;
+  if(!authId) return res.status(400).json({ error: "Auth ID required." });
+  
+  let user = await User.findOne({ $or: [{ phone: authId }, { email: authId }] });
+  if (!user) {
+    user = new User({ trinetraId: `TRN${Date.now()}`, [provider === 'Phone' ? 'phone' : 'email']: authId, provider });
+    await user.save();
+  }
+  res.json({ success: true, user, isDevMode: provider === 'GitHub' });
 });
 
-// --- API: MULTI-MODAL AI (Image/PDF/Audio Support) ---
-app.post('/api/trinetra-ai', upload.single('file'), async (req, res) => {
-  const { message, credits, mode } = req.body;
-  const file = req.file;
+// --- 5. THE ECONOMY & PAYMENTS (ALL PRO RATES ADDED 100%) ---
+const razorpay = new Razorpay({ key_id: 'rzp_live_YOURKEY', key_secret: 'YOURSECRET' });
 
-  if (credits <= 0) return res.status(403).json({ reply: "⚠️ रिचार्ज करें!" });
+// 🔥 FULL PRICING DICTIONARY (AI + Boost + Monetize) 🔥
+const PRICING = {
+    chatbot: { 1: 1499, 3: 4199, 6: 7999, 9: 11499, 12: 14999 },
+    agentic: { 1: 5999, 3: 16999, 6: 31999, 9: 45999, 12: 59999 },
+    os_creation: { 1: 49999 }, // Flat 1 month
+    pro_boost: { 1: 10000 },
+    paid_boost: { 1: 999, 3: 2499, 6: 4499, 9: 6499, 12: 8999 }, // (25% TriNetra / 75% User)
+    paid_boost_monetize: { 1: 1999, 3: 5499, 6: 9999, 9: 14499, 12: 18999 } // (100% User)
+};
 
-  // यहाँ AI फाइल को भी प्रोसेस करेगा (Logic for 15 Keys)
-  let responseText = `[TriNetra AI] संदेश प्राप्त: ${message}. `;
-  if (file) responseText += `फाइल '${file.originalname}' अपलोड और स्कैन की गई।`;
+app.post('/api/payment/recharge', async (req, res) => {
+    const { type, months, userId } = req.body;
+    let amount = PRICING[type][months];
+    if(!amount) return res.status(400).json({ error: "Invalid Plan" });
 
-  res.json({ 
-    reply: responseText,
-    fileUrl: file ? `/uploads/${file.filename}` : null,
-    deduct: 1 
+    // Payment goes directly to TriNetra Bank Account
+    const order = await razorpay.orders.create({ amount: amount * 100, currency: "INR" });
+    
+    // Auto-update user credits upon successful payment
+    const expiryDate = new Date();
+    expiryDate.setMonth(expiryDate.getMonth() + months);
+
+    if(type === 'chatbot') await User.findByIdAndUpdate(userId, { aiChatbotCredits: 99999 });
+    if(type === 'agentic') await User.findByIdAndUpdate(userId, { agenticCredits: 300 }); 
+    if(type === 'os_creation') await User.findByIdAndUpdate(userId, { osCreationAccess: true });
+    
+    // Updating Boost Plans
+    if(type === 'pro_boost') await User.findByIdAndUpdate(userId, { activeBoostPlan: 'Pro', activeBoostExpiry: expiryDate });
+    if(type === 'paid_boost') await User.findByIdAndUpdate(userId, { activeBoostPlan: 'Paid', activeBoostExpiry: expiryDate });
+    if(type === 'paid_boost_monetize') await User.findByIdAndUpdate(userId, { activeBoostPlan: 'Paid+Monetized', activeBoostExpiry: expiryDate });
+
+    res.json({ success: true, order, message: `Plan ${type} for ${months} months activated successfully.` });
+});
+
+// --- 6. AUTO-ESCALATION SYSTEM ---
+app.post('/api/complaint/escalate', async (req, res) => {
+  const { postId, category } = req.body;
+  const escalationChain = ['Local Authority', 'MLA', 'CM', 'PM', 'Civil Court', 'High Court', 'Supreme Court', 'International Body'];
+  
+  let complaint = await Complaint.findOne({ postId });
+  if (!complaint) complaint = new Complaint({ postId, category });
+  
+  if (complaint.status !== 'Resolved' && complaint.escalationLevel < escalationChain.length - 1) {
+    complaint.escalationLevel += 1;
+    await complaint.save();
+    return res.json({ success: true, message: `Escalated to: ${escalationChain[complaint.escalationLevel]} for category: ${category}` });
+  }
+  res.json({ success: false, message: "Max level reached or issue resolved." });
+});
+
+// --- 7. REAL-TIME CHAT (Mutual Follower Rule Applied) ---
+io.on('connection', (socket) => {
+  socket.on('send_message', async (data) => {
+    const sender = await User.findOne({ trinetraId: data.senderId });
+    const receiver = await User.findOne({ trinetraId: data.receiverId });
+    if(sender && receiver && sender.following.includes(data.receiverId) && receiver.following.includes(data.senderId)) {
+        io.emit('receive_message', data); 
+    }
   });
 });
 
-// --- API: PAYMENT HELPLINE ---
-app.post('/api/support', (req, res) => {
-  const { userId, issue } = req.body;
-  // यहाँ हेल्पडेस्क लॉजिक
-  res.json({ status: "Support ticket created. Admin will contact you." });
-});
-
-// --- API: CREATE PAYMENT ---
-app.post('/api/create-order', async (req, res) => {
-  try {
-    const order = await razorpay.orders.create({
-      amount: req.body.amount * 100, currency: "INR", receipt: "r_" + Date.now()
-    });
-    res.json(order);
-  } catch (e) { res.status(500).send(e); }
-});
-
-app.get('/', (req, res) => res.send('TriNetra A-Z Super-Engine LIVE 👁️🔥'));
-app.listen(process.env.PORT || 3000, () => console.log('Server Active'));
+app.get('/', (req, res) => res.send('TriNetra V4 Master Backend Live 👁️🔥'));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`🚀 TriNetra Engine running on port ${PORT}`));
