@@ -1,6 +1,6 @@
 // File: src/screens/Settings/SettingsMenu.jsx
 import React from 'react';
-import { User, Shield, Eye, CreditCard, HelpCircle } from 'lucide-react';
+import { User, Shield, Eye, CreditCard, HelpCircle, Globe } from 'lucide-react';
 
 export default function SettingsMenu({ onNavigate }) {
   const menuItems = [
@@ -9,6 +9,7 @@ export default function SettingsMenu({ onNavigate }) {
     { title: "Audience & Visibility", icon: <Eye size={20}/>, target: "audience" },
     { title: "Payments & Wallet", icon: <CreditCard size={20}/>, target: "wallet" },
     { title: "Boost & AI Subscriptions", icon: <CreditCard size={20}/>, target: "boost" },
+    { title: "App Language (A/क)", icon: <Globe size={20} className="text-blue-500"/>, target: "language" }, // नया जोड़ा गया
     { title: "Help & Support", icon: <HelpCircle size={20}/>, target: "support" },
   ];
 
