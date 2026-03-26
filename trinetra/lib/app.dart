@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // (ठीक किया गया: छोटा 'i')
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +17,9 @@ import 'features/referral/screens/referral_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'features/ai_assistant/screens/ai_chat_screen.dart';
 import 'l10n/app_localizations.dart';
+
+// 🚀 पहली लाइन जो जोड़ी गई: अपडेट वाली फाइल को यहाँ बुला लिया
+import 'update_helper.dart';
 
 // ─── Theme Mode Provider ─────────────────────────────────────────
 final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>(
@@ -181,6 +184,12 @@ class TriNetraApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: _router,
+      
+      // 🚀 दूसरी लाइन जो जोड़ी गई: ऐप के ऊपर ऑटो-अपडेट का सुरक्षा कवच!
+      builder: (context, child) {
+        return TriNetraUpdateManager(child: child!);
+      },
+      
     );
   }
 }
