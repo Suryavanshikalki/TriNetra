@@ -15,6 +15,7 @@
     "razorpay": "^2.9.2",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "aws-sdk": "^2.1580.0",
+    "multer": "^1.4.5-lts.1",
     "@google/generative-ai": "^0.2.1",
     "openai": "^4.28.0",
     "groq-sdk": "^0.3.1",
