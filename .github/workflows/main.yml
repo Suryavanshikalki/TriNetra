@@ -8,7 +8,7 @@ env:
 
 jobs:
 
-  # 1. ANDROID BUILD 🟢
+  # 1. ANDROID BUILD 🟢 (APK + AAB)
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -29,9 +29,9 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
-          if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           flutter clean
           flutter pub get
+          if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           flutter build apk --release
           flutter build appbundle --release
       - name: Save Android Artifacts
