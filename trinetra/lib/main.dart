@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // (ठीक किया गया: छोटा 'i')
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/services/firebase_service.dart';
 import 'core/services/gemini_service.dart';
