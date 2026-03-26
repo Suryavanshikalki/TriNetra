@@ -26,37 +26,61 @@ jobs:
           channel: 'stable'
 
       - name: 3. Install Universal Dependencies
+        shell: bash
         run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          cd "$APP_DIR"
           flutter clean
           flutter pub get
 
       # ═══ BUILD SECTION ═══════════════════════════════
       
       - name: 🟢 Build Android (APK & AAB)
+        shell: bash
         run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          cd "$APP_DIR"
+          if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           flutter build apk --release
           flutter build appbundle --release
 
       - name: 🔵 Build Windows (EXE)
+        shell: bash
         run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          cd "$APP_DIR"
           flutter config --enable-windows-desktop
           flutter build windows --release
 
       - name: 🟠 Build macOS (DMG)
+        shell: bash
         run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          cd "$APP_DIR"
           flutter config --enable-macos-desktop
           flutter build macos --release
 
       - name: 🟣 Build Linux
+        shell: bash
         run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          cd "$APP_DIR"
           flutter config --enable-linux-desktop
           flutter build linux --release
 
       - name: 🔴 Build iOS (No Codesign)
-        run: flutter build ios --release --no-codesign
+        shell: bash
+        run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          cd "$APP_DIR"
+          flutter build ios --release --no-codesign
 
       - name: 🟡 Build Web PWA
-        run: flutter build web --release
+        shell: bash
+        run: |
+          APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+          cd "$APP_DIR"
+          flutter build web --release
 
       # ═══ ARTIFACTS SECTION (Downloadable Files) ═══════
       
@@ -65,11 +89,12 @@ jobs:
         with:
           name: TriNetra-All-Platforms
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/windows/x64/runner/Release/
-            build/macos/Build/Products/Release/*.app
-            build/linux/x64/release/bundle/
-            build/web/
+            **/build/app/outputs/flutter-apk/app-release.apk
+            **/build/app/outputs/bundle/release/app-release.aab
+            **/build/windows/x64/runner/Release/
+            **/build/macos/Build/Products/Release/*.app
+            **/build/linux/x64/release/bundle/
+            **/build/web/
 
       # ═══ DEPLOY SECTION (Firebase Hub) ════════════════
       
