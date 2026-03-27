@@ -1,5 +1,5 @@
 // ==========================================
-// TRINETRA SUPER APP - FINAL MASTER BACKEND V5.0
+// TRINETRA SUPER APP - FINAL MASTER BACKEND V5.1
 // ==========================================
 const express = require('express');
 const cors = require('cors');
@@ -162,6 +162,36 @@ io.on('connection', (socket) => {
         io.emit('receive_message', data); 
     }
   });
+});
+
+// --- 9. THE TRINETRA SEARCH ENGINE (100% ACTIVE) ---
+// यह इंजन यूज़र्स, पोस्ट और हैशटैग को एक साथ खोजेगा
+
+// पहले डेटाबेस में 'Search Index' बनाना ज़रूरी है
+User.collection.createIndex({ trinetraId: "text", phone: "text", email: "text", bio: "text" });
+Post.collection.createIndex({ content: "text", category: "text" });
+
+app.get('/api/search', async (req, res) => {
+  try {
+    const { q } = req.query; // जो यूज़र ने टाइप किया (Search Query)
+    if (!q) return res.status(400).json({ error: "Search query required" });
+
+    // 🚀 यूज़र्स को खोजना
+    const users = await User.find({ $text: { $search: q } }).limit(10);
+    
+    // 🚀 पोस्ट्स को खोजना
+    const posts = await Post.find({ $text: { $search: q } }).limit(20);
+
+    res.json({ 
+      success: true, 
+      results: {
+        users: users.map(u => ({ id: u.trinetraId, name: u.phone || u.email, pic: u.profilePic })),
+        posts: posts
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // --- 8. SENTRY ERROR HANDLER ---
