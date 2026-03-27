@@ -21,7 +21,9 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 // --- 2. MONGODB DATABASE CONNECTION ---
-const MONGO_URI = "mongodb+srv://suryabhai19966_db_user:4xHdDad5zJDU6WYs@cluster0.jw5bhmc.mongodb.net/trinetra_app?retryWrites=true&w=majority";
+// 🚀 THE SMART LOCK: अब यह चाबी कोड में नहीं, बल्कि सीधे Render के सुरक्षित सर्वर (Env) से आएगी!
+const MONGO_URI = process.env.MONGO_URI; 
+
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ TriNetra MongoDB Database Active'))
   .catch(err => console.error('❌ DB Error:', err));
