@@ -1,5 +1,5 @@
 // ==========================================
-// TRINETRA SUPER APP - FINAL MASTER BACKEND
+// TRINETRA SUPER APP - FINAL MASTER BACKEND V5.0
 // ==========================================
 const express = require('express');
 const cors = require('cors');
@@ -8,21 +8,40 @@ const multer = require('multer');
 const http = require('http');
 const { Server } = require('socket.io');
 const Razorpay = require('razorpay');
+
+// 🚀 Naye Master Packages (AWS, PayPal, Sentry)
+const AWS = require('aws-sdk');
+const paypal = require('paypal-rest-sdk');
+const Sentry = require('@sentry/node');
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+
+// --- 0. SENTRY (CRASH TRACKING) ---
+// 🚀 THE SMART LOCK: GitHub/Render se asli DSN link aayega
+Sentry.init({ dsn: process.env.SENTRY_DSN });
+app.use(Sentry.Handlers.requestHandler());
 
 // --- 1. SOCKET.IO (WhatsApp 2.0 Engine) ---
 const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads')); // Purana local storage surakshit hai
+
+// --- 1.5 AWS S3 CLOUD STORAGE CONFIGURATION ---
+// 🚀 THE SMART LOCK: AWS Keys Render se aayengi
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+  region: 'ap-south-1' // Mumbai Region
+});
+const s3 = new AWS.S3();
 
 // --- 2. MONGODB DATABASE CONNECTION ---
-// 🚀 THE SMART LOCK: अब यह चाबी कोड में नहीं, बल्कि सीधे Render के सुरक्षित सर्वर (Env) से आएगी!
-const MONGO_URI = process.env.MONGO_URI; 
+// 🚀 THE SMART LOCK: MongoDB URI Render/GitHub se aayega
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI; 
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ TriNetra MongoDB Database Active'))
@@ -70,8 +89,19 @@ app.post('/api/auth/login', async (req, res) => {
   res.json({ success: true, user, isDevMode: provider === 'GitHub' });
 });
 
-// --- 5. THE ECONOMY & PAYMENTS (ALL PRO RATES ADDED 100%) ---
-const razorpay = new Razorpay({ key_id: 'rzp_live_YOURKEY', key_secret: 'YOURSECRET' });
+// --- 5. THE ECONOMY & PAYMENTS (RAZORPAY + PAYPAL) ---
+// 🚀 THE SMART LOCK: Razorpay Keys
+const razorpay = new Razorpay({ 
+  key_id: process.env.RAZORPAY_KEY, 
+  key_secret: process.env.RAZORPAY_SECRET 
+});
+
+// 🚀 THE SMART LOCK: PayPal Keys
+paypal.configure({
+  'mode': 'live', 
+  'client_id': process.env.PAYPAL_CLIENT_ID,
+  'client_secret': process.env.PAYPAL_SECRET
+});
 
 // 🔥 FULL PRICING DICTIONARY (AI + Boost + Monetize) 🔥
 const PRICING = {
@@ -88,7 +118,7 @@ app.post('/api/payment/recharge', async (req, res) => {
     let amount = PRICING[type][months];
     if(!amount) return res.status(400).json({ error: "Invalid Plan" });
 
-    // Payment goes directly to TriNetra Bank Account
+    // Payment goes directly to TriNetra Bank Account via Razorpay
     const order = await razorpay.orders.create({ amount: amount * 100, currency: "INR" });
     
     // Auto-update user credits upon successful payment
@@ -134,6 +164,9 @@ io.on('connection', (socket) => {
   });
 });
 
-app.get('/', (req, res) => res.send('TriNetra V4 Master Backend Live 👁️🔥'));
+// --- 8. SENTRY ERROR HANDLER ---
+app.use(Sentry.Handlers.errorHandler());
+
+app.get('/', (req, res) => res.send('TriNetra V5 Master Backend Live 👁️🔥'));
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 TriNetra Engine running on port ${PORT}`));
