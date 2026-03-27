@@ -9,16 +9,20 @@
   <meta name="google-site-verification" content="okTS37EKOgrxRhI9x7Vs62WbZ0Q3o25qKtuYqg3YDiA" />
   <meta name="google-site-verification" content="YOUR_GOOGLE_SEARCH_CONSOLE_CODE">
 
-  <title>TriNetra - The Ultimate Super-App | 6-Platforms | Connect, Share & Grow</title>
-  <meta name="title" content="TriNetra - The Ultimate Super-App | Connect, Share & Grow">
-  <meta name="description" content="TriNetra is India's ultimate social super-app for Android, iOS, Windows, macOS, Linux, and Web. Messaging, Payments, Marketplace, and AI.">
-  <meta name="keywords" content="TriNetra, super app, social media India, AI chatbot, refer and earn, TriNetra Pay, social super app">
+  <title>TriNetra - The Ultimate 6-in-1 Super App | Connect, Share & Grow</title>
+  <meta name="description" content="TriNetra is India's ultimate 6-in-1 social super-app for Android, iOS, Windows, macOS, Linux, and Web. Social media, AI chatbot, secure messenger, OS creation, and seamless payments all in one place.">
+  <meta name="keywords" content="TriNetra, super app, social media India, AI chatbot, refer and earn, TriNetra Pay, social super app, Messenger, Operating System, Kalki">
   <meta name="author" content="Suryavanshi Kalki - TriNetra Technologies">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://trinetra-8b846.web.app">
 
+  <meta property="og:title" content="TriNetra - The Ultimate Super App">
+  <meta property="og:description" content="Join the revolution! Social, AI, and Payments in one powerful app.">
+  <meta property="og:type" content="website">
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TriNetra">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="favicon.png"/>
@@ -96,20 +100,34 @@
     TriNetra Technologies Pvt. Ltd. | India's #1 Social Super-App | Powered by AI & Flutter
   </div>
 
+  <script src="flutter.js" defer></script>
   <script>
-    // PWA Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('flutter_service_worker.js?v=1');
-      });
-    }
-
-    // Auto-Detect OS & Highlight
+    // 1. OLD: Auto-Detect OS & Highlight Box
     const ua = navigator.userAgent;
     if (/android/i.test(ua)) document.getElementById('android-card').classList.add('highlight');
     else if (/iPhone|iPad|iPod/i.test(ua)) document.getElementById('ios-card').classList.add('highlight');
     else if (/Win/i.test(ua)) document.getElementById('windows-card').classList.add('highlight');
     else if (/Mac/i.test(ua)) document.getElementById('macos-card').classList.add('highlight');
+
+    // 2. NEW + OLD COMBINED: Service Worker & Flutter Loading
+    window.addEventListener('load', function(ev) {
+      if (typeof _flutter !== 'undefined') {
+        // New Flutter 3.x Engine Logic
+        _flutter.loader.loadEntrypoint({
+          serviceWorker: {
+            serviceWorkerVersion: typeof serviceWorkerVersion !== 'undefined' ? serviceWorkerVersion : null,
+          },
+          onEntrypointLoaded: function(engineInitializer) {
+            engineInitializer.initializeEngine().then(function(appRunner) {
+              appRunner.runApp();
+            });
+          }
+        });
+      } else if ('serviceWorker' in navigator) {
+        // Old Fallback (Safe Mode)
+        navigator.serviceWorker.register('flutter_service_worker.js?v=1');
+      }
+    });
   </script>
 </body>
 </html>
