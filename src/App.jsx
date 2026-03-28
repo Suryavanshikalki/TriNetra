@@ -3,15 +3,16 @@
 // File: src/App.jsx (The Main Engine)
 // ==========================================
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, PlaySquare, MessageCircle, Settings, Sparkles, Download, Search, Menu, Zap, Globe } from 'lucide-react';
+// 👁️ TRINETRA FIX: Yahan 'BrainCircuit' add kar diya gaya hai taaki naya error na aaye
+import { Home, PlaySquare, MessageCircle, Settings, Sparkles, Download, Search, Menu, Zap, Globe, BrainCircuit } from 'lucide-react';
 
-// 👁️🔥 Blueprint Components (14 Master Files Jo Humne Banayi Hain)
-import HomeFeed from './screens/Home/HomeFeed';
-import ChatWindow from './screens/Messenger/ChatWindow';
-import AIChatWindow from './screens/AI/AIChatWindow';
-import Preferences from './screens/Settings/Preferences';
-import DownloadHub from './screens/Auth/DownloadHub'; // PWA Link
-import LoginScreen from './screens/Auth/LoginScreen'; // New Gatekeeper
+// 👁️🔥 TRINETRA MASTER FIX: Sabhi files ke aage '.jsx' laga diya gaya hai!
+import HomeFeed from './screens/Home/HomeFeed.jsx';
+import ChatWindow from './screens/Messenger/ChatWindow.jsx';
+import AIChatWindow from './screens/AI/AIChatWindow.jsx';
+import Preferences from './screens/Settings/Preferences.jsx';
+import DownloadHub from './screens/Auth/DownloadHub.jsx'; 
+import LoginScreen from './screens/Auth/LoginScreen.jsx'; 
 
 export default function App() {
   // 🛡️ Global App State
