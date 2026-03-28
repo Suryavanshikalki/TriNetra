@@ -6,13 +6,15 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // 👁️ TRINETRA FIX: Ye setting double src ke chakkar ko khatam kar degi
+      // 👁️ TRINETRA FIX: Ye setting double 'src' ke chakkar ko bypass karegi
       '@': path.resolve(__dirname, './src'),
     },
     extensions: ['.js', '.jsx', '.json']
   },
+  server: {
+    port: 3000,
+  },
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
   }
 });
