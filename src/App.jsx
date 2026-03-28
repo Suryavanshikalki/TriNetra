@@ -3,16 +3,15 @@
 // File: src/App.jsx (The Main Engine)
 // ==========================================
 import React, { useState, useEffect, useRef } from 'react';
-// 👁️ TRINETRA FIX: Yahan 'BrainCircuit' add kar diya gaya hai taaki naya error na aaye
 import { Home, PlaySquare, MessageCircle, Settings, Sparkles, Download, Search, Menu, Zap, Globe, BrainCircuit } from 'lucide-react';
 
-// 👁️🔥 TRINETRA MASTER FIX: Sabhi files ke aage '.jsx' laga diya gaya hai!
-import HomeFeed from './screens/Home/HomeFeed.jsx';
-import ChatWindow from './screens/Messenger/ChatWindow.jsx';
-import AIChatWindow from './screens/AI/AIChatWindow.jsx';
-import Preferences from './screens/Settings/Preferences.jsx';
-import DownloadHub from './screens/Auth/DownloadHub.jsx'; 
-import LoginScreen from './screens/Auth/LoginScreen.jsx'; 
+// 👁️🔥 TRINETRA MASTER FIX: Yahan 'Screens' ka 'S' BADA kar diya gaya hai!
+import HomeFeed from './Screens/Home/HomeFeed.jsx';
+import ChatWindow from './Screens/Messenger/ChatWindow.jsx';
+import AIChatWindow from './Screens/AI/AIChatWindow.jsx';
+import Preferences from './Screens/Settings/Preferences.jsx';
+import DownloadHub from './Screens/Auth/DownloadHub.jsx'; 
+import LoginScreen from './Screens/Auth/LoginScreen.jsx'; 
 
 export default function App() {
   // 🛡️ Global App State
