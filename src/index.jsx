@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-// 👁️ TRINETRA FIX: Yahan App ke aage .jsx joda gaya hai
 import App from './App.jsx'; 
-// 👁️ TRINETRA FIX: Yahan UserContext ke aage .jsx joda gaya hai
-import { UserProvider } from './context/UserContext.jsx'; 
+
+// 👁️ TRINETRA FIX: Yahan chhota 'c' kar diya gaya hai
+import { UserProvider } from './context/Usercontext.jsx'; 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
