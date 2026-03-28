@@ -5,18 +5,19 @@
 import React, { useState, useEffect } from 'react';
 import { Home, PlaySquare, MessageCircle, Settings, Search, Menu, Zap, BrainCircuit } from 'lucide-react';
 
-// 👁️ TRINETRA EXACT PATH RECOVERY
+// 👁️ TRINETRA EXACT PATH RECOVERY (Based on your 57-file list)
+// Hum yahan './' use kar rahe hain taaki machine usi folder mein dhoondhe
 import HomeFeed from './screens/Home/HomeFeed.jsx';
 import ChatWindow from './screens/Messenger/ChatWindow.jsx';
 import AIChatWindow from './screens/AI/AIChatWindow.jsx';
+import SettingsMenu from './screens/Settings/SettingsMenu.jsx';
 
-// 🚨 Aapke bataye anusar: LoginScreen 'Auth' ke andar hai
+// 🚨 Aapke bataye anusar: Ye dono files 'Auth' ke andar hain
 import LoginScreen from './screens/Auth/LoginScreen.jsx'; 
+import ProfileSetup from './screens/Auth/ProfileSetup.jsx';
 
-// 🚨 Baki files jo seedhe 'screens' ya 'Settings' mein hain
+// 🚨 DownloadHub aapne screens ke bahar ya seedhe screens mein rakha hoga
 import DownloadHub from './screens/DownloadHub.jsx'; 
-import Preferences from './screens/Settings/Preferences.jsx';
-import ProfileSetup from './screens/Auth/ProfileSetup.jsx'; // ProfileSetup bhi Auth mein joda gaya hai
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -54,10 +55,6 @@ export default function App() {
         <h2 className="text-xl font-black uppercase tracking-widest text-cyan-400 flex items-center gap-2">
             <Zap size={20} className="animate-pulse" /> {activeTab}
         </h2>
-        <div className="flex space-x-4 items-center">
-            {activeTab === 'home' && <Search className="text-gray-400 hover:text-white transition cursor-pointer"/>}
-            {activeTab === 'settings' && <Menu className="text-gray-400 hover:text-white transition cursor-pointer"/>}
-        </div>
       </header>
 
       {/* 🚀 MAIN CONTENT */}
@@ -65,7 +62,7 @@ export default function App() {
         {activeTab === 'home' && <HomeFeed />}
         {activeTab === 'chat' && <ChatWindow onBack={() => setActiveTab('home')} />}
         {activeTab === 'ai' && <AIChatWindow />}
-        {activeTab === 'settings' && <Preferences />}
+        {activeTab === 'settings' && <SettingsMenu />}
         
         {activeTab === 'reels' && (
           <div className="h-full flex items-center justify-center bg-black">
@@ -75,7 +72,7 @@ export default function App() {
       </main>
 
       {/* 📱 NAVIGATION */}
-      <nav className="absolute bottom-0 w-full bg-[#111827]/90 backdrop-blur-xl border-t border-cyan-500/20 flex justify-around py-2 pb-6 z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+      <nav className="absolute bottom-0 w-full bg-[#111827]/90 backdrop-blur-xl border-t border-cyan-500/20 flex justify-around py-2 pb-6 z-40 shadow-[0_-10px_30_rgba(0,0,0,0.5)]">
           <button onClick={() => setActiveTab('home')} className="flex flex-col items-center gap-1 text-gray-500 hover:text-cyan-400">
               <Home className="w-6 h-6" />
               <span className="text-[8px] font-bold tracking-widest uppercase">Home</span>
