@@ -1,29 +1,15 @@
-// File: src/context/UserContext.jsx
-import React, { createContext, useState, useContext } from 'react';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.jsx'; 
 
-// Context बनाना
-const UserContext = createContext();
+// 👁️ TRINETRA MASTER FIX: Yahan 'c' ko chhota kar diya gaya hai (Usercontext.jsx)
+// kyunki aapke GitHub me file ka naam yahi hai!
+import { UserProvider } from './context/Usercontext.jsx'; 
 
-export const UserProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-
-    const login = (userData) => {
-        setUser(userData);
-        // यहाँ लोकल स्टोरेज में भी सेव कर सकते हैं ताकि रिफ्रेश होने पर लॉगिन रहे
-        localStorage.setItem('trinetra_user', JSON.stringify(userData));
-    };
-
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem('trinetra_user');
-    };
-
-    return (
-        <UserContext.Provider value={{ user, login, logout }}>
-            {children}
-        </UserContext.Provider>
-    );
-};
-
-// कस्टम हुक ताकि किसी भी फाइल में यूज़र डेटा आसानी से मिल सके
-export const useUser = () => useContext(UserContext);
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <UserProvider>
+      <App />
+    </UserProvider>
+  </React.StrictMode>
+);
