@@ -1,15 +1,22 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx'; 
+import React, { createContext, useState, useEffect } from 'react';
 
-// 👁️ TRINETRA MASTER FIX: Yahan 'c' ko chhota kar diya gaya hai (Usercontext.jsx)
-// kyunki aapke GitHub me file ka naam yahi hai!
-import { UserProvider } from './context/Usercontext.jsx'; 
+// 👁️ TRINETRA MASTER CONTEXT: Ye aapke app ka asli dil hai
+export const UserContext = createContext();
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <UserProvider>
-      <App />
-    </UserProvider>
-  </React.StrictMode>
-);
+export const UserProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Agar pehle se login hai, toh data safe rahega
+    const storedUser = localStorage.getItem('trinetra_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  return (
+    <UserContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
