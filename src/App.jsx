@@ -1,19 +1,19 @@
 // ==========================================
-// TRINETRA SUPER APP - 64 FILES MASTER ENGINE
+// TRINETRA SUPER APP - 64 FILES FINAL MASTER
 // ==========================================
 import React, { useState, useEffect } from 'react';
 import { Home, PlaySquare, MessageCircle, Settings, Zap, BrainCircuit, Search, Menu } from 'lucide-react';
 
-// 👁️ TRINETRA EXACT PATHS: 1:35 AM waale logs ke hisaab se (screens chhota rakha hai)
+// 👁️ TRINETRA RECOVERY: Path Fix (Relative to src/src or src)
 import HomeFeed from './screens/Home/HomeFeed.jsx';
 import ChatWindow from './screens/Messenger/ChatWindow.jsx';
 import AIChatWindow from './screens/AI/AIChatWindow.jsx';
 
-// 🛡️ AUTH: LoginScreen aur ProfileSetup 'Auth' folder mein hain
+// 🛡️ AUTH: Login aur Setup (Aapke bataye anusar Auth folder mein)
 import LoginScreen from './screens/Auth/LoginScreen.jsx'; 
 import ProfileSetup from './screens/Auth/ProfileSetup.jsx'; 
 
-// 🚨 RECENT: DownloadHub aur Preferences seedhe 'screens' folder mein hain
+// 🚨 RECENT: DownloadHub aur Preferences (Aapki aaj ki mehnat)
 import DownloadHub from './screens/DownloadHub.jsx'; 
 import Preferences from './screens/Settings/Preferences.jsx';
 
@@ -22,7 +22,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [showPlatformDetect, setShowPlatformDetect] = useState(true);
 
-  // 🛡️ Data Recovery & Persistence
+  // 🛡️ Persistence & Data Recovery
   useEffect(() => {
     const session = localStorage.getItem('trinetra_session');
     if (session) setIsLoggedIn(true);
@@ -31,22 +31,26 @@ export default function App() {
     }
   }, []);
 
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = (userData) => {
     setIsLoggedIn(true);
     localStorage.setItem('trinetra_session', 'active');
     setActiveTab('home');
   };
 
-  // 🚀 MASTER ROUTER
+  // 🚀 MASTER ROUTING ENGINE
   if (showPlatformDetect && !isLoggedIn) return <DownloadHub onProceedToLogin={() => setShowPlatformDetect(false)} />;
   if (!isLoggedIn) return <LoginScreen onLoginSuccess={handleAuthSuccess} />;
 
   return (
     <div className="flex flex-col h-screen bg-[#0a1014] text-white overflow-hidden font-sans">
-      <header className="p-4 bg-[#111827] border-b border-cyan-500/10 flex justify-between items-center shadow-2xl z-50">
-        <h2 className="text-xl font-black text-cyan-400 flex items-center gap-2"><Zap size={20} className="animate-pulse"/> {activeTab.toUpperCase()}</h2>
+      {/* 🌟 HEADER */}
+      <header className="p-4 bg-[#111827] border-b border-cyan-500/10 flex justify-between items-center z-50 shadow-2xl">
+        <h2 className="text-xl font-black text-cyan-400 flex items-center gap-2">
+            <Zap size={20} className="animate-pulse" /> {activeTab.toUpperCase()}
+        </h2>
       </header>
 
+      {/* 🚀 MAIN CONTENT */}
       <main className="flex-1 overflow-hidden relative">
         {activeTab === 'home' && <HomeFeed />}
         {activeTab === 'chat' && <ChatWindow onBack={() => setActiveTab('home')} />}
@@ -54,11 +58,12 @@ export default function App() {
         {activeTab === 'settings' && <Preferences />}
         {activeTab === 'reels' && (
           <div className="h-full flex items-center justify-center bg-black">
-              <p className="text-gray-500 font-bold tracking-widest uppercase">TriNetra Reels Engine Active</p>
+              <p className="text-gray-500 font-bold tracking-widest uppercase">TriNetra Reels Active</p>
           </div>
         )}
       </main>
 
+      {/* 📱 NAVIGATION */}
       <nav className="absolute bottom-0 w-full bg-[#111827]/90 backdrop-blur-md border-t border-cyan-500/20 flex justify-around py-2 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
           <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-cyan-400 scale-110' : 'text-gray-500'}`}><Home size={24}/><span className="text-[8px] uppercase font-bold">Home</span></button>
           <button onClick={() => setActiveTab('reels')} className={`flex flex-col items-center gap-1 ${activeTab === 'reels' ? 'text-cyan-400 scale-110' : 'text-gray-500'}`}><PlaySquare size={24}/><span className="text-[8px] uppercase font-bold">Reels</span></button>
