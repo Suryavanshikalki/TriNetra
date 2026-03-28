@@ -2,14 +2,25 @@
   "name": "trinetra-web-server",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "start": "npx serve -s build -l 3000 --no-clipboard"
+    "dev": "vite",
+    "start": "npx serve -s dist -l 3000",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "lucide-react": "^0.263.1",
     "@zegocloud/zego-uikit-prebuilt": "^2.11.0",
-    "socket.io-client": "^4.7.2"
+    "socket.io-client": "^4.7.2",
+    "axios": "^1.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "vite": "^4.4.5"
   }
 }
