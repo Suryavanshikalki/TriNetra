@@ -1,13 +1,14 @@
 {
   "name": "trinetra-super-app-final",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "start": "node backend/server.js",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "render-build": "npm install && npm run build && cd backend && npm install && cd .. && cp -r dist backend/dist"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -24,12 +25,18 @@
     "aws-sdk": "^2.1467.0",
     "paypal-rest-sdk": "^1.8.1",
     "@sentry/node": "^7.73.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "react-router-dom": "^6.15.0",
+    "framer-motion": "^10.16.4",
+    "multer": "^1.4.5-lts.1",
+    "jsonwebtoken": "^9.0.1",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",
-    "vite": "^4.4.5"
+    "vite": "^4.4.5",
+    "vite-plugin-pwa": "^0.16.4"
   }
 }
