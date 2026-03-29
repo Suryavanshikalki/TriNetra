@@ -1,5 +1,6 @@
 // ==========================================
-// TRINETRA SUPER APP - FINAL MASTER BACKEND V5.2
+// TRINETRA SUPER APP - FINAL MASTER BACKEND V5.3
+// File: backend/server.js (Economy Integrated)
 // ==========================================
 const express = require('express');
 const cors = require('cors');
@@ -10,7 +11,6 @@ const { Server } = require('socket.io');
 const Razorpay = require('razorpay');
 const path = require('path'); 
 
-// 🚀 Naye Master Packages
 const AWS = require('aws-sdk');
 const paypal = require('paypal-rest-sdk');
 const Sentry = require('@sentry/node');
@@ -18,6 +18,10 @@ require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+
+// 👁️🔥 TRINETRA CONTROLLERS IMPORT
+// Aapki di hui payment controller file yahan import ho rahi hai
+const paymentController = require('./controllers/paymentController');
 
 // --- 0. SENTRY (CRASH TRACKING) ---
 Sentry.init({ dsn: process.env.SENTRY_DSN });
@@ -55,20 +59,21 @@ const UserSchema = new mongoose.Schema({
   profilePic: String, coverPic: String, bio: String, avatar: String,
   walletBalance: { type: Number, default: 0 },
   aiChatbotCredits: { type: Number, default: 8 },  
-  agenticCredits: { type: Number, default: 20 },   
+  agenticCredits: { type: Number, default: 20 },
+  osCredits: { type: Number, default: 0 },   
+  isPaidChatbot: { type: Boolean, default: false },
   osCreationAccess: { type: Boolean, default: false },
   followers: [String], following: [String], blocked: [String],
   privacy: { lastSeen: Boolean, onlineStatus: Boolean, profileLocked: Boolean },
   activeBoostPlan: { type: String, default: 'None' }, 
   activeBoostExpiry: Date
 });
-// 👁️ Search Indexing for Facebook style search
 UserSchema.index({ trinetraId: "text", phone: "text", email: "text", bio: "text" });
 const User = mongoose.model('User', UserSchema);
 
 const PostSchema = new mongoose.Schema({
   userId: String, content: String, mediaUrl: String, mediaType: String,
-  boostType: { type: String, enum: ['None', 'Free', 'Paid', 'Paid+Monetized', 'Pro'], default: 'None' },
+  boostType: { type: String, enum: ['None', 'FreeBoost', 'PaidBoost', 'PaidBoostMonetization', 'ProAutoBoost'], default: 'None' },
   likes: { type: Number, default: 0 }, comments: Array, category: String,
   createdAt: { type: Date, default: Date.now }
 });
@@ -82,11 +87,19 @@ const ComplaintSchema = new mongoose.Schema({
 });
 const Complaint = mongoose.model('Complaint', ComplaintSchema);
 
+// Aapke Transaction Schema ka basic structure jo controller me use hua hai
+const TransactionSchema = new mongoose.Schema({
+    userId: String, type: String, amount: Number, planType: String, 
+    months: Number, status: String, paymentMethod: String,
+    triNetraShare: Number, userShare: Number, isNoDiscountApplied: Boolean,
+    createdAt: { type: Date, default: Date.now }
+});
+const Transaction = mongoose.model('Transaction', TransactionSchema);
+
 // --- 4. GATEKEEPER API (LOGIN) ---
 app.post('/api/auth/login', async (req, res) => {
   const { authId, provider } = req.body;
   if(!authId) return res.status(400).json({ error: "Auth ID required." });
-  
   let user = await User.findOne({ $or: [{ phone: authId }, { email: authId }] });
   if (!user) {
     user = new User({ trinetraId: `TRN${Date.now()}`, [provider === 'Phone' ? 'phone' : 'email']: authId, provider });
@@ -95,38 +108,16 @@ app.post('/api/auth/login', async (req, res) => {
   res.json({ success: true, user, isDevMode: provider === 'GitHub' });
 });
 
-// --- 5. THE ECONOMY (RAZORPAY & PAYPAL) ---
+// --- 5. THE ECONOMY (RAZORPAY & PAYPAL & YOUR CONTROLLER) ---
 const razorpay = new Razorpay({ 
   key_id: process.env.RAZORPAY_KEY, 
   key_secret: process.env.RAZORPAY_SECRET 
 });
 
-const PRICING = {
-    chatbot: { 1: 1499, 3: 4199, 6: 7999, 9: 11499, 12: 14999 },
-    agentic: { 1: 5999, 3: 16999, 6: 31999, 9: 45999, 12: 59999 },
-    os_creation: { 1: 49999 },
-    pro_boost: { 1: 10000 },
-    paid_boost: { 1: 999, 3: 2499, 6: 4499, 9: 6499, 12: 8999 },
-    paid_boost_monetize: { 1: 1999, 3: 5499, 6: 9999, 9: 14499, 12: 18999 }
-};
-
-// 💰 Recharge API with Auto-Credit Update logic
-app.post('/api/payment/recharge', async (req, res) => {
-    try {
-        const { type, months, userId } = req.body;
-        let amount = PRICING[type][months];
-        if(!amount) return res.status(400).json({ error: "Invalid Plan" });
-
-        const order = await razorpay.orders.create({ amount: amount * 100, currency: "INR" });
-        
-        // Logic for auto-updating user (Usually called after payment verification)
-        const expiryDate = new Date();
-        expiryDate.setMonth(expiryDate.now() + months);
-        // ... (Payment success logic remains same)
-
-        res.json({ success: true, order });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
+// 🚀 Yahan aapke Payment Controller ko Routes ke saath joda gaya hai
+app.post('/api/payment/recharge', paymentController.createRechargeOrder);
+app.post('/api/payment/verify', paymentController.verifyPayment);
+app.get('/api/payment/wallet', paymentController.getWalletInfo);
 
 // --- 6. AUTO-ESCALATION SYSTEM ---
 app.post('/api/complaint/escalate', async (req, res) => {
@@ -142,13 +133,11 @@ app.post('/api/complaint/escalate', async (req, res) => {
   res.json({ success: false, message: "Max level reached." });
 });
 
-// --- 7. REAL-TIME CHAT (Mutual Follower Rule Applied) ---
+// --- 7. REAL-TIME CHAT (Mutual Follower Rule) ---
 io.on('connection', (socket) => {
   socket.on('send_message', async (data) => {
-    // 🛡️ SECURITY: Only allow if following each other
     const sender = await User.findOne({ trinetraId: data.senderId });
     const receiver = await User.findOne({ trinetraId: data.receiverId });
-    
     if(sender && receiver && sender.following.includes(data.receiverId) && receiver.following.includes(data.senderId)) {
         io.emit('receive_message', data); 
     }
@@ -169,15 +158,12 @@ app.get('/api/search', async (req, res) => {
 app.use(Sentry.Handlers.errorHandler());
 
 // ==========================================
-// 🚀 10. FRONTEND LINKING & DEPLOYMENT FIX (UPDATED)
+// 🚀 10. FRONTEND LINKING (RENDER FIX)
 // ==========================================
-
 app.get('/api/status', (req, res) => res.send('TriNetra V5 Master Backend Live 👁️🔥'));
 
-// 👁️ YAHAN RASTA THEEK KIYA GAYA HAI ('../dist' kiya gaya hai)
 const frontendPath = path.join(__dirname, '../dist');
 app.use(express.static(frontendPath));
-
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
