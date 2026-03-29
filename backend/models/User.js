@@ -1,76 +1,56 @@
-// File: backend/models/User.js
-const mongoose = require('mongoose');
+// ==========================================
+// TRINETRA BACKEND - USER MODEL (File 4)
+// Blueprint: Point 2, 3, 6, 11
+// ==========================================
+import mongoose from 'mongoose';
 
-const UserSchema = new mongoose.Schema({
-  // ==========================================
-  // 🛡️ PURANA CODE (BINA KUCHH HATAYE)
-  // ==========================================
-  trinetraId: { type: String, unique: true, required: true },
-  phone: String,
-  email: String,
-  provider: String, // Phone, Email, Google, Apple, Microsoft, GitHub
-  profilePic: String,
-  coverPic: String,
-  bio: String,
-  avatar: String, // Path or ID for 3D Avatar (Point 3)
+const userSchema = new mongoose.Schema({
+  // Point 2: Permanent TriNetra ID (TRN-YYYY-XXXXX)
+  trinetraId: { type: String, required: true, unique: true, index: true },
+  
+  name: { type: String, required: true },
+  bio: { type: String, default: "TriNetra User" },
+  profilePic: { type: String, default: "" },
+  coverPic: { type: String, default: "" },
+
+  // Point 2: 5 Login Methods + GitHub Rule
+  authProvider: { type: String, enum: ['phone', 'email', 'google', 'apple', 'microsoft', 'github'], required: true },
+  authId: { type: String, required: true, unique: true },
+  isAIOnly: { type: Boolean, default: false }, // GitHub login restricts to AI only
+
+  // Point 3: Connection Rules
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
+  // Point 6-10: Economy & Boosts (STRICTLY 5 Gateways)
   walletBalance: { type: Number, default: 0 },
-  followers: [String], // Array of TriNetra IDs (Mutual Connection Rule)
-  following: [String],
-  blocked: [String],
+  preferredGateway: { 
+    type: String, 
+    enum: ['PayU', 'Braintree', 'Paddle', 'Adyen', 'PayPal'], 
+    default: 'PayPal' 
+  },
 
-  // ==========================================
-  // 🚀 NAYA CODE (12-Point Blueprint Logic)
-  // ==========================================
+  // Point 11: Master AI (6-in-1 Brain) Subscription
+  aiProfile: {
+    modeA_freeMessagesLimit: { type: Number, default: 8 }, // Daily Reset handled by CRON
+    modeB_credits: { type: Number, default: 20 }, // One-time 20 free
+    modeC_credits: { type: Number, default: 0 }, // Super Agentic: 900 credits
+    isPaidSubscriber: { type: Boolean, default: false },
+  },
 
-  // 1. 🌍 Multilanguage Support (Point 13 & E)
-  // Yahan user ki pasand ki bhasha save hogi (Default: Hindi)
-  preferredLanguage: { type: String, default: 'hi' },
-
-  // 2. 🧠 Master AI System Logic (Point 11)
-  // Mode A: Chatbot
-  isPaidChatbot: { type: Boolean, default: false }, // True = Unlimited, False = 8 Limit
-  dailyAiLimit: { type: Number, default: 8 }, // Reset hone wala counter
-  lastAiReset: { type: Date, default: Date.now }, // Daily reset check karne ke liye
-  
-  // Mode B: Agentic AI
-  agenticCredits: { type: Number, default: 20 }, // One-time 20 credits for Free users
-  isPaidAgentic: { type: Boolean, default: false }, // Recharge karne par 500 milega ya nahi
-  
-  // OS Creation Tier (Ultimate Tier)
-  osCreationAccess: { type: Boolean, default: false }, 
-  osCredits: { type: Number, default: 0 }, // 2500 Credits for OS Builder
-
-  // 3. 🛡️ Gatekeeper Security (Point 2)
-  // GitHub se login karne walo ko Social features se lock karne ke liye
-  isGithubUser: { type: Boolean, default: false }, 
-  isProfessionalMode: { type: Boolean, default: false }, // Screen 6 - Creator Access
-
-  // 4. 💰 The Economy (Point 7-10)
-  activeBoostPlan: { type: String, enum: ['None', 'Free', 'Paid', 'PaidMonetized', 'Pro'], default: 'None' },
-  activeBoostExpiry: Date,
-  payoutHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
-
-  // 5. 🔒 Privacy & Safety (Point 3 & G)
-  privacy: {
-    lastSeen: { type: Boolean, default: true },
-    onlineStatus: { type: Boolean, default: true },
-    profileLocked: { type: Boolean, default: false },
-    twoFactorAuth: { type: Boolean, default: false } // Security upgrade
+  // Point 12: Privacy & Preferences Settings
+  preferences: {
+    language: { type: String, default: 'en' },
+    reactions: { type: Boolean, default: true },
+    accessibility: { type: Boolean, default: false },
+    whatsappSync: { type: Boolean, default: false }
+  },
+  permissions: {
+    cameraRollSharing: { type: Boolean, default: true },
+    adsInContent: { type: Boolean, default: false },
+    activeStatus: { type: Boolean, default: true }
   }
-
 }, { timestamps: true });
 
-// Pre-save hook to ensure daily reset for AI credits (Point 11)
-UserSchema.pre('save', function(next) {
-  const now = new Date();
-  const lastReset = new Date(this.lastAiReset);
-  
-  // Agar din badal gaya hai, to free credits reset kar do (8 msg rule)
-  if (now.toDateString() !== lastReset.toDateString()) {
-    this.dailyAiLimit = 8;
-    this.lastAiReset = now;
-  }
-  next();
-});
-
-module.exports = mongoose.model('User', UserSchema);
+export default mongoose.model('User', userSchema);
