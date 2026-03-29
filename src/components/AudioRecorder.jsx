@@ -1,33 +1,84 @@
-// File: src/components/AudioRecorder.jsx
-import React, { useState, useEffect } from 'react';
-import { Trash2, Send, Mic } from 'lucide-react';
+// ==========================================
+// TRINETRA SUPER APP - AUDIO RECORDER (File 31)
+// Exact File Path: src/components/AudioRecorder.jsx
+// Blueprint Point: 4 & 5 - Real Mic / Voice Note Support
+// ==========================================
+import React, { useState, useRef } from 'react';
+import { Mic, Square, Trash2, Send, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import axios from 'axios';
 
-export default function AudioRecorder({ onSend, onCancel }) {
-  const [seconds, setSeconds] = useState(0);
+export default function AudioRecorder({ onUploadSuccess, userId }) {
+  const { t } = useTranslation();
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const mediaRecorderRef = useRef(null);
 
-  useEffect(() => {
-    const timer = setInterval(() => setSeconds(s => s + 1), 1000);
-    return () => clearInterval(timer);
-  }, []);
+  // 100% Real Mic Access & Recording
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      const chunks = [];
+
+      mediaRecorderRef.current.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/mpeg' });
+        setAudioBlob(blob);
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (err) { alert(t("Mic access denied.")); }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current.stop();
+    setIsRecording(false);
+  };
+
+  const deleteRecording = () => setAudioBlob(null);
+
+  // 100% Real Upload to TriNetra AWS S3
+  const uploadVoiceNote = async () => {
+    if (!audioBlob) return;
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append('media', audioBlob, `voice_note_${Date.now()}.mp3`);
+    formData.append('userId', userId);
+    formData.append('uploadType', 'voice_note');
+
+    try {
+      const res = await axios.post('https://trinetra-umys.onrender.com/api/chat/upload-media', formData);
+      onUploadSuccess(res.data.url);
+      setAudioBlob(null);
+    } catch (err) { alert(t("Failed to upload Voice Note.")); }
+    finally { setIsUploading(false); }
+  };
 
   return (
-    <div className="flex-1 bg-gray-800 rounded-full flex items-center px-4 py-2 space-x-3 justify-between">
-      <div className="flex items-center text-red-500 animate-pulse">
-        <Mic size={16} className="mr-2" />
-        <span className="font-mono text-sm">
-          {Math.floor(seconds / 60)}:{(seconds % 60).toString().padStart(2, '0')}
-        </span>
-      </div>
-      
-      {/* Mock Waveform */}
-      <div className="flex-1 flex items-center space-x-1 px-4 opacity-50">
-        {[1,2,3,4,5,6].map(i => <div key={i} className="w-1 h-3 bg-green-500 rounded-full"></div>)}
-      </div>
-
-      <div className="flex items-center space-x-4">
-        <Trash2 onClick={onCancel} size={20} className="text-gray-400 cursor-pointer hover:text-red-500" />
-        <Send onClick={() => onSend('audio_data')} size={20} className="text-green-500 cursor-pointer" />
-      </div>
+    <div className="flex items-center gap-3 bg-[#111827] p-2 rounded-2xl border border-gray-800 shadow-xl">
+      {!audioBlob ? (
+        <button 
+          onClick={isRecording ? stopRecording : startRecording}
+          className={`p-4 rounded-full transition-all ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-cyan-500 text-black'}`}
+        >
+          {isRecording ? <Square size={20} /> : <Mic size={20} />}
+        </button>
+      ) : (
+        <div className="flex items-center gap-4 px-2">
+          <button onClick={deleteRecording} className="text-red-500 hover:text-red-400"><Trash2 size={20}/></button>
+          <div className="h-2 w-24 bg-cyan-900 rounded-full overflow-hidden">
+             <div className="h-full bg-cyan-400 w-full animate-pulse"></div>
+          </div>
+          <button onClick={uploadVoiceNote} disabled={isUploading} className="bg-cyan-500 p-3 rounded-xl text-black">
+            {isUploading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+          </button>
+        </div>
+      )}
+      {isRecording && <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">{t("Recording...")}</span>}
     </div>
   );
 }
