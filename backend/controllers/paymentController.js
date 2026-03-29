@@ -1,132 +1,100 @@
-// File: backend/controllers/paymentController.js
-const User = require('../models/User');
-const Transaction = require('../models/Transaction');
+// ==========================================
+// TRINETRA BACKEND - ECONOMY CONTROLLER (File 11)
+// Blueprint: Point 6 to 10 (4 Boosts, 5 Gateways, No Razorpay)
+// ==========================================
+import User from '../models/User.js';
 
-/**
- * 👁️🔥 TRINETRA ECONOMY CONTROLLER (The Money Hub)
- * Points 6-11: Monetization, Boost, Wallet & AI Credits logic.
- */
+// The 5 Officially Sanctioned Gateways
+const ALLOWED_GATEWAYS = ['PayU', 'Braintree', 'Paddle', 'Adyen', 'PayPal'];
 
-// 1. Order Creation (Razorpay/PayPal)
-exports.createRechargeOrder = async (req, res) => {
-  // Logic to interact with Razorpay/PayPal API goes here
-  res.status(200).json({ success: true, orderId: `TRINETRA_RZP_${Date.now()}` });
+export const processPayment = async (req, res) => {
+  try {
+    const { userId, amount, gateway, purpose } = req.body;
+
+    // Strict Rule: Reject Razorpay completely
+    if (gateway.toLowerCase() === 'razorpay') {
+      return res.status(403).json({ success: false, message: "Razorpay is PERMANENTLY banned on TriNetra." });
+    }
+
+    if (!ALLOWED_GATEWAYS.includes(gateway)) {
+      return res.status(400).json({ success: false, message: "Invalid Payment Gateway selected." });
+    }
+
+    // In a real app, you hit the actual Gateway API here (e.g., PayPal SDK)
+    // Assuming payment is successful from the gateway:
+
+    const user = await User.findOne({ trinetraId: userId });
+    
+    // Log Transaction & Add to User Wallet
+    user.walletBalance += amount;
+    user.transactions.push({
+      amount: amount,
+      type: 'credit',
+      gateway: gateway,
+      purpose: purpose || 'Wallet Deposit',
+      date: new Date()
+    });
+
+    await user.save();
+    console.log(`[ECONOMY] ₹${amount} added to ${userId} via ${gateway}`);
+
+    res.status(200).json({ success: true, balance: user.walletBalance, message: "Payment Successful" });
+  } catch (error) {
+    console.error(`[ECONOMY CRASH] ${error.message}`);
+    res.status(500).json({ success: false, message: "Payment Processing Failed" });
+  }
 };
 
-// 2. 🛡️ MASTER PAYMENT VERIFICATION (The 100% Blueprint Engine)
-exports.verifyPayment = async (req, res) => {
+// Point 7 to 10: The 4 Boost Models Logic
+export const applyBoost = async (req, res) => {
   try {
-    const { userId, type, months, paymentMethod } = req.body; 
-    
-    /**
-     * 💰 Point 7-11: Pricing & Split Rules
-     * triNetra: Percentage that stays with YOU.
-     * user: Percentage that goes to USER WALLET.
-     */
-    const pricingRules = {
-      // Point 4: Justice System
-      'AutoEscalation': { price: 20000, discountEligible: true, triNetra: 100, user: 0 },
-      
-      // Point 7: Free Boost (70/30 Split)
-      'FreeBoost': { price: 0, discountEligible: false, triNetra: 70, user: 30 }, 
-      
-      // Point 8: Paid Boost (25/75 Split)
-      'PaidBoost': { price: 5000, discountEligible: true, triNetra: 25, user: 75 },
-      
-      // Point 9: Paid Boost + Monetization (100% User)
-      'PaidBoostMonetization': { price: 7500, discountEligible: true, triNetra: 0, user: 100 },
-      
-      // Point 10: Pro Auto-Boost (Politics/Marketing - 30/70 Split)
-      'ProAutoBoost': { price: 10000, discountEligible: true, triNetra: 30, user: 70 },
-      
-      // Point 11: AI Master Brains (STRICTLY NO DISCOUNT)
-      'AIChatbotPaid': { price: 2000, discountEligible: false, credits: 'Unlimited', triNetra: 100, user: 0 },
-      'AIAgenticPaid': { price: 3999, discountEligible: false, credits: 500, triNetra: 100, user: 0 },
-      'OSCreationTier': { price: 69999, discountEligible: false, credits: 2500, triNetra: 100, user: 0 }
-    };
+    const { userId, postId, boostType, amountPaid } = req.body;
+    let trinetraShare = 0;
+    let userShare = 0;
 
-    const plan = pricingRules[type];
-    if (!plan) return res.status(400).json({ success: false, error: "Invalid Plan Detected. Transaction Aborted." });
-
-    // 🕒 Calculation Engine (Discounting Logic)
-    let baseAmount = plan.price * months;
-    let finalAmount = baseAmount;
-    let discountApplied = 0;
-
-    // Rule: 20% Off for 6/12 months, but NOT for AI Tiers (Point 11 restriction)
-    if (plan.discountEligible && (months === 6 || months === 12)) {
-        discountApplied = baseAmount * 0.20;
-        finalAmount = baseAmount - discountApplied;
+    // Model 1: Free Boost (Point 7)
+    if (boostType === 'Free_Boost') {
+      trinetraShare = 70; // 70% to Me
+      userShare = 30;     // 30% to User
+    } 
+    // Model 2: Paid Boost (Point 8)
+    else if (boostType === 'Paid_Boost') {
+      trinetraShare = 25; // 25% to Me
+      userShare = 75;     // 75% to User
+      // Deduct from wallet
+      await deductFromWallet(userId, amountPaid);
+    } 
+    // Model 3: Paid Boost + Monetization (Point 9)
+    else if (boostType === 'Paid_Monetization') {
+      trinetraShare = 0;  // 0% to Me
+      userShare = 100;    // 100% to User
+      await deductFromWallet(userId, amountPaid);
+    } 
+    // Model 4: Pro Auto-Boost ₹10,000/mo (Point 10)
+    else if (boostType === 'Pro_Auto') {
+      trinetraShare = 30; // 30% to Me
+      userShare = 70;     // 70% to User
+      await deductFromWallet(userId, amountPaid); // e.g., ₹10000
     }
 
-    // 💸 Point 6: Commission Split Math
-    // TriNetra (Your) Share vs User's Earning Share
-    let userShareAmount = (finalAmount * plan.user) / 100;
-    let triNetraShareAmount = (finalAmount * plan.triNetra) / 100;
+    console.log(`[BOOST APPLIED] ${boostType} active on post ${postId}. Share: Trinetra ${trinetraShare}% / User ${userShare}%`);
 
-    // 📝 Save Verified Transaction
-    const transaction = new Transaction({ 
-        userId, 
-        type: 'Recharge', 
-        amount: finalAmount, 
-        planType: type, 
-        months, 
-        status: 'Success', 
-        paymentMethod,
-        triNetraShare: triNetraShareAmount,
-        userShare: userShareAmount,
-        isNoDiscountApplied: !plan.discountEligible
-    });
-    await transaction.save();
-    
-    // 👤 Update User Wallet & AI Status (Point 6 & 11)
-    const user = await User.findById(userId);
-    if (user) {
-        // Earnings go to User Wallet (available for withdrawal)
-        user.walletBalance += userShareAmount;
-        
-        // AI Credit Update
-        if (type === 'AIChatbotPaid') user.isPaidChatbot = true;
-        if (type === 'AIAgenticPaid') user.agenticCredits += 500;
-        if (type === 'OSCreationTier') {
-            user.osCreationAccess = true;
-            user.osCredits += 2500;
-        }
-        
-        // Boost Plan Update
-        user.activeBoostPlan = type;
-        const expiryDate = new Date();
-        expiryDate.setMonth(expiryDate.getMonth() + months);
-        user.activeBoostExpiry = expiryDate;
-
-        await user.save();
-    }
-    
     res.status(200).json({ 
       success: true, 
-      message: "Transaction Verified. Funds allocated according to TriNetra rules.",
-      details: {
-        paid: finalAmount,
-        walletAdded: userShareAmount,
-        expiry: user.activeBoostExpiry
-      }
+      message: `${boostType} activated successfully.`,
+      revenueSplit: { trinetra: trinetraShare, user: userShare }
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, error: "Payment verification failed." });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 3. Wallet Management (Point 6: Payout History)
-exports.getWalletInfo = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    res.status(200).json({ 
-        success: true, 
-        balance: user.walletBalance,
-        currency: 'INR',
-        canWithdraw: user.walletBalance > 0
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: "Wallet data unavailable." });
-  }
+// Helper for deducting wallet
+const deductFromWallet = async (userId, amount) => {
+  const user = await User.findOne({ trinetraId: userId });
+  if (user.walletBalance < amount) throw new Error("Insufficient Wallet Balance");
+  user.walletBalance -= amount;
+  user.transactions.push({ amount, type: 'debit', gateway: 'Internal Wallet', purpose: 'Boost' });
+  await user.save();
 };
