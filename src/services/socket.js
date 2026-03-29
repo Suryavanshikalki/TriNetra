@@ -1,21 +1,31 @@
-// File: src/services/socket.js
+// ==========================================
+// TRINETRA SUPER APP - REAL-TIME SOCKET (File 35)
+// Point 5: Real WhatsApp 2.0 Engine
+// ==========================================
 import { io } from 'socket.io-client';
 
-// अपने बैकएंड का URL (बाद में इसे Render/AWS के लिंक से बदलेंगे)
-const SOCKET_URL = 'http://localhost:3000';
+// 100% REAL: Direct Connection to Render WebSocket
+const SOCKET_URL = 'https://trinetra-umys.onrender.com';
 
 export const socket = io(SOCKET_URL, {
-    autoConnect: false // जब यूज़र लॉगिन करेगा, तब कनेक्ट करेंगे
+  autoConnect: false, // Security check
+  reconnection: true,
+  reconnectionAttempts: 10,
+  transports: ['websocket'], // Faster & Stable
 });
 
-export const connectSocket = () => {
-    if (!socket.connected) {
-        socket.connect();
-    }
+// Helper for Chat Rooms (Point 5 Rule)
+export const joinChatRoom = (userId, friendId) => {
+  const roomId = [userId, friendId].sort().join('_');
+  socket.emit('join_room', roomId);
+  return roomId;
 };
 
-export const disconnectSocket = () => {
-    if (socket.connected) {
-        socket.disconnect();
-    }
+// Real-time Listeners
+export const onMessageReceived = (callback) => {
+  socket.on('receive_message', (data) => {
+    callback(data);
+  });
 };
+
+export default socket;
