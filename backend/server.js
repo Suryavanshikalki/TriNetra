@@ -169,13 +169,13 @@ app.get('/api/search', async (req, res) => {
 app.use(Sentry.Handlers.errorHandler());
 
 // ==========================================
-// 🚀 10. FRONTEND LINKING & DEPLOYMENT FIX 
+// 🚀 10. FRONTEND LINKING & DEPLOYMENT FIX (UPDATED)
 // ==========================================
 
 app.get('/api/status', (req, res) => res.send('TriNetra V5 Master Backend Live 👁️🔥'));
 
-// Path resolution fix
-const frontendPath = path.join(__dirname, 'dist');
+// 👁️ YAHAN RASTA THEEK KIYA GAYA HAI ('../dist' kiya gaya hai)
+const frontendPath = path.join(__dirname, '../dist');
 app.use(express.static(frontendPath));
 
 app.get('*', (req, res) => {
