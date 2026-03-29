@@ -1,12 +1,12 @@
 // ==========================================
 // TRINETRA SUPER APP - PRIVACY & SAFETY (File 25)
 // Exact File Path: src/screens/Settings/PrivacyCheckup.jsx
-// Blueprint Point: 12 (D & G) - 100% Combined & Real
+// Blueprint Point: 12 (D & G Combined) - 100% Real
 // ==========================================
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, ShieldCheck, Camera, Smartphone, Ban, Eye, 
-  ToggleLeft, ToggleRight, Loader2, ShieldAlert, CheckCircle, Lock
+  ToggleLeft, ToggleRight, Loader2, ShieldAlert, CheckCircle 
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -14,9 +14,8 @@ import axios from 'axios';
 export default function PrivacyCheckup({ currentUser, onBack }) {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
-  const [securityStatus, setSecurityStatus] = useState(null);
   
-  // Point 12G: Permissions/Safety States (Sab kuch yahan add kar diya hai)
+  // Point 12D & 12G Combined States
   const [permissions, setPermissions] = useState({
     cameraRollSharing: true,
     adsInContent: false,
@@ -30,13 +29,11 @@ export default function PrivacyCheckup({ currentUser, onBack }) {
     const fetchSecurityStatus = async () => {
       try {
         const res = await axios.get(`https://trinetra-umys.onrender.com/api/user/privacy-status?userId=${currentUser?.trinetraId}`);
-        if(res.data.success) {
-          setSecurityStatus(res.data.status);
-          // Agar backend se purana data milta hai to set karein
-          if(res.data.permissions) setPermissions(res.data.permissions);
+        if(res.data.success && res.data.permissions) {
+          setPermissions(res.data.permissions);
         }
       } catch (err) {
-        console.error("Privacy Checkup DB Connection Error");
+        console.error("Privacy Checkup DB Error");
       } finally {
         setIsLoading(false);
       }
@@ -57,7 +54,7 @@ export default function PrivacyCheckup({ currentUser, onBack }) {
         value: newVal
       });
     } catch (err) {
-      console.error("Permission sync failed with Master Engine");
+      console.error("Permission sync failed");
     }
   };
 
@@ -66,7 +63,7 @@ export default function PrivacyCheckup({ currentUser, onBack }) {
   return (
     <div className="flex flex-col h-full bg-[#0a1014] text-white font-sans fixed inset-0 z-50 overflow-y-auto">
       
-      {/* 100% Real Header as per Screenshot */}
+      {/* Real Header as per Screenshot */}
       <header className="p-4 bg-[#111827] flex items-center gap-4 border-b border-gray-800 shadow-lg sticky top-0 z-10">
         <ArrowLeft onClick={onBack} className="text-cyan-400 cursor-pointer active:scale-90" />
         <div>
@@ -121,7 +118,7 @@ export default function PrivacyCheckup({ currentUser, onBack }) {
               </button>
             </div>
 
-            {/* Blocking (Screenshot G Detail) */}
+            {/* Blocking (Point 12G) */}
             <div className="flex items-center justify-between p-4 hover:bg-[#1a2333] cursor-pointer" onClick={() => alert(t("Opening Blocked Profiles List..."))}>
               <div className="flex items-center gap-3">
                 <Ban size={20} className="text-red-500" />
@@ -155,24 +152,13 @@ export default function PrivacyCheckup({ currentUser, onBack }) {
               </button>
             </div>
 
-            {/* Login Alerts */}
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <ShieldAlert size={20} className="text-orange-400" />
-                <span className="text-sm font-medium">{t("Login alerts")}</span>
-              </div>
-              <button onClick={() => togglePermission('loginAlerts')}>
-                {permissions.loginAlerts ? <ToggleRight className="text-cyan-400" size={32} /> : <ToggleLeft className="text-gray-600" size={32} />}
-              </button>
-            </div>
-
           </div>
         </div>
 
-        {/* Screenshot G Technical Note */}
+        {/* Technical Safety Note */}
         <div className="p-4 bg-gray-900/50 rounded-xl border border-gray-800">
            <p className="text-[10px] text-gray-500 leading-relaxed text-center italic">
-             {t("Safety audit powered by AWS WAF & CloudWatch. Your permissions are stored in your Master TriNetra Profile and synced across 6 platforms.")}
+             {t("Safety audit powered by AWS WAF & CloudWatch. Your permissions are stored in your Master TriNetra Profile.")}
            </p>
         </div>
 
