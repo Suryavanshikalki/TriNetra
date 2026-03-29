@@ -1,26 +1,40 @@
-// File: src/services/zegoCloud.js
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 
-// Aapne text me jo keys di thi, wo yaha secure tarike se add hain
-const APP_ID = 1218908374;
-const SERVER_SECRET = "7308cd0113c93801130957698f292c8d";
+// 100% Real ZegoCloud Engine (Pulls Keys from your Live Environment)
+export const generateZegoToken = (roomID, userID, userName) => {
+  // Your real Zego App ID and Server Secret will come from Render .env
+  const appID = Number(import.meta.env.VITE_ZEGO_APP_ID); 
+  const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
 
-export const generateZegoToken = (roomId, userId, userName) => {
-    return ZegoUIKitPrebuilt.generateKitTokenForTest(
-        APP_ID, 
-        SERVER_SECRET, 
-        roomId, 
-        userId, 
-        userName
-    );
+  if (!appID || !serverSecret) {
+    console.error("TriNetra Zego Error: Missing Live Keys");
+    return null;
+  }
+
+  // Generate Kit Token for Real Call
+  const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+    appID,
+    serverSecret,
+    roomID,
+    userID,
+    userName
+  );
+
+  return kitToken;
 };
 
-export const startZegoCall = (element, token, isVideoCall) => {
-    const zp = ZegoUIKitPrebuilt.create(token);
-    zp.joinRoom({
-        container: element,
-        turnOnCameraWhenJoining: isVideoCall,
-        showPreJoinView: false,
-    });
-    return zp;
+// Real Call Initializer
+export const startZegoCall = (element, kitToken, isVideoCall) => {
+  const zp = ZegoUIKitPrebuilt.create(kitToken);
+  zp.joinRoom({
+    container: element,
+    scenario: {
+      mode: ZegoUIKitPrebuilt.OneONoneCall, // WhatsApp style 1-on-1
+    },
+    turnOnMicrophoneWhenJoining: true,
+    turnOnCameraWhenJoining: isVideoCall,
+    showPreJoinView: false,
+    showLeavingView: false,
+  });
+  return zp;
 };
