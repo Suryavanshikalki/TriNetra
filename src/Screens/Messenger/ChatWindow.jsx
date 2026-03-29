@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import io from 'socket.io-client';
 import axios from 'axios';
 
-// 100% Real Socket Connection to TriNetra Backend
-const socket = io('https://trinetra-umys.onrender.com');
+// 100% Real Socket Connection to your Render Node Server
+const socket = io('https://trinetra-umys.onrender.com', { autoConnect: true });
 
 export default function ChatWindow({ currentUser, friend, onBack, onStartCall }) {
   const { t } = useTranslation();
@@ -15,9 +15,9 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
   const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Load Real Chat History
+  // 100% Real Socket Room & DB History Fetch
   useEffect(() => {
-    const fetchChatHistory = async () => {
+    const fetchHistory = async () => {
       try {
         const res = await axios.post('https://trinetra-umys.onrender.com/api/chat/history', {
           user1: currentUser.trinetraId,
@@ -25,31 +25,26 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
         });
         if(res.data.success) setMessages(res.data.messages);
       } catch (err) {
-        console.error(t("Failed to load history"));
+        console.error("Chat DB Offline");
       }
     };
-    fetchChatHistory();
+    fetchHistory();
 
-    // Socket: Join Private Room
     const room = [currentUser.trinetraId, friend.trinetraId].sort().join('_');
     socket.emit('join_room', room);
 
-    // Socket: Listen for incoming messages
     socket.on('receive_message', (data) => {
       setMessages((prev) => [...prev, data]);
     });
 
-    return () => {
-      socket.off('receive_message');
-    };
-  }, [currentUser, friend, t]);
+    return () => socket.off('receive_message');
+  }, [currentUser, friend]);
 
-  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Real Message Sender
+  // 100% Real Message Sender
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!msgInput.trim()) return;
@@ -64,20 +59,18 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
       timestamp: new Date().toISOString()
     };
 
-    // Emit to real-time socket
     socket.emit('send_message', messageData);
     setMessages((prev) => [...prev, messageData]);
     setMsgInput('');
 
-    // Save to DB via API
     try {
       await axios.post('https://trinetra-umys.onrender.com/api/chat/save', messageData);
     } catch (err) {
-      console.error(t("Failed to save to DB"));
+      console.error("Message DB save failed");
     }
   };
 
-  // Real S3 Media Uploader + Universal Download Rule
+  // 100% Real Media Upload to AWS S3 & Socket emit
   const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -107,15 +100,14 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
       socket.emit('send_message', messageData);
       setMessages((prev) => [...prev, messageData]);
       await axios.post('https://trinetra-umys.onrender.com/api/chat/save', messageData);
-
     } catch (err) {
-      alert(t("Media upload failed."));
+      console.error(t("Upload failed"));
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Real Universal Download Function
+  // Real Original Quality Download Trigger
   const downloadMedia = (mediaUrl) => {
     if (!mediaUrl) return;
     const link = document.createElement('a');
@@ -129,8 +121,6 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
 
   return (
     <div className="flex flex-col h-full bg-[#0a1014] text-white fixed inset-0 z-[60] font-sans">
-      
-      {/* Header with Real Calling Triggers */}
       <header className="p-4 bg-[#111827] flex justify-between items-center border-b border-gray-800 shadow-lg">
         <div className="flex items-center gap-3">
           <ArrowLeft onClick={onBack} className="text-cyan-400 cursor-pointer active:scale-90" />
@@ -139,35 +129,26 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
           </div>
           <div>
             <h4 className="font-bold text-sm tracking-wide">{friend.name}</h4>
-            <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">{friend.isOnline ? t("Online") : t("Offline")}</p>
           </div>
         </div>
+        {/* Real Audio / Video Call Triggers (Point 5) */}
         <div className="flex items-center gap-5 text-cyan-400">
           <Phone onClick={() => onStartCall(friend, 'Voice')} size={20} className="active:scale-90 transition-transform cursor-pointer" />
           <Video onClick={() => onStartCall(friend, 'Video')} size={20} className="active:scale-90 transition-transform cursor-pointer" />
         </div>
       </header>
 
-      {/* Real Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((m, index) => {
           const isMe = m.senderId === currentUser.trinetraId;
           return (
             <div key={index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full`}>
               <div className={`p-3 max-w-[80%] shadow-lg ${isMe ? 'bg-cyan-600 text-black rounded-2xl rounded-tr-none' : 'bg-[#111827] text-white border border-gray-800 rounded-2xl rounded-tl-none'}`}>
                 
-                {/* Media Renderer with Universal Download */}
                 {m.mediaUrl && (
                   <div className="w-48 h-48 bg-black rounded-lg mb-2 overflow-hidden relative group border border-black/20">
-                    {m.mediaType === 'image' ? (
-                      <img src={m.mediaUrl} className="w-full h-full object-cover" alt="media" />
-                    ) : (
-                      <div className="flex items-center justify-center w-full h-full text-cyan-400"><FileText size={40}/></div>
-                    )}
-                    <button 
-                      onClick={() => downloadMedia(m.mediaUrl)}
-                      className="absolute top-2 right-2 bg-black/80 p-1.5 rounded-lg border border-white/20 text-white hover:text-cyan-400 backdrop-blur-md"
-                    >
+                    {m.mediaType === 'image' ? <img src={m.mediaUrl} className="w-full h-full object-cover" alt="media" /> : <div className="flex items-center justify-center w-full h-full text-cyan-400"><FileText size={40}/></div>}
+                    <button onClick={() => downloadMedia(m.mediaUrl)} className="absolute top-2 right-2 bg-black/80 p-1.5 rounded-lg border border-white/20 text-white hover:text-cyan-400 backdrop-blur-md">
                       <Download size={16} />
                     </button>
                   </div>
@@ -185,15 +166,12 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       <div className="p-4 bg-[#111827] border-t border-gray-800">
         <form onSubmit={sendMessage} className="flex items-center gap-3 relative">
-          
           <div className="relative">
             <button type="button" onClick={() => setShowAttach(!showAttach)} className={`p-2 rounded-full transition-all ${showAttach ? 'bg-cyan-500 text-black rotate-45' : 'bg-gray-800 text-cyan-400'}`}>
               <Plus size={24} />
             </button>
-            
             {showAttach && (
               <div className="absolute bottom-14 left-0 bg-[#111827] border border-gray-800 p-3 rounded-2xl flex gap-4 shadow-2xl">
                 <label className="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform">
@@ -211,13 +189,7 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
           </div>
 
           <div className="flex-1 bg-[#0a1014] border border-gray-800 rounded-2xl flex items-center px-4 py-1 focus-within:border-cyan-500 transition-all">
-            <input 
-              type="text" 
-              placeholder={t("Type message...")}
-              className="bg-transparent w-full py-2 text-sm focus:outline-none"
-              value={msgInput}
-              onChange={(e) => setMsgInput(e.target.value)}
-            />
+            <input type="text" placeholder={t("Type message...")} className="bg-transparent w-full py-2 text-sm focus:outline-none" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />
             {msgInput.length === 0 ? (
                <label className="cursor-pointer text-gray-500 hover:text-cyan-400"><Mic size={20}/><input type="file" accept="audio/*" className="hidden" onChange={(e) => handleFileUpload(e, 'audio')} /></label>
             ) : (
