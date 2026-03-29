@@ -1,23 +1,39 @@
-// ==========================================
-// TRINETRA SUPER APP - MASTER AI HUB (File 18)
-// Blueprint Point 11: 6-in-1 Brain, Mode A, B, C & OS Creation
-// ==========================================
-import React, { useState } from 'react';
-import { BrainCircuit, Cpu, Zap, Globe, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BrainCircuit, Cpu, Zap, Globe, Lock, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 
-const t = (text) => text;
-
-export default function AIHub({ userCredits = { chatbot: 8, agentic: 20, superAgentic: 900 } }) {
+export default function MasterAIHub({ currentUser, onLaunchAI }) {
+  const { t } = useTranslation();
   const [selectedMode, setSelectedMode] = useState(null);
+  const [userCredits, setUserCredits] = useState({ chatbot: 8, agentic: 20, superAgentic: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isActivating, setIsActivating] = useState(false);
 
-  // 100% Real Blueprint Pricing & Modes
+  // 100% Real Fetch: Checking User's Current AI Credits from DB
+  useEffect(() => {
+    const fetchAICredits = async () => {
+      try {
+        const res = await axios.get(`https://trinetra-umys.onrender.com/api/ai/credits?userId=${currentUser?.trinetraId}`);
+        if (res.data.success) {
+          setUserCredits(res.data.credits);
+        }
+      } catch (err) {
+        console.error("AI Engine Offline");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (currentUser?.trinetraId) fetchAICredits();
+  }, [currentUser]);
+
+  // Point 11: Real Blueprint Pricing & Modes
   const aiModes = [
     {
       id: 'ModeA',
       name: 'Mode A: Chatbot AI',
       level: '(GPT / Gemini / DeepSeek / Meta)',
-      credits: userCredits.chatbot === 'Unlimited' ? 'Unlimited' : `${userCredits.chatbot} msgs left`,
+      credits: userCredits.chatbot === -1 ? 'Unlimited' : `${userCredits.chatbot} msgs left`,
       desc: 'Free Lifetime Meta AI basics. Free Premium (8 msgs). Paid for Unlimited.',
       icon: <BrainCircuit size={28} className="text-cyan-400" />,
       color: 'border-cyan-500/50 hover:border-cyan-400 bg-cyan-500/10'
@@ -44,23 +60,45 @@ export default function AIHub({ userCredits = { chatbot: 8, agentic: 20, superAg
       id: 'OSMode',
       name: 'OS Creation Tier',
       level: '(Ultimate Power)',
-      credits: 'Restricted',
+      credits: 'Restricted Access',
       desc: 'Most expensive plan. Build a full Operating System using AI.',
       icon: <Lock size={28} className="text-red-400" />,
       color: 'border-red-500/50 hover:border-red-400 bg-red-500/10'
     }
   ];
 
-  const handleLaunchAI = () => {
-    if (!selectedMode) return alert(t("Select an AI Mode first."));
-    // Real logic: Route to File 19 (AIChatbot.jsx) with selected mode context
-    alert(t(`Launching ${selectedMode}. The 6-in-1 background engine will auto-switch models.`));
+  // Real Initialization Logic
+  const handleLaunchAI = async () => {
+    if (!selectedMode) return;
+    
+    // Check if user has credits for the selected mode
+    const modeKey = selectedMode === 'ModeA' ? 'chatbot' : selectedMode === 'ModeB' ? 'agentic' : 'superAgentic';
+    if (selectedMode !== 'OSMode' && userCredits[modeKey] === 0) {
+       alert(t("Insufficient credits. Please recharge your AI Wallet."));
+       return;
+    }
+
+    setIsActivating(true);
+    try {
+      // Real API hitting your TriNetra Backend to warm up the 6-in-1 AI models
+      await axios.post('https://trinetra-umys.onrender.com/api/ai/initialize', {
+        userId: currentUser?.trinetraId,
+        mode: selectedMode
+      });
+      onLaunchAI(selectedMode); // Opens the AIChatWindow (File 19)
+    } catch (err) {
+      alert(t("Failed to connect to the Master 6-in-1 Brain."));
+    } finally {
+      setIsActivating(false);
+    }
   };
 
+  if (isLoading) return <div className="flex h-full items-center justify-center bg-[#0a1014]"><Loader2 size={40} className="text-cyan-500 animate-spin" /></div>;
+
   return (
-    <div className="flex flex-col h-full bg-[#0a1014] text-white font-sans overflow-y-auto multilanguage-container p-4">
+    <div className="flex flex-col h-full bg-[#0a1014] text-white font-sans overflow-y-auto p-4">
       
-      {/* 🧠 Header - Alag Pehchan (Point 11) */}
+      {/* Header - Alag Pehchan (Point 11) */}
       <div className="text-center mb-8 mt-6">
         <div className="inline-block p-5 rounded-full bg-black border-2 border-cyan-500 shadow-[0_0_40px_rgba(6,182,212,0.4)] mb-4">
             <Zap size={40} className="text-cyan-400 animate-pulse" />
@@ -73,19 +111,19 @@ export default function AIHub({ userCredits = { chatbot: 8, agentic: 20, superAg
         </p>
       </div>
 
-      {/* 🎛️ AI Modes Selection */}
+      {/* AI Modes Selection */}
       <div className="space-y-4 mb-24">
         {aiModes.map((mode) => (
           <div 
             key={mode.id}
             onClick={() => setSelectedMode(mode.id)}
-            className={`relative p-5 rounded-2xl border cursor-pointer transition-all active:scale-95 overflow-hidden ${mode.color} ${selectedMode === mode.id ? 'shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-[1.02] border-opacity-100' : 'opacity-80'}`}
+            className={`relative p-5 rounded-2xl border cursor-pointer transition-all active:scale-95 overflow-hidden ${mode.color} ${selectedMode === mode.id ? 'shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-[1.02] border-opacity-100' : 'opacity-80 border-gray-800'}`}
           >
             <div className="flex gap-4 items-start">
                 <div className="mt-1 bg-[#0a1014] p-2 rounded-xl border border-gray-800">{mode.icon}</div>
                 <div>
                     <h3 className="font-black text-lg tracking-wide">{t(mode.name)}</h3>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-2">{mode.level}</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-2">{t(mode.level)}</p>
                     
                     <span className="inline-block bg-black/60 border border-gray-700 px-2 py-1 rounded text-[10px] font-bold text-white mb-2 tracking-widest">
                         {t(mode.credits)}
@@ -98,13 +136,14 @@ export default function AIHub({ userCredits = { chatbot: 8, agentic: 20, superAg
         ))}
       </div>
 
-      {/* 🚀 Launch Button */}
+      {/* Launch Button */}
       <div className="fixed bottom-0 left-0 w-full p-4 bg-[#0a1014]/90 backdrop-blur-md border-t border-gray-800 pb-20">
         <button 
           onClick={handleLaunchAI}
+          disabled={!selectedMode || isActivating}
           className={`w-full py-4 rounded-xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${selectedMode ? 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_30px_rgba(6,182,212,0.4)]' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
         >
-          {t("Initialize Brain")} <ArrowRight size={20} />
+          {isActivating ? <Loader2 size={20} className="animate-spin" /> : <>{t("Initialize Brain")} <ArrowRight size={20} /></>}
         </button>
       </div>
     </div>
