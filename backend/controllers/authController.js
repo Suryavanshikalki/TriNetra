@@ -1,110 +1,69 @@
-// File: backend/controllers/authController.js
-const User = require('../models/User');
-
 // ==========================================
-// 🛡️ PURANA CODE (BINA KUCHH HATAYE)
+// TRINETRA BACKEND - AUTH CONTROLLER (File 5)
+// Blueprint: Point 2 (Gatekeeper & Permanent ID)
 // ==========================================
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
-exports.loginUser = async (req, res) => {
+// TriNetra ID Generator Rule
+const generateTriNetraId = () => {
+  const randomStr = crypto.randomBytes(3).toString('hex').toUpperCase();
+  const year = new Date().getFullYear();
+  return `TRN-${year}-${randomStr}`;
+};
+
+export const registerOrLogin = async (req, res) => {
   try {
-    const { authId, provider } = req.body;
-    let user = await User.findOne({ $or: [{ phone: authId }, { email: authId }] });
-    
+    const { authProvider, authId, name } = req.body;
+
+    // Strict Entry: No Skip Button Rule
+    if (!authProvider || !authId) {
+      return res.status(400).json({ success: false, message: "TriNetra Gatekeeper: Auth details missing. Entry Denied." });
+    }
+
+    let user = await User.findOne({ authId, authProvider });
+
     if (!user) {
-      user = new User({ 
-        trinetraId: `TRN${Date.now()}`, 
-        [provider === 'Phone' ? 'phone' : 'email']: authId, 
-        provider 
+      // Create New Permanent ID
+      const newId = generateTriNetraId();
+      
+      // Point 2 Rule: GitHub limits to AI Only
+      const isAIOnlyFlag = authProvider === 'github';
+
+      user = new User({
+        trinetraId: newId,
+        authProvider,
+        authId,
+        name: name || `User_${newId}`,
+        isAIOnly: isAIOnlyFlag,
       });
+
       await user.save();
+      console.log(`[GATEKEEPER] New TriNetra Identity Forged: ${newId}`);
     }
-    res.status(200).json({ success: true, user, isDevMode: provider === 'GitHub' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: "Login System Error" });
-  }
-};
 
-exports.getUserProfile = async (req, res) => {
-  try {
-    const user = await User.findOne({ trinetraId: req.params.id });
-    if(!user) return res.status(404).json({ success: false, error: "User not found" });
-    res.status(200).json({ success: true, user });
-  } catch (error) {
-    res.status(500).json({ success: false, error: "Profile Fetch Error" });
-  }
-};
-
-exports.updateProfile = async (req, res) => {
-  try {
-    const { trinetraId, bio, avatar, profilePic, coverPic } = req.body;
-    const updatedUser = await User.findOneAndUpdate(
-      { trinetraId }, 
-      { bio, avatar, profilePic, coverPic }, 
-      { new: true }
+    // Token Generation (Using your Render JWT Secret)
+    const token = jwt.sign(
+      { userId: user._id, trinetraId: user.trinetraId, isAIOnly: user.isAIOnly },
+      process.env.JWT_SECRET || 'trinetra_master_key_fallback',
+      { expiresIn: '365d' }
     );
-    res.status(200).json({ success: true, user: updatedUser });
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        trinetraId: user.trinetraId,
+        name: user.name,
+        isAIOnly: user.isAIOnly,
+        aiProfile: user.aiProfile,
+        walletBalance: user.walletBalance
+      }
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, error: "Profile Update Error" });
+    console.error(`[AUTH CRASH] ${error.message}`);
+    res.status(500).json({ success: false, message: "Gatekeeper Server Error" });
   }
-};
-
-
-// ==========================================
-// 🚀 NAYA CODE (12-Point Blueprint: Point 1 & 2)
-// ==========================================
-
-/**
- * 👁️🔥 Point 1: Auto-Detect OS Engine (Backend Version)
- * यह आपके 'getOS' लॉजिक को सर्वर पर चलाएगा और सही डाउनलोड लिंक देगा।
- */
-exports.detectUserPlatform = async (req, res) => {
-    try {
-        const userAgent = req.headers['user-agent'] || '';
-        let os = 'Web Browser';
-
-        // 🕵️‍♂️ Detection Logic 
-        if (/android/i.test(userAgent)) {
-            os = 'Android';
-        } else if (/iPad|iPhone|iPod/.test(userAgent)) {
-            os = 'iOS';
-        } else if (/windows/i.test(userAgent)) {
-            os = 'Windows';
-        } else if (/macintosh/i.test(userAgent)) {
-            os = 'macOS';
-        } else if (/linux/i.test(userAgent)) {
-            os = 'Linux';
-        }
-
-        // 🚀 Master Download Links
-        const downloadLinks = {
-            'Android': 'https://trinetra.pro/download/android-apk',
-            'iOS': 'https://trinetra.pro/download/ios-app',
-            'Windows': 'https://trinetra.pro/download/windows-exe',
-            'macOS': 'https://trinetra.pro/download/macos-dmg',
-            'Linux': 'https://trinetra.pro/download/linux-deb',
-            'Web Browser': 'https://trinetra.pro/web'
-        };
-
-        res.status(200).json({
-            success: true,
-            detectedOS: os,
-            downloadUrl: downloadLinks[os] || downloadLinks['Web Browser'],
-            securityNote: "TriNetra Anti-Bypass Active"
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, error: "Platform Detection Failed" });
-    }
-};
-
-/**
- * 🛡️ GitHub Gatekeeper Logic (Point 2)
- * यह सिर्फ AI कोडर्स को एंट्री देगा, सोशल फीचर्स ब्लॉक रखेगा।
- */
-exports.handleGithubLogin = async (req, res) => {
-    try {
-        // GitHub OAuth Callback logic will process here
-        res.status(200).json({ success: true, message: "GitHub Auth Success. Redirecting to AI Coder Mode." });
-    } catch (error) {
-        res.status(500).json({ success: false, error: "GitHub Login Error" });
-    }
 };
