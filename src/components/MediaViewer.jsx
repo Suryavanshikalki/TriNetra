@@ -1,37 +1,63 @@
-// File: src/components/MediaViewer.jsx
 import React from 'react';
-import { PlayCircle, FileText, X } from 'lucide-react';
+import { X, Download, Maximize, Play, FileText, Share2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-export default function MediaViewer({ type, url, onClose }) {
+export default function UniversalMediaViewer({ mediaUrl, mediaType, onClose }) {
+  const { t } = useTranslation();
+
+  // Point 4: Universal Download Logic (Original Quality from S3)
+  const handleDownload = () => {
+    if (!mediaUrl) return;
+    const link = document.createElement('a');
+    link.href = mediaUrl;
+    link.target = '_blank';
+    link.download = `TriNetra_Original_${Date.now()}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center p-4">
-      <div className="absolute top-4 right-4 bg-gray-800 p-2 rounded-full cursor-pointer" onClick={onClose}>
-        <X className="text-white" />
+    <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center animate-fade-in">
+      
+      {/* Viewer Header */}
+      <div className="absolute top-0 w-full p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+        <button onClick={onClose} className="text-white hover:text-red-500 transition-colors"><X size={28} /></button>
+        <div className="flex gap-6">
+           <button onClick={handleDownload} className="flex items-center gap-2 bg-cyan-500 text-black px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest active:scale-95">
+              <Download size={18} /> {t("Original")}
+           </button>
+           <button className="text-white"><Share2 size={24} /></button>
+        </div>
       </div>
 
-      {type === 'video' && (
-        <div className="w-full max-w-lg aspect-video bg-gray-900 rounded-xl flex items-center justify-center border border-gray-700 relative">
-          <PlayCircle size={64} className="text-green-500 absolute" />
-          <span className="text-gray-500">Video Player Component</span>
-        </div>
-      )}
+      {/* Real In-built Player Logic (Point 4) */}
+      <div className="w-full h-full max-h-[70vh] flex items-center justify-center p-4">
+        {mediaType === 'image' && (
+          <img src={mediaUrl} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-white/10" alt="viewer"/>
+        )}
+        
+        {mediaType === 'video' && (
+          <video controls autoPlay className="max-w-full max-h-full rounded-lg shadow-2xl border border-white/10">
+            <source src={mediaUrl} type="video/mp4" />
+            {t("Your device does not support the TriNetra Player.")}
+          </video>
+        )}
 
-      {type === 'pdf' && (
-        <div className="w-full max-w-lg h-[80vh] bg-gray-200 rounded-xl flex flex-col items-center justify-center text-black">
-          <FileText size={64} className="text-red-500 mb-4" />
-          <h2 className="font-bold">In-Built PDF Reader</h2>
-          <p className="text-sm">Document.pdf</p>
-        </div>
-      )}
-
-      {type === 'audio' && (
-        <div className="w-full max-w-sm bg-gray-900 p-6 rounded-2xl flex items-center space-x-4">
-          <PlayCircle size={40} className="text-green-500 cursor-pointer" />
-          <div className="flex-1 h-2 bg-gray-700 rounded-full relative">
-            <div className="w-1/3 h-full bg-green-500 rounded-full"></div>
+        {mediaType === 'document' || mediaType === 'pdf' && (
+          <div className="flex flex-col items-center gap-6">
+            <div className="bg-[#111827] p-10 rounded-3xl border border-gray-800 shadow-2xl">
+               <FileText size={100} className="text-cyan-400" />
+            </div>
+            <p className="font-bold text-center uppercase tracking-widest text-sm">{t("PDF / Document Ready")}</p>
+            <button onClick={handleDownload} className="bg-white text-black font-black px-8 py-3 rounded-2xl uppercase text-xs tracking-[0.2em]">{t("Open Original PDF")}</button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      <div className="absolute bottom-10 px-8 text-center">
+        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.5em]">{t("TriNetra Universal Secure Player")}</p>
+      </div>
     </div>
   );
 }
