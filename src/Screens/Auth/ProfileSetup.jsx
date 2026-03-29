@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, Image as ImageIcon, Box, ArrowRight } from 'lucide-react';
+import { Camera, Image as ImageIcon, Box, ArrowRight, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 
@@ -9,18 +9,21 @@ export default function ProfileSetup({ user, onComplete }) {
   const [profilePic, setProfilePic] = useState(null);
   const [coverPic, setCoverPic] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // 100% Real File Upload to backend -> AWS S3
+  // 100% Real File Upload to backend -> AWS S3 bucket
   const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const formData = new FormData();
     formData.append('media', file);
-    formData.append('userId', user?.trinetraId);
+    formData.append('userId', user?.trinetraId || 'NEW_USER');
     formData.append('uploadType', type);
 
     setIsLoading(true);
+    setError('');
+    
     try {
       // Real API hitting your TriNetra Backend (File 56 S3 Uploader)
       const res = await axios.post('https://trinetra-umys.onrender.com/api/user/upload-media', formData, {
@@ -29,15 +32,16 @@ export default function ProfileSetup({ user, onComplete }) {
       if (type === 'profile') setProfilePic(res.data.url);
       if (type === 'cover') setCoverPic(res.data.url);
     } catch (err) {
-      console.error(t("Upload failed to secure server."));
+      setError(t("Upload failed to secure server."));
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Real Save Profile Logic
+  // Real Save Profile Logic to MongoDB
   const saveProfile = async () => {
     setIsLoading(true);
+    setError('');
     try {
       await axios.post('https://trinetra-umys.onrender.com/api/user/update-profile', {
         userId: user?.trinetraId,
@@ -45,17 +49,17 @@ export default function ProfileSetup({ user, onComplete }) {
         profilePicUrl: profilePic,
         coverPicUrl: coverPic
       });
-      onComplete(); // Takes user to Home Screen
+      onComplete(); // Successfully takes user to Home Screen
     } catch (err) {
-      console.error(t("Profile save error"));
-    } finally {
+      setError(t("Profile save error on backend."));
       setIsLoading(false);
     }
   };
 
   return (
     <div className="flex flex-col h-screen bg-[#0a1014] text-white overflow-y-auto font-sans">
-      {/* Cover Photo Area */}
+      
+      {/* 100% Real Cover Photo Area */}
       <div className="relative h-48 bg-gray-800 border-b border-cyan-500/20 flex items-center justify-center overflow-hidden">
         {coverPic ? (
           <img src={coverPic} alt="Cover" className="w-full h-full object-cover opacity-80" />
@@ -71,7 +75,7 @@ export default function ProfileSetup({ user, onComplete }) {
         </div>
       </div>
 
-      {/* Profile Photo & Info */}
+      {/* 100% Real Profile Photo & Details */}
       <div className="px-4 relative pb-4 border-b border-gray-800">
         <div className="flex justify-between items-end -mt-12 mb-4">
           <div className="relative">
@@ -90,6 +94,8 @@ export default function ProfileSetup({ user, onComplete }) {
           <h2 className="text-xl font-black uppercase tracking-wide">{t("Setup Profile")}</h2>
           <p className="text-cyan-400 text-[10px] font-bold tracking-widest mb-3">ID: {user?.trinetraId || 'TRN-NEW'}</p>
           
+          {error && <p className="text-red-400 text-xs font-bold mb-2">{error}</p>}
+
           <textarea 
             placeholder={t("Write your bio here... (FB/Insta Style)")}
             className="bg-[#111827] border border-gray-800 w-full p-3 rounded-xl text-sm text-gray-300 focus:outline-none focus:border-cyan-500 resize-none"
@@ -98,10 +104,10 @@ export default function ProfileSetup({ user, onComplete }) {
         </div>
       </div>
 
-      {/* Point 3: Skip Option and Complete */}
+      {/* Blueprint Point 3: Skip Option and Complete Button */}
       <div className="mt-auto p-6 flex flex-col gap-4">
         <button onClick={saveProfile} disabled={isLoading} className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase tracking-widest py-4 rounded-xl flex items-center justify-center gap-2 transition-all">
-          {isLoading ? t("Saving...") : <>{t("Save Profile")} <ArrowRight size={20} /></>}
+          {isLoading ? <Loader2 size={20} className="animate-spin" /> : <>{t("Save Profile")} <ArrowRight size={20} /></>}
         </button>
         <button onClick={onComplete} disabled={isLoading} className="w-full text-gray-500 font-bold uppercase text-xs hover:text-white py-2">
           {t("Skip for now")}
