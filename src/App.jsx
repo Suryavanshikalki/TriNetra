@@ -1,33 +1,39 @@
 // ==========================================
-// TRINETRA SUPER APP - FINAL GHOST-FREE ENGINE
+// TRINETRA SUPER APP - FINAL MASTER ENGINE
 // File: src/App.jsx 
 // ==========================================
 import React, { useState, useEffect } from 'react';
 import { Home, PlaySquare, MessageCircle, Settings, Zap, BrainCircuit } from 'lucide-react';
 
-// 👁️ TRINETRA PATHS: Folder 'Screens' ka 'S' BADA hai
+// 👁️ TRINETRA PATHS: Screens folder
 import HomeFeed from './Screens/Home/HomeFeed.jsx';
 import ChatWindow from './Screens/Messenger/ChatWindow.jsx';
 import AIChatWindow from './Screens/AI/AIChatWindow.jsx';
 
-// 🛡️ AUTH: Login aur ProfileSetup 'Auth' folder mein hain
+// 🛡️ AUTH: Login aur ProfileSetup
 import LoginScreen from './Screens/Auth/LoginScreen.jsx'; 
 import ProfileSetup from './Screens/Auth/ProfileSetup.jsx'; 
 
-// ⚙️ Settings: Preferences aapki Settings folder mein hai
+// ⚙️ Settings
 import Preferences from './Screens/Settings/Preferences.jsx';
 
-// 🚨 DOWNLOAD HUB ko hamesha ke liye hata diya gaya hai!
+// 🚨 DOWNLOAD HUB: Nayi file jo abhi banayi hai
+import DownloadHub from './Screens/DownloadHub.jsx'; 
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+  const [showPlatformDetect, setShowPlatformDetect] = useState(true);
 
-  // Persistence logic taaki login bachaye rakhein
+  // Persistence logic
   useEffect(() => {
     const session = localStorage.getItem('trinetra_session');
     if (session) {
       setIsLoggedIn(true);
+    }
+    // Agar app pehle se install hai ya web par hai, toh direct login par le jao
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      setShowPlatformDetect(false);
     }
   }, []);
 
@@ -37,11 +43,18 @@ export default function App() {
     setActiveTab('home');
   };
 
-  // 🚀 MASTER ROUTING ENGINE (Ab seedha Login dikhega)
+  // 🚀 MASTER ROUTING ENGINE
+  // 1. Agar platform detect karna hai (Download Screen)
+  if (showPlatformDetect && !isLoggedIn) {
+      return <DownloadHub onProceedToLogin={() => setShowPlatformDetect(false)} />;
+  }
+
+  // 2. Phir Login Screen
   if (!isLoggedIn) {
       return <LoginScreen onLoginSuccess={handleAuthSuccess} />;
   }
 
+  // 3. Main App
   return (
     <div className="flex flex-col h-screen bg-[#0a1014] text-white overflow-hidden font-sans">
       
