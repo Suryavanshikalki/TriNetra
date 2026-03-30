@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // ✅ 'i' छोटा कर दिया गया है
 import { Zap, Home, PlaySquare, MessageCircle, Settings, BrainCircuit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-// ✅ फाइल का नाम छोटा 'i' (i18n.js) है, इसलिए यह सही है
+// ✅ i18n.js (छोटा i) - आपकी फाइल के नाम से मैच है
 import './i18n'; 
-// ✅ फोल्डर का नाम बड़ा 'S' (Screens) है, इसलिए यह सही है
+// ✅ Screens (बड़ा S) - आपके फोल्डर के नाम से मैच है
 import LoginScreen from './Screens/Auth/LoginScreen';
 
 // 100% Real Universal Logo Component
@@ -48,7 +48,7 @@ export default function App() {
     return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // 3. Main Application Shell
+  // 3. Main Application Shell (Facebook Style)
   return (
     <div className="flex flex-col h-screen bg-[#0a1014] text-white overflow-hidden font-sans">
       
@@ -73,7 +73,7 @@ export default function App() {
               <PlaySquare size={22}/><span className="text-[9px] uppercase font-bold">{t("reels")}</span>
           </button>
           
-          {/* Master AI Logo */}
+          {/* Master AI Logo in Center */}
           <div className="relative -top-6">
             <button onClick={() => setActiveTab('ai')} className="bg-cyan-500 p-5 rounded-full shadow-[0_0_30px_rgba(6,182,212,0.8)] border-4 border-[#0a1014] hover:bg-violet-500 transition-all active:scale-90">
                 <BrainCircuit className="text-black" size={26}/>
