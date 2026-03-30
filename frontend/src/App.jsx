@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Home, PlaySquare, MessageCircle, Settings, BrainCircuit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+// ✅ फाइल का नाम छोटा 'i' (i18n.js) है, इसलिए यह सही है
 import './i18n'; 
+// ✅ फोल्डर का नाम बड़ा 'S' (Screens) है, इसलिए यह सही है
 import LoginScreen from './Screens/Auth/LoginScreen';
 
-// 100% Real Universal Logo Component (Point 1)
+// 100% Real Universal Logo Component
 export const TriNetraLogo = ({ size = 24, pulse = false }) => (
   <div className={`flex items-center justify-center bg-black border border-cyan-500 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.6)] ${pulse ? 'animate-pulse' : ''}`} style={{ width: size, height: size }}>
     <Zap size={size * 0.6} className="text-cyan-400" />
@@ -18,7 +20,7 @@ export default function App() {
   const [userData, setUserData] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
 
-  // Exact 2-Second Splash Screen Logic (Point 1)
+  // Exact 2-Second Splash Screen Logic
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 2000);
     return () => clearTimeout(timer);
@@ -41,35 +43,37 @@ export default function App() {
     );
   }
 
-  // 2. Strict Entry Gatekeeper - No Skip Button (Point 2)
+  // 2. Strict Entry Gatekeeper
   if (!isAuthenticated) {
     return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // 3. Real 100% Facebook-style Navigation Shell (Point 12)
+  // 3. Main Application Shell
   return (
     <div className="flex flex-col h-screen bg-[#0a1014] text-white overflow-hidden font-sans">
       
       {/* Dynamic Content Area */}
       <main className="flex-1 overflow-y-auto relative pb-20">
-        {activeTab === 'home' && <div className="flex items-center justify-center h-full text-cyan-400 font-black tracking-widest uppercase">Home Feed Ready</div>}
-        {activeTab === 'reels' && <div className="flex items-center justify-center h-full text-cyan-400 font-black tracking-widest uppercase">Reels Engine Ready</div>}
-        {activeTab === 'ai' && <div className="flex items-center justify-center h-full text-cyan-400 font-black tracking-widest uppercase">Master AI Hub Ready</div>}
-        {activeTab === 'chat' && <div className="flex items-center justify-center h-full text-cyan-400 font-black tracking-widest uppercase">Messenger Ready</div>}
-        {activeTab === 'menu' && <div className="flex items-center justify-center h-full text-cyan-400 font-black tracking-widest uppercase">Settings Menu Ready</div>}
+        <div className="flex items-center justify-center h-full text-cyan-400 font-black tracking-widest uppercase">
+            {activeTab === 'home' && "Home Feed Ready"}
+            {activeTab === 'reels' && "Reels Engine Ready"}
+            {activeTab === 'ai' && "Master AI Hub Ready"}
+            {activeTab === 'chat' && "Messenger Ready"}
+            {activeTab === 'menu' && "Settings Menu Ready"}
+        </div>
       </main>
 
-      {/* Real Bottom Navigation Bar (Point 12) */}
+      {/* Real Bottom Navigation Bar */}
       <nav className="absolute bottom-0 w-full bg-[#111827]/95 backdrop-blur-md border-t border-cyan-500/20 flex justify-around py-2 pb-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
           <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 active:scale-95 transition-all ${activeTab === 'home' ? 'text-cyan-400' : 'text-gray-500'}`}>
-              <Home size={22}/><span className="text-[9px] uppercase font-bold">{t("Home")}</span>
+              <Home size={22}/><span className="text-[9px] uppercase font-bold">{t("home")}</span>
           </button>
           
           <button onClick={() => setActiveTab('reels')} className={`flex flex-col items-center gap-1 active:scale-95 transition-all ${activeTab === 'reels' ? 'text-cyan-400' : 'text-gray-500'}`}>
-              <PlaySquare size={22}/><span className="text-[9px] uppercase font-bold">{t("Reels")}</span>
+              <PlaySquare size={22}/><span className="text-[9px] uppercase font-bold">{t("reels")}</span>
           </button>
           
-          {/* Master AI Logo in Middle (Point 11) */}
+          {/* Master AI Logo */}
           <div className="relative -top-6">
             <button onClick={() => setActiveTab('ai')} className="bg-cyan-500 p-5 rounded-full shadow-[0_0_30px_rgba(6,182,212,0.8)] border-4 border-[#0a1014] hover:bg-violet-500 transition-all active:scale-90">
                 <BrainCircuit className="text-black" size={26}/>
@@ -77,11 +81,11 @@ export default function App() {
           </div>
           
           <button onClick={() => setActiveTab('chat')} className={`flex flex-col items-center gap-1 active:scale-95 transition-all ${activeTab === 'chat' ? 'text-cyan-400' : 'text-gray-500'}`}>
-              <MessageCircle size={22}/><span className="text-[9px] uppercase font-bold">{t("Chat")}</span>
+              <MessageCircle size={22}/><span className="text-[9px] uppercase font-bold">{t("chat")}</span>
           </button>
           
           <button onClick={() => setActiveTab('menu')} className={`flex flex-col items-center gap-1 active:scale-95 transition-all ${activeTab === 'menu' ? 'text-cyan-400' : 'text-gray-500'}`}>
-              <Settings size={22}/><span className="text-[9px] uppercase font-bold">{t("Menu")}</span>
+              <Settings size={22}/><span className="text-[9px] uppercase font-bold">{t("menu")}</span>
           </button>
       </nav>
     </div>
