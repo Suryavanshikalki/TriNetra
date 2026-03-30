@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Zap, Home, PlaySquare, MessageCircle, Settings, BrainCircuit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './i18n'; 
-import LoginScreen from './screens/Auth/LoginScreen';
+import LoginScreen from './Screens/Auth/LoginScreen';
 
 // 100% Real Universal Logo Component (Point 1)
 export const TriNetraLogo = ({ size = 24, pulse = false }) => (
