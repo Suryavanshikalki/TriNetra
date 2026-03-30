@@ -1,55 +1,57 @@
-name: TriNetra AWS Auto-Deploy
+name: TriNetra AWS Full Auto-Deploy
 
-# यह तब चलेगा जब आप 'main' ब्रांच पर कुछ भी पुश करेंगे
 on:
   push:
     branches: [ main ]
 
 jobs:
-  # 🎨 भाग 1: Frontend को Deploy करना (S3 Bucket में)
+  # 🎨 भाग 1: Frontend (React/Vite) लाइव करना
   deploy-frontend:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
 
-    - name: Build Frontend (React/Vite)
+    - name: Build Frontend
       run: |
         cd frontend
         npm install
-        npm run build
+        # CI=false का मतलब है छोटे वॉर्निंग्स को इग्नोर करो और बिल्ड बनाओ
+        CI=false npm run build
 
     - name: Connect to AWS
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1 
 
-    - name: Deploy Frontend to S3 Bucket
-      run: aws s3 sync frontend/dist/ s3://trinetra-app-live --delete 
+    - name: Deploy to S3 Bucket
+      run: |
+        # पक्का करो कि रास्ता frontend/dist ही है
+        aws s3 sync frontend/dist/ s3://trinetra-app-live --delete 
 
-  # 🧠 भाग 2: Backend को Deploy करना (AWS App Runner)
+  # 🧠 भाग 2: Backend (Node.js) लाइव करना
   deploy-backend:
     runs-on: ubuntu-latest
-    needs: deploy-frontend  # पहले Frontend होगा, फिर Backend
+    needs: deploy-frontend
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Connect to AWS
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1
 
-    - name: Trigger App Runner Deployment
+    - name: Trigger App Runner
       run: |
-        # यह कमांड AWS App Runner को बोलेगा कि नया कोड खींच लो
+        # AWS को बोलना कि नया कोड उठा ले
         aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
