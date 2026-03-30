@@ -1,42 +1,33 @@
 {
-  "name": "trinetra-super-app-final",
-  "version": "1.2.0",
+  "name": "trinetra-super-app-frontend",
   "private": true,
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node backend/server.js",
-    "preview": "vite preview",
-    "render-build": "npm install && npm run build && cd backend && npm install && cd .. && cp -r dist backend/dist"
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@zegocloud/zego-uikit-prebuilt": "^2.12.1",
+    "axios": "^1.6.8",
+    "firebase": "^10.10.0",
+    "framer-motion": "^11.0.24",
+    "lucide-react": "^0.363.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "lucide-react": "^0.263.1",
-    "@zegocloud/zego-uikit-prebuilt": "^2.11.0",
-    "socket.io-client": "^4.7.2",
-    "axios": "^1.5.0",
-    "express": "^4.18.2",
-    "mongoose": "^7.4.1",
-    "cors": "^2.8.5",
-    "socket.io": "^4.7.2",
-    "razorpay": "^2.9.2",
-    "aws-sdk": "^2.1467.0",
-    "paypal-rest-sdk": "^1.8.1",
-    "@sentry/node": "^7.73.0",
-    "dotenv": "^16.3.1",
-    "react-router-dom": "^6.15.0",
-    "framer-motion": "^10.16.4",
-    "multer": "^1.4.5-lts.1",
-    "jsonwebtoken": "^9.0.1",
-    "bcryptjs": "^2.4.3"
+    "react-router-dom": "^6.22.3",
+    "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
-    "@types/react": "^18.2.15",
-    "@types/react-dom": "^18.2.7",
-    "@vitejs/plugin-react": "^4.0.3",
-    "vite": "^4.4.5",
-    "vite-plugin-pwa": "^0.16.4"
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "vite": "^5.2.0"
   }
 }
