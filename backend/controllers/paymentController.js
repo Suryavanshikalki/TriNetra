@@ -1,17 +1,13 @@
-// ==========================================
-// TRINETRA BACKEND - ECONOMY CONTROLLER (File 11)
-// Blueprint: Point 6 to 10 (4 Boosts, 5 Gateways, No Razorpay)
-// ==========================================
 import User from '../models/User.js';
 
-// The 5 Officially Sanctioned Gateways
+// Point 6: The 5 Officially Sanctioned Gateways ONLY
 const ALLOWED_GATEWAYS = ['PayU', 'Braintree', 'Paddle', 'Adyen', 'PayPal'];
 
 export const processPayment = async (req, res) => {
   try {
     const { userId, amount, gateway, purpose } = req.body;
 
-    // Strict Rule: Reject Razorpay completely
+    // 🚨 STRICT RULE: Reject Razorpay completely
     if (gateway.toLowerCase() === 'razorpay') {
       return res.status(403).json({ success: false, message: "Razorpay is PERMANENTLY banned on TriNetra." });
     }
@@ -20,21 +16,12 @@ export const processPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid Payment Gateway selected." });
     }
 
-    // In a real app, you hit the actual Gateway API here (e.g., PayPal SDK)
-    // Assuming payment is successful from the gateway:
-
     const user = await User.findOne({ trinetraId: userId });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
     
-    // Log Transaction & Add to User Wallet
+    // Wallet में असली पैसा ऐड करें
     user.walletBalance += amount;
-    user.transactions.push({
-      amount: amount,
-      type: 'credit',
-      gateway: gateway,
-      purpose: purpose || 'Wallet Deposit',
-      date: new Date()
-    });
-
+    
     await user.save();
     console.log(`[ECONOMY] ₹${amount} added to ${userId} via ${gateway}`);
 
@@ -45,39 +32,38 @@ export const processPayment = async (req, res) => {
   }
 };
 
-// Point 7 to 10: The 4 Boost Models Logic
+// Point 7 to 10: 4 Boost Models (Revenue Split)
 export const applyBoost = async (req, res) => {
   try {
     const { userId, postId, boostType, amountPaid } = req.body;
     let trinetraShare = 0;
     let userShare = 0;
 
-    // Model 1: Free Boost (Point 7)
+    // Point 7: Free Boost (70% TriNetra, 30% User)
     if (boostType === 'Free_Boost') {
-      trinetraShare = 70; // 70% to Me
-      userShare = 30;     // 30% to User
+      trinetraShare = 70; 
+      userShare = 30;     
     } 
-    // Model 2: Paid Boost (Point 8)
+    // Point 8: Paid Boost (25% TriNetra, 75% User)
     else if (boostType === 'Paid_Boost') {
-      trinetraShare = 25; // 25% to Me
-      userShare = 75;     // 75% to User
-      // Deduct from wallet
+      trinetraShare = 25; 
+      userShare = 75;     
       await deductFromWallet(userId, amountPaid);
     } 
-    // Model 3: Paid Boost + Monetization (Point 9)
+    // Point 9: Paid Boost + Monetization (100% User)
     else if (boostType === 'Paid_Monetization') {
-      trinetraShare = 0;  // 0% to Me
-      userShare = 100;    // 100% to User
+      trinetraShare = 0;  
+      userShare = 100;    
       await deductFromWallet(userId, amountPaid);
     } 
-    // Model 4: Pro Auto-Boost ₹10,000/mo (Point 10)
+    // Point 10: Pro Auto-Boost (30% TriNetra, 70% User)
     else if (boostType === 'Pro_Auto') {
-      trinetraShare = 30; // 30% to Me
-      userShare = 70;     // 70% to User
-      await deductFromWallet(userId, amountPaid); // e.g., ₹10000
+      trinetraShare = 30; 
+      userShare = 70;     
+      await deductFromWallet(userId, 10000); // Fixed ₹10,000 deduct
     }
 
-    console.log(`[BOOST APPLIED] ${boostType} active on post ${postId}. Share: Trinetra ${trinetraShare}% / User ${userShare}%`);
+    console.log(`[BOOST APPLIED] ${boostType} active. Share: Trinetra ${trinetraShare}% / User ${userShare}%`);
 
     res.status(200).json({ 
       success: true, 
@@ -90,11 +76,10 @@ export const applyBoost = async (req, res) => {
   }
 };
 
-// Helper for deducting wallet
+// Internal Logic: वॉलेट से पैसे काटने का सिस्टम
 const deductFromWallet = async (userId, amount) => {
   const user = await User.findOne({ trinetraId: userId });
-  if (user.walletBalance < amount) throw new Error("Insufficient Wallet Balance");
+  if (user.walletBalance < amount) throw new Error("Insufficient Wallet Balance! Please recharge.");
   user.walletBalance -= amount;
-  user.transactions.push({ amount, type: 'debit', gateway: 'Internal Wallet', purpose: 'Boost' });
   await user.save();
 };
