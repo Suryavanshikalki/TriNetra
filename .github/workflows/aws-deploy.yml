@@ -5,6 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
+  # 🎨 JOB 1: Frontend Deployment (S3 Bucket)
   deploy-frontend:
     runs-on: ubuntu-latest
     steps:
@@ -31,3 +32,24 @@ jobs:
 
     - name: Deploy Frontend to S3 Bucket
       run: aws s3 sync frontend/dist/ s3://trinetra-app-live --delete 
+
+  # 🧠 JOB 2: Backend Deployment (App Runner)
+  deploy-backend:
+    runs-on: ubuntu-latest
+    needs: deploy-frontend  # Frontend के बाद Backend अपडेट होगा
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Connect to AWS
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+
+    - name: Trigger App Runner Deployment
+      run: |
+        # यहाँ AWS आपके Backend को अपने आप Refresh करेगा
+        # नोट: GitHub Secrets में AWS_APP_RUNNER_ARN नाम से अपना ARN सेव कर लें
+        aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
