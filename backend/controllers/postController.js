@@ -1,48 +1,34 @@
-// ==========================================
-// TRINETRA BACKEND - FILE 12: controllers/postController.js
-// Blueprint: Point 4 (Feed, Reels, Marketplace, Original Media)
-// ==========================================
 import Post from '../models/Post.js';
-// (In production, AWS SDK logic will be implemented here to upload original media)
+import User from '../models/User.js';
 
+// Point 4: Feed, Reels, and Media Upload (Original Quality)
 export const createPost = async (req, res) => {
   try {
-    const { userId, userName, userAvatar, content, mediaUrl, mediaType, isReel, targetLanguage } = req.body;
-
-    // मल्टीलिंगुअल ट्रांसलेशन लॉजिक (API integration needed for real translation)
-    const translatedContent = content ? `[Translated to ${targetLanguage || 'en'}]: ${content}` : "";
+    const { userId, content, mediaUrl, mediaType, isReel, isMarketplace, price } = req.body;
 
     const newPost = new Post({
       userId,
-      userName,
-      userAvatar,
-      content: translatedContent || content,
-      mediaUrl, // Point 4: URL to original AWS S3 file for direct download
-      mediaType, // text, image, video, audio, pdf, none
-      isReel: isReel || false
+      content,
+      mediaUrl, // AWS S3 link for original format download
+      mediaType, // Photo, Video, Audio, PDF, etc.
+      isReel: isReel || false,
+      isMarketplace: isMarketplace || false,
+      price: price || 0
     });
 
     await newPost.save();
-    
-    console.log(`[FEED UPDATE] New ${isReel ? 'Reel' : 'Post'} created by ${userId}. Media: ${mediaType}`);
-
-    res.status(201).json({ 
-      success: true, 
-      message: `${isReel ? 'Reel' : 'Post'} published successfully.`,
-      post: newPost 
-    });
+    res.status(201).json({ success: true, message: "Post Published Successfully", post: newPost });
   } catch (error) {
-    console.error(`[POST CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Error publishing post." });
+    res.status(500).json({ success: false, message: "Feed Error" });
   }
 };
 
-export const fetchFeed = async (req, res) => {
+// Universal Media Download: ओरिजिनल फाइल भेजने का लॉजिक
+export const getFeed = async (req, res) => {
   try {
-    // असली दुनिया में यहाँ Pagination (limit, skip) और एल्गोरिदम लगेगा
-    const feed = await Post.find().sort({ createdAt: -1 }).limit(50);
-    res.status(200).json({ success: true, count: feed.length, data: feed });
+    const posts = await Post.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: posts });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch feed." });
+    res.status(500).json({ success: false, message: "Fetch Error" });
   }
 };
