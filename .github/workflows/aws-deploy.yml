@@ -21,36 +21,20 @@ jobs:
       run: |
         cd frontend
         npm install
-        # 🔥 ये ब्रह्मास्त्र है: जो पैकेजेस गायब हैं, ये उन्हें जबरदस्ती इंस्टॉल कर देगा!
         npm install i18next react-i18next
         CI=false npm run build
 
     - name: Connect to AWS
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # 🔥 यहाँ मैंने आपके वाले असली नाम डाल दिए हैं!
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: ap-south-1 
 
     - name: Deploy to S3 Bucket
       run: |
         aws s3 sync frontend/dist/ s3://trinetra-app-live --delete 
 
-  # 🧠 भाग 2: Backend (Node.js) को App Runner पर अपडेट करना
-  deploy-backend:
-    runs-on: ubuntu-latest
-    needs: deploy-frontend
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: Connect to AWS
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-south-1
-
-    - name: Trigger App Runner
-      run: |
-        aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
+  # नोट: Backend वाले हिस्से को अभी रोक दिया है ताकि Frontend 100% पास हो जाए।
+  # जब आप App Runner सेट कर लेंगे, तब हम इसे खोल देंगे।
