@@ -1,12 +1,11 @@
-name: TriNetra AWS Full Auto-Deploy
+name: TriNetra Master Deploy
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  # 🎨 भाग 1: Frontend (React/Vite) को S3 पर भेजना
-  deploy-frontend:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
@@ -21,13 +20,14 @@ jobs:
       run: |
         cd frontend
         npm install
+        # i18next पैकेज को जबरदस्ती यहाँ इंस्टॉल कर रहे हैं
         npm install i18next react-i18next
         CI=false npm run build
 
     - name: Connect to AWS
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        # 🔥 यहाँ मैंने आपके वाले असली नाम डाल दिए हैं!
+        # 🔥 आपकी फोटो के हिसाब से एकदम सही नाम!
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: ap-south-1 
@@ -35,6 +35,3 @@ jobs:
     - name: Deploy to S3 Bucket
       run: |
         aws s3 sync frontend/dist/ s3://trinetra-app-live --delete 
-
-  # नोट: Backend वाले हिस्से को अभी रोक दिया है ताकि Frontend 100% पास हो जाए।
-  # जब आप App Runner सेट कर लेंगे, तब हम इसे खोल देंगे।
