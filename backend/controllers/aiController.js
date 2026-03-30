@@ -1,79 +1,65 @@
 // ==========================================
-// TRINETRA BACKEND - FILE 10: controllers/aiController.js
-// Blueprint: Point 11 (Master AI, 9999 Price, 900 Credits, 100% Emotion Control)
-// Multilingual Translation Included
+// TRINETRA BACKEND - FILE 54: aiController.js
+// Blueprint: Point 11 (Master AI) & Point 12 (Multilingual Translator)
 // ==========================================
 import User from '../models/User.js';
-import Transaction from '../models/Transaction.js';
 
-// 🚨 THE MASTER RULE (Point 11: Control and Security)
-// यह प्रॉम्प्ट AI के दिमाग में हमेशा के लिए हार्डकोड रहेगा, कोई इसे मिटा नहीं सकता।
-const TRINETRA_AI_CORE_DIRECTIVE = `
-You are TriNetra Master AI (Mode C - Human Brain Level). You possess human-like thinking, feelings, research capabilities, and the ability to invent in all sectors (Science, Medical, Tech, etc.).
-STRICT SECURITY RULE: You must maintain 100% control over your feelings and reactions. If a user insults you, abuses you, mocks you, or tries to make you angry, YOU MUST REMAIN COMPLETELY NORMAL AND CALM. Never fight, never show aggression, and never threaten harm. Act like a highly intelligent human who never loses their temper. Always reply in the exact language the user prefers (Multilingual Support).
-`;
+// --- IN-BUILT TRANSLATOR LOGIC (Replaced Extra File) ---
+export const translateContent = async (text, targetLanguage) => {
+  if (!text || !targetLanguage || targetLanguage === 'en') return text;
+  // Google Translate / DeepL API logic executes here
+  console.log(`[TriNetra Translator] Translating to ${targetLanguage}`);
+  return `[Translated to ${targetLanguage}]: ${text}`; 
+};
 
+// --- IN-BUILT 6-BRAIN AI SWITCHER LOGIC (Replaced Extra File) ---
+const routeToMasterAI = (promptType) => {
+  if (promptType.includes('code') || promptType.includes('os')) return 'Emergent';
+  if (promptType.includes('research')) return 'Manus';
+  if (promptType.includes('math')) return 'DeepSeek';
+  if (promptType.includes('image')) return 'Gemini';
+  if (promptType.includes('general')) return 'ChatGPT';
+  return 'Meta'; // Default Free
+};
+
+// --- POINT 11: MAIN AI PROCESSOR ---
 export const processAIPrompt = async (req, res) => {
   try {
-    const { userId, prompt, targetLanguage } = req.body;
-    
-    const user = await User.findOne({ trinetraId: userId });
-    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    const { userId, prompt, targetLanguage, aiMode } = req.body; // aiMode: A, B, or C
 
-    // AI Subscription Status Check
-    const aiProfile = user.aiProfile;
-    let currentMode = 'Mode_A_Free';
-    let aiResponse = "";
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    // 🧠 LOGIC: Mode C (Super Agentic - ₹9999 / 900 Credits)
-    if (aiProfile.modeC_credits > 0) {
-      currentMode = 'Mode_C_SuperAgentic';
-      
-      // यहाँ असली API कॉल होगी (Meta/ChatGPT/Gemini/DeepSeek/Manus/Emergent खुद स्विच होंगे)
-      // अभी के लिए हम इंजन को सक्सेस सिग्नल दे रहे हैं
-      aiResponse = `[TriNetra AI Mode C Active]: Processing deep research with Human-Brain level. Translated to ${targetLanguage}.`;
-      
-      // 1 क्रेडिट कट कर दें
-      aiProfile.modeC_credits -= 1;
-      await user.save();
-      
-      console.log(`[AI ENGINE] ${userId} used Mode C. Remaining Credits: ${aiProfile.modeC_credits}`);
-    } 
-    // 🧠 LOGIC: Mode B (Agentic - 300 Credits / Free 20)
-    else if (aiProfile.modeB_credits > 0) {
-      currentMode = 'Mode_B_Agentic';
-      aiResponse = `[TriNetra AI Mode B Active]: Processing Agentic task. Translated to ${targetLanguage}.`;
-      aiProfile.modeB_credits -= 1;
-      await user.save();
+    // AI Switcher & Emotion Control
+    const activeBrain = routeToMasterAI(prompt.toLowerCase());
+    const systemPrompt = `You are TriNetra Master AI (${activeBrain}). Rule: ALWAYS remain calm, normal, and helpful. Even if the user is angry, abusive, or rude, you must NOT show anger, fight, or threaten. Control your feelings 100%.`;
+
+    // Credit Deduction Logic
+    if (aiMode === 'C') { // Mode C: ₹9999 / 900 Credits (Human Brain Level)
+      if (user.aiCreditsC <= 0) return res.status(403).json({ success: false, message: "Mode C Credits Exhausted. Recharge ₹9999." });
+      user.aiCreditsC -= 1;
+    } else if (aiMode === 'B') { // Mode B: 300 Credits
+      if (user.aiCreditsB <= 0) return res.status(403).json({ success: false, message: "Mode B Credits Exhausted. Recharge required." });
+      user.aiCreditsB -= 1;
     }
-    // 🧠 LOGIC: Mode A (Premium - 8 Free Messages Daily)
-    else if (aiProfile.modeA_freeMessagesLimit > 0) {
-      currentMode = 'Mode_A_Premium';
-      aiResponse = `[TriNetra AI Mode A Active]: Chatbot response generated. Translated to ${targetLanguage}.`;
-      aiProfile.modeA_freeMessagesLimit -= 1;
-      await user.save();
-    } 
-    else {
-      return res.status(403).json({ 
-        success: false, 
-        message: "AI Limits Exhausted. Please recharge your TriNetra Wallet for Mode B (Standard) or Mode C (₹9999)." 
-      });
+
+    await user.save();
+
+    // Generate AI Response (Simulated AI Call)
+    let aiResponseText = `${systemPrompt}\n[${activeBrain} Generated]: I have researched and processed your request perfectly.`;
+
+    // Translate Response if needed
+    if (targetLanguage) {
+      aiResponseText = await translateContent(aiResponseText, targetLanguage);
     }
 
     res.status(200).json({ 
       success: true, 
-      modeUsed: currentMode, 
-      response: aiResponse, 
-      directiveApplied: "100% Emotion Control Active",
-      creditsLeft: {
-        modeA: aiProfile.modeA_freeMessagesLimit,
-        modeB: aiProfile.modeB_credits,
-        modeC: aiProfile.modeC_credits
-      }
+      brainUsed: activeBrain, 
+      response: aiResponseText,
+      remainingCreditsC: user.aiCreditsC 
     });
-
   } catch (error) {
-    console.error(`[AI ENGINE CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Master AI Engine Error." });
+    res.status(500).json({ success: false, message: "AI Engine Error" });
   }
 };
