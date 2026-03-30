@@ -1,34 +1,22 @@
 {
-  "name": "trinetra-super-app",
-  "private": true,
-  "version": "6.0.0",
+  "name": "trinetra-super-app-backend",
+  "version": "3.0.0",
+  "description": "Master Backend Engine for TriNetra",
+  "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
-    "@zegocloud/zego-uikit-prebuilt": "^2.12.1",
-    "axios": "^1.6.8",
-    "firebase": "^10.10.0",
-    "i18next": "^23.10.1",
-    "lucide-react": "^0.364.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-i18next": "^14.1.0",
-    "react-router-dom": "^6.22.3",
-    "socket.io-client": "^4.7.5"
-  },
-  "devDependencies": {
-    "@types/react": "^18.2.66",
-    "@types/react-dom": "^18.2.22",
-    "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.34.1",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.6",
-    "vite": "^5.2.0"
+    "aws-sdk": "^2.1500.0",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.6.3",
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.1"
   }
 }
