@@ -1,8 +1,3 @@
-// ==========================================
-// TRINETRA BACKEND - MAIN ENGINE (File 2)
-// Exact Path: server.js
-// Blueprint: Point 1 to 12 Core Router
-// ==========================================
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -10,22 +5,23 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 
-// Load all 20 Asli Keys from .env
+// यह लाइन Render/GitHub Secrets से आपकी चाबियाँ खुद खींच लेगी
 dotenv.config();
 
-// Connect to Permanent Memory (MongoDB)
+// डेटाबेस (परमानेंट मेमोरी) कनेक्ट करें
 connectDB();
 
 const app = express();
 
-// Security: Allow all 6 Platforms (Web, Android, iOS, Windows, Mac, Linux)
+// Point 1: 6-Platform Support
 app.use(cors({ origin: '*', credentials: true }));
-// Support for large Media (PDF, Video, Audio)
+
+// Point 4: Heavy Media Support (Original Quality Uploads)
 app.use(express.json({ limit: '500mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 
-// Base Route Verification
-app.get('/', (req, res) => {
+// Base Route
+app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     success: true, 
     message: "TriNetra Master Backend is LIVE! 👁️🔥",
@@ -34,38 +30,23 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 💬 POINT 5: REAL-TIME ENGINE (WhatsApp 2.0)
+// 💬 POINT 5: WhatsApp 2.0 (Socket Engine)
 // ==========================================
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: '*' }
-});
+const io = new Server(server, { cors: { origin: '*' } });
 
 io.on('connection', (socket) => {
   console.log(`[MATRIX] User Connected: ${socket.id}`);
-
-  // Join 1-on-1 or Group Chat
-  socket.on('join_room', (roomId) => {
-    socket.join(roomId);
-  });
-
-  // Real-time Message transfer (Text, Mic, Media)
-  socket.on('send_message', (data) => {
-    socket.to(data.roomId).emit('receive_message', data);
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`[MATRIX] User Disconnected`);
-  });
+  
+  socket.on('join_room', (roomId) => socket.join(roomId));
+  socket.on('send_message', (data) => socket.to(data.roomId).emit('receive_message', data));
+  
+  socket.on('disconnect', () => console.log(`[MATRIX] User Disconnected`));
 });
 
-// ==========================================
-// 🚀 SERVER BOOT
-// ==========================================
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`=================================`);
+  console.log(`=================================================`);
   console.log(`👁️🔥 TriNetra Server LIVE on Port ${PORT}`);
-  console.log(`🔗 Permanent Database & Socket Engine Active`);
-  console.log(`=================================`);
+  console.log(`=================================================`);
 });
