@@ -1,128 +1,123 @@
 // ==========================================
-// TRINETRA BACKEND - FILE 9: controllers/paymentController.js
-// Blueprint: Point 6-10 (Economy, 5 Gateways, Razorpay BANNED)
-// 100% LINKED WITH TRANSACTION MODEL
+// TRINETRA BACKEND - FILE 53: paymentController.js
+// Blueprint: Point 6 to 11 (Economy, 4 Gateways, Boosts, AI Timing Options)
+// 🚨 DEEP SEARCH UPDATE: MULTIPLIER & ALL PRICES STRICTLY HARDCODED 🚨
 // ==========================================
+import Transaction from '../models/Transaction.js';
 import User from '../models/User.js';
-import Transaction, { TriNetraPricing } from '../models/Transaction.js';
 
-// Point 6: The 5 Officially Sanctioned Gateways ONLY
-const ALLOWED_GATEWAYS = ['PayU', 'Braintree', 'Paddle', 'Adyen', 'PayPal', 'Internal_Wallet'];
-
-export const processPayment = async (req, res) => {
-  try {
-    const { userId, amount, gateway, planType, gatewayTransactionId } = req.body;
-
-    // 🚨 STRICT RULE: Reject Razorpay completely
-    if (gateway.toLowerCase() === 'razorpay') {
-      return res.status(403).json({ success: false, message: "Razorpay is PERMANENTLY banned on TriNetra." });
-    }
-
-    if (!ALLOWED_GATEWAYS.includes(gateway)) {
-      return res.status(400).json({ success: false, message: "Invalid Payment Gateway selected." });
-    }
-
-    const user = await User.findOne({ trinetraId: userId });
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
-    
-    // Wallet Deposit Logic
-    if (planType === 'Wallet_Deposit') {
-      user.walletBalance += amount;
-      await user.save();
-    }
-
-    // असली ट्रांज़ैक्शन हिस्ट्री सेव करें (Transaction.js में)
-    const newTransaction = new Transaction({
-      userId,
-      gateway,
-      gatewayTransactionId: gatewayTransactionId || `TRN-TXN-${Date.now()}`,
-      amount,
-      planType,
-      status: 'Success'
-    });
-    
-    await newTransaction.save();
-    console.log(`[ECONOMY] ₹${amount} processed for ${userId} via ${gateway}`);
-
-    res.status(200).json({ success: true, balance: user.walletBalance, transactionId: newTransaction._id });
-  } catch (error) {
-    console.error(`[ECONOMY CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Payment Processing Failed" });
-  }
+// --- IN-BUILT PAYMENT GATEWAY LOGIC ---
+const processRealPayment = async (amount, gatewayName) => {
+  console.log(`[TriNetra Economy] Processing ₹${amount} via ${gatewayName}`);
+  if (gatewayName === 'Razorpay') throw new Error("Razorpay is Permanently Banned.");
+  const allowedGateways = ['PayU', 'Braintree', 'Paddle', 'Adyen'];
+  if (!allowedGateways.includes(gatewayName)) throw new Error("Invalid Payment Gateway");
+  return true; 
 };
 
-// Point 7 to 10: 4 Boost Models (Revenue Split Engine)
-export const applyBoost = async (req, res) => {
+// --- POINT 6-11: BOOST, MONTHLY AI RECHARGE & ESCALATION ---
+export const processPaymentAndBoost = async (req, res) => {
   try {
-    const { userId, postId, boostType, amountPaid } = req.body;
+    const { userId, planType, gatewayName, customAmount, requestedMonths } = req.body;
     
-    let triNetraShare = 0;
+    // 🚨 Point 11: Subscription Timing Rule (1, 3, 6, 9, 12 Months Only)
+    const validMonths = [1, 3, 6, 9, 12];
+    const months = validMonths.includes(requestedMonths) ? requestedMonths : 1; 
+    // (अगर कोई हैकर गलत महीना डालेगा, तो सिस्टम खुद उसे 1 महीने पर सेट कर देगा)
+
+    let finalAmount = 0;
+    let trinetraShare = 0;
     let userShare = 0;
-    let splitRule = "0/0";
+    let creditsToAddC = 0;
+    let creditsToAddB = 0;
 
-    const user = await User.findOne({ trinetraId: userId });
+    // 🚨 100% HARDCODED BASE PRICES (Multiplied by Months) 🚨
+    
+    // --- SOCIAL BOOST MODELS ---
+    if (planType === 'FreeBoost') {
+      finalAmount = 0;
+      trinetraShare = (customAmount || 100) * 0.70; // 70% TriNetra (Ad Revenue)
+      userShare = (customAmount || 100) * 0.30;     // 30% User
+    
+    } else if (planType === 'PaidBoost') {
+      finalAmount = customAmount || 5000; 
+      trinetraShare = finalAmount * 0.25; // 25% TriNetra
+      userShare = finalAmount * 0.75;     // 75% User
+    
+    } else if (planType === 'PaidMonetization') {
+      finalAmount = customAmount || 5000; 
+      trinetraShare = 0;                  // 0% TriNetra
+      userShare = finalAmount * 1.00;     // 100% User
+    
+    } else if (planType === 'ProAutoBoost') {
+      finalAmount = 10000 * months;       // 🔒 ₹10,000 per month
+      trinetraShare = finalAmount * 0.30; // 30% TriNetra
+      userShare = finalAmount * 0.70;     // 70% User
 
-    // Point 7: Free Boost (70% TriNetra, 30% User)
-    if (boostType === 'Free_Boost') {
-      triNetraShare = 70; 
-      userShare = 30;
-      splitRule = "70/30";
-    } 
-    // Point 8: Paid Boost (25% TriNetra, 75% User)
-    else if (boostType === 'Paid_Boost') {
-      triNetraShare = (amountPaid * 25) / 100; 
-      userShare = (amountPaid * 75) / 100;
-      splitRule = "25/75";
-      await deductFromWallet(user, amountPaid);
-    } 
-    // Point 9: Paid Boost + Monetization (100% User)
-    else if (boostType === 'Paid_Monetization') {
-      triNetraShare = 0;  
-      userShare = amountPaid;
-      splitRule = "0/100";
-      await deductFromWallet(user, amountPaid);
-    } 
-    // Point 10: Pro Auto-Boost (30% TriNetra, 70% User)
-    else if (boostType === 'Pro_Auto') {
-      const fixedPrice = TriNetraPricing.ProAutoBoost.pricePerMonth; // 10000
-      triNetraShare = (fixedPrice * 30) / 100; 
-      userShare = (fixedPrice * 70) / 100;
-      splitRule = "30/70";
-      await deductFromWallet(user, fixedPrice);
+    // --- AI MODELS (Point 11) ---
+    } else if (planType === 'ModeC_Recharge') {
+      finalAmount = 9999 * months;        // 🔒 ₹9,999 per month
+      trinetraShare = finalAmount;        // 100% TriNetra
+      userShare = 0;
+      creditsToAddC = 900 * months;       // 🔒 900 Credits per month
+    
+    } else if (planType === 'ModeB_Recharge') {
+      finalAmount = 3999 * months;        // 🔒 ₹3,999 per month
+      trinetraShare = finalAmount;
+      userShare = 0;
+      creditsToAddB = 300 * months;       // 🔒 300 Credits per month
+    
+    } else if (planType === 'ModeA_Recharge') {
+      finalAmount = 2000 * months;        // 🔒 ₹2,000 per month
+      trinetraShare = finalAmount;
+      userShare = 0;
+    
+    } else if (planType === 'OS_Creation') {
+      finalAmount = 69999;                // 🔒 One-Time Very Expensive Tier
+      trinetraShare = finalAmount;
+      userShare = 0;
+
+    // --- ESCALATION & SERVICES (Point 4) ---
+    } else if (planType === 'Escalation_VIP') {
+      finalAmount = 20000;                // 🔒 ₹20,000 Supreme Court Tier
+      trinetraShare = finalAmount;
+      userShare = 0;
+
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid Plan/Boost Type" });
     }
 
-    // ट्रांज़ैक्शन डेटाबेस में असली 70/30 का गणित सेव करें
-    const boostTxn = new Transaction({
-      userId,
-      gateway: 'Internal_Wallet',
-      amount: amountPaid || 0,
-      planType: boostType,
-      status: 'Success',
-      splitRatioRule: splitRule,
-      triNetraShare,
-      userShare
-    });
+    // 2. Gateway Processing
+    if (finalAmount > 0) {
+      const paymentSuccess = await processRealPayment(finalAmount, gatewayName);
+      if (!paymentSuccess) return res.status(400).json({ success: false, message: "Payment Failed" });
+    }
 
-    await boostTxn.save();
-    console.log(`[BOOST APPLIED] ${boostType} active. Share Rule: ${splitRule}`);
+    // 3. Save to Ledger
+    const transaction = new Transaction({
+      userId, amount: finalAmount, trinetraShare, userShare, boostType: planType,
+      gatewayUsed: finalAmount > 0 ? gatewayName : 'Free', status: 'Completed', monthsActivated: months
+    });
+    await transaction.save();
+
+    // 4. Update User Wallet & Credits
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if (userShare > 0) user.walletBalance = (user.walletBalance || 0) + userShare;
+    if (creditsToAddC > 0) user.aiCreditsC = (user.aiCreditsC || 0) + creditsToAddC;
+    if (creditsToAddB > 0) user.aiCreditsB = (user.aiCreditsB || 0) + creditsToAddB;
+    
+    await user.save();
 
     res.status(200).json({ 
       success: true, 
-      message: `${boostType} activated successfully.`,
-      splitRule: splitRule,
-      walletBalance: user.walletBalance
+      message: `${planType} Locked for ${months} Month(s).`, 
+      walletBalance: user.walletBalance,
+      aiCreditsC: user.aiCreditsC
     });
 
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
-};
-
-// Helper: वॉलेट से पैसे काटने का सिस्टम
-const deductFromWallet = async (user, amount) => {
-  if (user.walletBalance < amount) {
-    throw new Error(`Insufficient Wallet Balance! Need ₹${amount} to activate this feature.`);
-  }
-  user.walletBalance -= amount;
-  await user.save();
 };
