@@ -1,9 +1,11 @@
-// File: backend/models/Transaction.js
-const mongoose = require('mongoose');
+// ==========================================
+// TRINETRA BACKEND - FILE: models/Transaction.js
+// 100% User's Exact Pricing + Mode C Added
+// ==========================================
+import mongoose from 'mongoose';
 
 // 👁️🔥 TriNetra Master Pricing & Commission Dictionary (Locked Configuration)
-// (यह बैकएंड को याद दिलाएगा कि किस प्लान का क्या रेट है और कितना % बँटेगा)
-const TriNetraPricing = {
+export const TriNetraPricing = {
   // Auto-Escalation & Boost Plans (Discount Eligible)
   AutoEscalation: { pricePerMonth: 20000, discountEligible: true },
   FreeBoost: { pricePerMonth: 0, split: { triNetra: 70, user: 30 } },
@@ -14,6 +16,10 @@ const TriNetraPricing = {
   // AI Master Plans (STRICTLY NO DISCOUNT)
   AIChatbotPaid: { pricePerMonth: 2000, discountEligible: false, type: 'Unlimited_Meta_Level' },
   AIAgenticPaid: { pricePerMonth: 3999, discountEligible: false, credits: 500 },
+  
+  // 👉 🚀 SIRF MODE C AI ALAG SE JODA GAYA HAI (As per Point 11)
+  ModeC_SuperAgentic: { pricePerMonth: 9999, discountEligible: false, credits: 900, type: 'Human_Brain_Level' },
+  
   OSCreationTier: { pricePerMonth: 69999, discountEligible: false, credits: 2500 }
 };
 
@@ -25,10 +31,10 @@ const TransactionSchema = new mongoose.Schema({
   // Maine enum me naye type jode hain taki Boost aur AI ka payment clear rahe, purana nahi hataya
   type: { type: String, enum: ['Recharge', 'AdRevenue', 'Withdrawal', 'BoostPayment', 'AIPayment', 'AutoEscalationPayment'] }, 
   amount: { type: Number, required: true }, // Ye final amount hoga jo PayU se katega
-  planType: String, // Chatbot, Agentic, Pro Boost, AutoEscalation, OS_Creation etc.
+  planType: String, // Chatbot, Agentic, Pro Boost, AutoEscalation, OS_Creation, ModeC_SuperAgentic etc.
   months: Number, // 1, 3, 6, 9, 12
   status: { type: String, enum: ['Pending', 'Success', 'Failed'], default: 'Pending' },
-  razorpayOrderId: String,
+  razorpayOrderId: String, // User ke order ke anusar isko nahi hataya gaya hai
 
   // ==========================================
   // 🚀 NAYA CODE (12-Point Blueprint ke anusar)
@@ -44,13 +50,9 @@ const TransactionSchema = new mongoose.Schema({
   userShare: { type: Number, default: 0 }, // User ka profit jo uske Wallet (Payout) me dikhega
   
   // 3. AI Logic (Master AI System)
-  aiCreditsAllocated: { type: Number, default: 0 }, // 500 (Agentic) ya 2500 (OS Builder)
+  aiCreditsAllocated: { type: Number, default: 0 }, // 500, 900 (Mode C), ya 2500 (OS Builder)
   isNoDiscountPlan: { type: Boolean, default: false } // Ensure karega ki AI me galti se bhi discount na lage
 
 }, { timestamps: true });
 
-// Pricing object ko export kar rahe hain taki controllers ise use kar sakein
-module.exports = {
-  Transaction: mongoose.model('Transaction', TransactionSchema),
-  TriNetraPricing
-};
+export default mongoose.model('Transaction', TransactionSchema);
