@@ -1,16 +1,15 @@
-// File: backend/routes/postRoutes.js
-const express = require('express');
+import express from 'express';
+import { createPost, getFeed } from '../controllers/postController.js';
+import { updateSettings, handleFollow } from '../controllers/userController.js';
+
 const router = express.Router();
-const postController = require('../controllers/postController');
-const escalationController = require('../controllers/escalationController');
 
-// Posts
-router.post('/create', postController.createPost);
-router.get('/feed', postController.getFeed);
-router.post('/like', postController.likePost);
-router.post('/comment', postController.addComment);
+// Point 4: Feed & Reels Logic
+router.post('/create', createPost);
+router.get('/feed', getFeed);
 
-// Auto-Escalation (MLA/CM System)
-router.post('/escalate', escalationController.escalateIssue);
+// Point 3 & 12: Profile & Deep Settings (A to H)
+router.put('/settings/update', updateSettings);
+router.post('/follow', handleFollow);
 
-module.exports = router;
+export default router;
