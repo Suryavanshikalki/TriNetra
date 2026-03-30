@@ -1,12 +1,8 @@
-// ==========================================
-// TRINETRA BACKEND - AUTH CONTROLLER (File 5)
-// Blueprint: Point 2 (Gatekeeper & Permanent ID)
-// ==========================================
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-// TriNetra ID Generator Rule
+// असली TriNetra ID बनाने का लॉजिक (Point 2: Permanent ID)
 const generateTriNetraId = () => {
   const randomStr = crypto.randomBytes(3).toString('hex').toUpperCase();
   const year = new Date().getFullYear();
@@ -15,20 +11,21 @@ const generateTriNetraId = () => {
 
 export const registerOrLogin = async (req, res) => {
   try {
-    const { authProvider, authId, name } = req.body;
+    const { authProvider, authId, name, email, phone } = req.body;
 
-    // Strict Entry: No Skip Button Rule
+    // Point 2: Strict Entry Rule (बिना लॉगिन नो एंट्री)
     if (!authProvider || !authId) {
       return res.status(400).json({ success: false, message: "TriNetra Gatekeeper: Auth details missing. Entry Denied." });
     }
 
+    // चेक करें कि यूज़र पहले से है या नहीं
     let user = await User.findOne({ authId, authProvider });
 
     if (!user) {
-      // Create New Permanent ID
+      // नया यूज़र - Permanent ID बनाएँ
       const newId = generateTriNetraId();
       
-      // Point 2 Rule: GitHub limits to AI Only
+      // Point 2 Rule: GitHub Login = AI Only
       const isAIOnlyFlag = authProvider === 'github';
 
       user = new User({
@@ -40,10 +37,12 @@ export const registerOrLogin = async (req, res) => {
       });
 
       await user.save();
-      console.log(`[GATEKEEPER] New TriNetra Identity Forged: ${newId}`);
+      console.log(`[GATEKEEPER] New TriNetra Identity Forged: ${newId} via ${authProvider}`);
+    } else {
+      console.log(`[GATEKEEPER] Welcome Back: ${user.trinetraId}`);
     }
 
-    // Token Generation (Using your Render JWT Secret)
+    // सुरक्षा के लिए JWT Token (Render के .env से सीक्रेट लेगा)
     const token = jwt.sign(
       { userId: user._id, trinetraId: user.trinetraId, isAIOnly: user.isAIOnly },
       process.env.JWT_SECRET || 'trinetra_master_key_fallback',
@@ -58,7 +57,8 @@ export const registerOrLogin = async (req, res) => {
         name: user.name,
         isAIOnly: user.isAIOnly,
         aiProfile: user.aiProfile,
-        walletBalance: user.walletBalance
+        walletBalance: user.walletBalance,
+        preferredGateway: user.preferredGateway
       }
     });
 
