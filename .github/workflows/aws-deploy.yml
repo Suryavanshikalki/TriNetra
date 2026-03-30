@@ -21,7 +21,8 @@ jobs:
       run: |
         cd frontend
         npm install
-        # CI=false का मतलब है: वॉर्निंग्स को नजरअंदाज करो और ऐप बनाओ!
+        # 🔥 ये ब्रह्मास्त्र है: जो पैकेजेस गायब हैं, ये उन्हें जबरदस्ती इंस्टॉल कर देगा!
+        npm install i18next react-i18next
         CI=false npm run build
 
     - name: Connect to AWS
@@ -33,7 +34,6 @@ jobs:
 
     - name: Deploy to S3 Bucket
       run: |
-        # पक्का करें कि आपका S3 बकेट नाम सही है
         aws s3 sync frontend/dist/ s3://trinetra-app-live --delete 
 
   # 🧠 भाग 2: Backend (Node.js) को App Runner पर अपडेट करना
@@ -53,5 +53,4 @@ jobs:
 
     - name: Trigger App Runner
       run: |
-        # AWS App Runner को नया कोड खींचने का आदेश देना
         aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
