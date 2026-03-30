@@ -19,19 +19,29 @@ jobs:
     - name: Build Frontend
       run: |
         cd frontend
+        # 1. पुराने कचरे को साफ करना
+        rm -rf node_modules package-lock.json
+        # 2. ताज़ा इनस्टॉल
         npm install
-        # i18next पैकेज को जबरदस्ती यहाँ इंस्टॉल कर रहे हैं
-        npm install i18next react-i18next
+        # 3. गायब पैकेजेस का ब्रह्मास्त्र
+        npm install i18next react-i18next i18next-browser-languagedetector
+        # 4. बिल्ड बनाना (Errors को इग्नोर करते हुए)
         CI=false npm run build
 
     - name: Connect to AWS
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        # 🔥 आपकी फोटो के हिसाब से एकदम सही नाम!
+        # 🔥 आपकी फोटो 63/64 के हिसाब से एकदम 'प्योर' नाम
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: ap-south-1 
 
     - name: Deploy to S3 Bucket
       run: |
-        aws s3 sync frontend/dist/ s3://trinetra-app-live --delete 
+        # 🔥 अगर डिस्ट फोल्डर बन गया है, तो उसे सीधा S3 में फेंक दो
+        if [ -d "frontend/dist" ]; then
+          aws s3 sync frontend/dist/ s3://trinetra-app-live --delete
+        else
+          echo "TriNetra Error: Dist folder not found! Build failed."
+          exit 1
+        fi
