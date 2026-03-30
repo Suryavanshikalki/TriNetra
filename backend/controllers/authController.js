@@ -1,69 +1,37 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-
-// असली TriNetra ID बनाने का लॉजिक (Point 2: Permanent ID)
-const generateTriNetraId = () => {
-  const randomStr = crypto.randomBytes(3).toString('hex').toUpperCase();
-  const year = new Date().getFullYear();
-  return `TRN-${year}-${randomStr}`;
-};
 
 export const registerOrLogin = async (req, res) => {
   try {
-    const { authProvider, authId, name, email, phone } = req.body;
-
-    // Point 2: Strict Entry Rule (बिना लॉगिन नो एंट्री)
-    if (!authProvider || !authId) {
-      return res.status(400).json({ success: false, message: "TriNetra Gatekeeper: Auth details missing. Entry Denied." });
-    }
-
-    // चेक करें कि यूज़र पहले से है या नहीं
-    let user = await User.findOne({ authId, authProvider });
-
+    const { phone, email, method } = req.body;
+    // Point 2: Strict Entry Logic
+    let user = await User.findOne({ $or: [{ phone }, { email }] });
     if (!user) {
-      // नया यूज़र - Permanent ID बनाएँ
-      const newId = generateTriNetraId();
-      
-      // Point 2 Rule: GitHub Login = AI Only
-      const isAIOnlyFlag = authProvider === 'github';
-
-      user = new User({
-        trinetraId: newId,
-        authProvider,
-        authId,
-        name: name || `User_${newId}`,
-        isAIOnly: isAIOnlyFlag,
+      user = new User({ 
+        phone, 
+        email, 
+        trinetraId: `TRN-${Math.floor(100000 + Math.random() * 900000)}`,
+        loginMethod: method 
       });
-
       await user.save();
-      console.log(`[GATEKEEPER] New TriNetra Identity Forged: ${newId} via ${authProvider}`);
-    } else {
-      console.log(`[GATEKEEPER] Welcome Back: ${user.trinetraId}`);
     }
-
-    // सुरक्षा के लिए JWT Token (Render के .env से सीक्रेट लेगा)
-    const token = jwt.sign(
-      { userId: user._id, trinetraId: user.trinetraId, isAIOnly: user.isAIOnly },
-      process.env.JWT_SECRET || 'trinetra_master_key_fallback',
-      { expiresIn: '365d' }
-    );
-
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        trinetraId: user.trinetraId,
-        name: user.name,
-        isAIOnly: user.isAIOnly,
-        aiProfile: user.aiProfile,
-        walletBalance: user.walletBalance,
-        preferredGateway: user.preferredGateway
-      }
-    });
-
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    res.status(200).json({ success: true, token, user });
   } catch (error) {
-    console.error(`[AUTH CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Gatekeeper Server Error" });
+    res.status(500).json({ success: false, message: "Auth Error" });
+  }
+};
+
+// Point 12: Settings A to H (Preferences & Privacy)
+export const updateDeepSettings = async (req, res) => {
+  try {
+    const { userId, settingsType, data } = req.body; 
+    // settingsType = 'Preferences', 'Privacy', 'Notifications' etc.
+    const user = await User.findById(userId);
+    user[settingsType] = { ...user[settingsType], ...data };
+    await user.save();
+    res.status(200).json({ success: true, message: `Settings ${settingsType} Locked.` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Settings Sync Error" });
   }
 };
