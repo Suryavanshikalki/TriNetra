@@ -1,7 +1,7 @@
 {
   "hosting": {
     "site": "trinetra-8b846",
-    "public": "dist", 
+    "public": "build/web", 
     "ignore": [
       "firebase.json",
       "**/.*",
