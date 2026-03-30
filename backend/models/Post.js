@@ -1,11 +1,7 @@
-// ==========================================
-// TRINETRA BACKEND - POST & ESCALATION MODEL (File 6)
-// Blueprint: Point 4 (Feed, Universal Media, Escalation)
-// ==========================================
 import mongoose from 'mongoose';
 
 const postSchema = new mongoose.Schema({
-  userId: { type: String, required: true }, // Links to TriNetra ID
+  userId: { type: String, required: true }, // TriNetra ID
   userName: { type: String, required: true },
   userAvatar: { type: String, default: "" },
   
@@ -15,7 +11,6 @@ const postSchema = new mongoose.Schema({
   mediaUrl: { type: String, default: "" },
   mediaType: { type: String, enum: ['image', 'video', 'audio', 'document', 'none'], default: 'none' },
   
-  // Engagement
   likes: { type: Number, default: 0 },
   comments: { type: Number, default: 0 },
 
@@ -38,8 +33,8 @@ const postSchema = new mongoose.Schema({
   },
   escalationHistory: [{
     level: String,
-    timestamp: { type: Date, default: Date.now },
-    status: { type: String, enum: ['Pending', 'Resolved', 'Escalated'], default: 'Pending' }
+    status: { type: String, enum: ['Pending', 'Resolved', 'Escalated'], default: 'Pending' },
+    timestamp: { type: Date, default: Date.now }
   }]
 }, { timestamps: true });
 
