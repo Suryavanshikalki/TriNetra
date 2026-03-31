@@ -3,12 +3,24 @@ on:
   push:
     branches: [ main ]
 
+# 🔐 SUPER-SAFE VAULT: अब कोई 'meta' या 'quote' एरर नहीं आएगा!
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  AWS_AK: ${{ secrets.AWS_ACCESS_KEY }}
+  AWS_SK: ${{ secrets.AWS_SECRET_KEY }}
+  GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
+  PAYU_KEY: ${{ secrets.PAYU_MERCHANT_KEY }}
+  BT_TOKEN: ${{ secrets.BRAINTREE_TOKEN }}
+  PAYPAL_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+  PADDLE_KEY: ${{ secrets.PADDLE_API_KEY }}
+  ADYEN_KEY: ${{ secrets.ADYEN_API_KEY }}
+  META_ID: ${{ secrets.META_AUDIENCE_NETWORK_APP_ID }}
+  APPLOVIN_KEY: ${{ secrets.APPLOVIN_SDK_KEY }}
+  SENTRY: ${{ secrets.SENTRY_DSN }}
 
 jobs:
 
-  # 1. ANDROID BUILD 🟢 (APK + AAB with 20 Keys)
+  # 1. ANDROID BUILD 🟢 (APK + AAB)
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -18,9 +30,7 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
       - name: Install Android Build Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libsecret-1-dev
+        run: sudo apt-get update && sudo apt-get install -y libsecret-1-dev
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -29,31 +39,40 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
+          # 🔥 NINJA SCRIPT: Razorpay को हमेशा के लिए जड़ से मिटाएं
+          grep -v "razorpay_flutter" pubspec.yaml > tmp.yaml && mv tmp.yaml pubspec.yaml
+          
           flutter clean
           flutter pub get
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
-          # AWS, AI, and Fintech Payment Gateways (Razorpay Removed)
+          # Universal App Keys
           flutter build apk --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
-            --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY="$AWS_AK" \
+            --dart-define=AWS_SECRET_KEY="$AWS_SK" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_KEY" \
+            --dart-define=PAYU_MERCHANT_KEY="$PAYU_KEY" \
+            --dart-define=BRAINTREE_TOKEN="$BT_TOKEN" \
+            --dart-define=PAYPAL_CLIENT_ID="$PAYPAL_ID" \
+            --dart-define=PADDLE_API_KEY="$PADDLE_KEY" \
+            --dart-define=ADYEN_API_KEY="$ADYEN_KEY" \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID="$META_ID" \
+            --dart-define=APPLOVIN_SDK_KEY="$APPLOVIN_KEY" \
+            --dart-define=SENTRY_DSN="$SENTRY" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
             
           flutter build appbundle --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
-            --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY="$AWS_AK" \
+            --dart-define=AWS_SECRET_KEY="$AWS_SK" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_KEY" \
+            --dart-define=PAYU_MERCHANT_KEY="$PAYU_KEY" \
+            --dart-define=BRAINTREE_TOKEN="$BT_TOKEN" \
+            --dart-define=PAYPAL_CLIENT_ID="$PAYPAL_ID" \
+            --dart-define=PADDLE_API_KEY="$PADDLE_KEY" \
+            --dart-define=ADYEN_API_KEY="$ADYEN_KEY" \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID="$META_ID" \
+            --dart-define=APPLOVIN_SDK_KEY="$APPLOVIN_KEY" \
+            --dart-define=SENTRY_DSN="$SENTRY" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
             
       - name: Save Android Artifacts
@@ -77,13 +96,22 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
+          grep -v "razorpay_flutter" pubspec.yaml > tmp.yaml && mv tmp.yaml pubspec.yaml
           flutter config --enable-windows-desktop
           flutter clean
           flutter pub get
           flutter build windows --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
+            --dart-define=AWS_ACCESS_KEY="$AWS_AK" \
+            --dart-define=AWS_SECRET_KEY="$AWS_SK" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_KEY" \
+            --dart-define=PAYU_MERCHANT_KEY="$PAYU_KEY" \
+            --dart-define=BRAINTREE_TOKEN="$BT_TOKEN" \
+            --dart-define=PAYPAL_CLIENT_ID="$PAYPAL_ID" \
+            --dart-define=PADDLE_API_KEY="$PADDLE_KEY" \
+            --dart-define=ADYEN_API_KEY="$ADYEN_KEY" \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID="$META_ID" \
+            --dart-define=APPLOVIN_SDK_KEY="$APPLOVIN_KEY" \
+            --dart-define=SENTRY_DSN="$SENTRY" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
@@ -97,9 +125,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Linux Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libsecret-1-dev libcurl4-openssl-dev
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libsecret-1-dev libcurl4-openssl-dev
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -108,13 +134,22 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
+          grep -v "razorpay_flutter" pubspec.yaml > tmp.yaml && mv tmp.yaml pubspec.yaml
           flutter config --enable-linux-desktop
           flutter clean
           flutter pub get
           flutter build linux --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
+            --dart-define=AWS_ACCESS_KEY="$AWS_AK" \
+            --dart-define=AWS_SECRET_KEY="$AWS_SK" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_KEY" \
+            --dart-define=PAYU_MERCHANT_KEY="$PAYU_KEY" \
+            --dart-define=BRAINTREE_TOKEN="$BT_TOKEN" \
+            --dart-define=PAYPAL_CLIENT_ID="$PAYPAL_ID" \
+            --dart-define=PADDLE_API_KEY="$PADDLE_KEY" \
+            --dart-define=ADYEN_API_KEY="$ADYEN_KEY" \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID="$META_ID" \
+            --dart-define=APPLOVIN_SDK_KEY="$APPLOVIN_KEY" \
+            --dart-define=SENTRY_DSN="$SENTRY" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
@@ -122,7 +157,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (Ekdum Alag - Vision Pro Ready)
+  # 4. iOS BUILD 🔴 (🔥 FIXED: Razorpay Swift Error)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
@@ -136,20 +171,24 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
+          grep -v "razorpay_flutter" pubspec.yaml > tmp.yaml && mv tmp.yaml pubspec.yaml
           flutter clean
           flutter pub get
           flutter build ios --release --no-codesign \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
-            --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY="$AWS_AK" \
+            --dart-define=AWS_SECRET_KEY="$AWS_SK" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_KEY" \
+            --dart-define=PAYU_MERCHANT_KEY="$PAYU_KEY" \
+            --dart-define=BRAINTREE_TOKEN="$BT_TOKEN" \
+            --dart-define=PAYPAL_CLIENT_ID="$PAYPAL_ID" \
+            --dart-define=PADDLE_API_KEY="$PADDLE_KEY" \
+            --dart-define=ADYEN_API_KEY="$ADYEN_KEY" \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID="$META_ID" \
+            --dart-define=APPLOVIN_SDK_KEY="$APPLOVIN_KEY" \
+            --dart-define=SENTRY_DSN="$SENTRY" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (Ekdum Alag)
+  # 5. macOS BUILD 🟠 (🔥 FIXED: Removed Invalid --no-codesign Flag)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
@@ -163,13 +202,22 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
+          grep -v "razorpay_flutter" pubspec.yaml > tmp.yaml && mv tmp.yaml pubspec.yaml
           flutter config --enable-macos-desktop
           flutter clean
           flutter pub get
           flutter build macos --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
+            --dart-define=AWS_ACCESS_KEY="$AWS_AK" \
+            --dart-define=AWS_SECRET_KEY="$AWS_SK" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_KEY" \
+            --dart-define=PAYU_MERCHANT_KEY="$PAYU_KEY" \
+            --dart-define=BRAINTREE_TOKEN="$BT_TOKEN" \
+            --dart-define=PAYPAL_CLIENT_ID="$PAYPAL_ID" \
+            --dart-define=PADDLE_API_KEY="$PADDLE_KEY" \
+            --dart-define=ADYEN_API_KEY="$ADYEN_KEY" \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID="$META_ID" \
+            --dart-define=APPLOVIN_SDK_KEY="$APPLOVIN_KEY" \
+            --dart-define=SENTRY_DSN="$SENTRY" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
@@ -177,7 +225,7 @@ jobs:
           name: macOS-Release
           path: '**/build/macos/Build/Products/Release/*.app'
 
-  # 6. WEB PWA & FIREBASE DEPLOY 🟡 (AWS Focus + Firebase Bypass)
+  # 6. WEB PWA & FIREBASE DEPLOY 🟡 (🔥 FIXED: Safe Meta Injection & AWS Bypass)
   deploy-web-firebase:
     runs-on: ubuntu-latest
     steps:
@@ -190,30 +238,37 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
+          grep -v "razorpay_flutter" pubspec.yaml > tmp.yaml && mv tmp.yaml pubspec.yaml
           flutter clean
           flutter pub get
-          
-          # Web receives all keys for full App-like experience
           flutter build web --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
-            --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY="$AWS_AK" \
+            --dart-define=AWS_SECRET_KEY="$AWS_SK" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_KEY" \
+            --dart-define=PAYU_MERCHANT_KEY="$PAYU_KEY" \
+            --dart-define=BRAINTREE_TOKEN="$BT_TOKEN" \
+            --dart-define=PAYPAL_CLIENT_ID="$PAYPAL_ID" \
+            --dart-define=PADDLE_API_KEY="$PADDLE_KEY" \
+            --dart-define=ADYEN_API_KEY="$ADYEN_KEY" \
+            --dart-define=META_AUDIENCE_NETWORK_APP_ID="$META_ID" \
+            --dart-define=APPLOVIN_SDK_KEY="$APPLOVIN_KEY" \
+            --dart-define=SENTRY_DSN="$SENTRY" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
             
-      - name: Deploy to Firebase (Bypass Hack for AWS)
-        continue-on-error: true  # 🔥 यह Firebase के फालतू लाल एरर को रोककर हरा टिक देगा!
+      - name: Deploy to Firebase (AWS Smart Bypass)
+        continue-on-error: true
         shell: bash
         run: |
+          FIREBASE_FILE=$(find . -name "firebase.json" | head -n 1)
+          if [ -z "$FIREBASE_FILE" ]; then
+            echo "🔥 Firebase JSON not found! We are on AWS. Skipping Firebase..."
+            exit 0
+          fi
           cd $GITHUB_WORKSPACE
           npm install -g firebase-tools
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > sa.json
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/sa.json
-          FIREBASE_DIR=$(dirname $(find . -name "firebase.json" | head -n 1))
+          FIREBASE_DIR=$(dirname "$FIREBASE_FILE")
           cd "$FIREBASE_DIR"
           firebase deploy --only hosting
           rm $GITHUB_WORKSPACE/sa.json
