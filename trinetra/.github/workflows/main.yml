@@ -192,11 +192,11 @@ jobs:
           path: out/TriNetra.apk
 
   # ─────────────────────────────────────────────────────────────────
-  # 3. iOS Unsigned IPA
+  # 3. iOS Unsigned IPA (🔥 FIXED: macos-14 for Apple Vision Support)
   # ─────────────────────────────────────────────────────────────────
   build-ios:
     name: Build iOS (Unsigned)
-    runs-on: macos-latest
+    runs-on: macos-14
     timeout-minutes: 60
     steps:
       - name: Checkout Code
@@ -258,11 +258,11 @@ jobs:
         continue-on-error: true
 
   # ─────────────────────────────────────────────────────────────────
-  # 4. macOS Unsigned DMG
+  # 4. macOS Unsigned DMG (🔥 FIXED: macos-14)
   # ─────────────────────────────────────────────────────────────────
   build-macos:
     name: Build macOS (Unsigned)
-    runs-on: macos-latest
+    runs-on: macos-14
     timeout-minutes: 60
     steps:
       - name: Checkout Code
@@ -468,145 +468,17 @@ jobs:
           path: out/TriNetra.deb
 
   # ─────────────────────────────────────────────────────────────────
-  # 7. Assemble downloads/ + Deploy to Firebase
-  # ─────────────────────────────────────────────────────────────────
-  deploy-firebase:
-    name: Assemble & Deploy to Firebase
-    runs-on: ubuntu-latest
-    needs: [build-web, build-android, build-ios, build-macos, build-windows, build-linux]
-    if: ${{ !cancelled() && needs.build-web.result == 'success' }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-
-      - name: Find project root
-        shell: bash
-        run: |
-          if [ -f "pubspec.yaml" ]; then
-            echo "PROJ=." >> $GITHUB_ENV
-          elif [ -f "trinetra/pubspec.yaml" ]; then
-            echo "PROJ=trinetra" >> $GITHUB_ENV
-          else
-            echo "pubspec.yaml not found" && exit 1
-          fi
-
-      - name: Download web build
-        uses: actions/download-artifact@v4
-        with:
-          name: web-build
-          path: ${{ env.PROJ }}/build/web/
-
-      - name: Download Android APK
-        uses: actions/download-artifact@v4
-        with:
-          name: android-apk
-          path: native/android/
-        continue-on-error: true
-
-      - name: Download Windows ZIP
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-zip
-          path: native/windows/
-        continue-on-error: true
-
-      - name: Download Linux DEB
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-deb
-          path: native/linux/
-        continue-on-error: true
-
-      - name: Download macOS DMG
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-dmg
-          path: native/macos/
-        continue-on-error: true
-
-      - name: Download iOS IPA
-        uses: actions/download-artifact@v4
-        with:
-          name: ios-ipa
-          path: native/ios/
-        continue-on-error: true
-
-      - name: Move native builds into downloads/
-        shell: bash
-        run: |
-          mkdir -p ${{ env.PROJ }}/build/web/downloads
-          for f in \
-            "native/android/TriNetra.apk" \
-            "native/windows/TriNetra-Windows.zip" \
-            "native/linux/TriNetra.deb" \
-            "native/macos/TriNetra.dmg" \
-            "native/ios/TriNetra-iOS-Unsigned.ipa"; do
-            [ -f "$f" ] \
-              && cp "$f" "${{ env.PROJ }}/build/web/downloads/" \
-              && echo "copied: $(basename $f)" \
-              || echo "not found: $f"
-          done
-
-      - name: Inject Google verification tag
-        shell: bash
-        env:
-          GOOGLE_VERIFICATION_TAG: ${{ secrets.GOOGLE_VERIFICATION_TAG }}
-          PROJ_DIR: ${{ env.PROJ }}
-        run: |
-          python3 - << 'PYEOF'
-          import os, sys
-          tag  = os.environ.get('GOOGLE_VERIFICATION_TAG', '').strip()
-          proj = os.environ.get('PROJ_DIR', '.')
-          if not tag:
-              print("GOOGLE_VERIFICATION_TAG not set — skipping"); sys.exit(0)
-          if not tag.startswith('<'):
-              tag = f'<meta name="google-site-verification" content="{tag}">'
-          path = f'{proj}/build/web/index.html'
-          txt  = open(path).read()
-          ph   = '<meta name="google-site-verification" content="YOUR_GOOGLE_SEARCH_CONSOLE_CODE">'
-          if ph in txt:
-              open(path, 'w').write(txt.replace(ph, tag))
-              print(f'injected: {tag}')
-          elif 'google-site-verification' in txt:
-              print('tag already present')
-          else:
-              print('placeholder not found'); sys.exit(1)
-          PYEOF
-
-      - name: Deploy to Firebase
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > sa.json
-          export GOOGLE_APPLICATION_CREDENTIALS=sa.json
-          npx firebase-tools deploy --only hosting
-          rm sa.json
-        shell: bash
-        working-directory: ${{ env.PROJ }}
-
-  # ─────────────────────────────────────────────────────────────────
-  # 8. GitHub Release
+  # 7. GitHub Release (🔥 FIXED: Removed Firebase Dependency)
   # ─────────────────────────────────────────────────────────────────
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [deploy-firebase]
+    needs: [build-web, build-android, build-ios, build-macos, build-windows, build-linux]
     if: github.ref == 'refs/heads/main' || github.event.inputs.create_release == 'true'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+      
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -653,7 +525,7 @@ jobs:
             | macOS | `TriNetra.dmg` | Right-click → Open |
             | Windows | `TriNetra-Windows.zip` | Extract and run |
             | Linux | `TriNetra.deb` | `sudo dpkg -i TriNetra.deb` |
-            | Web PWA | https://trinetra-8b846.web.app | Auto-deployed |
+            | Web PWA | Web Build | Available via AWS S3 |
           files: |
             all-artifacts/**/*.apk
             all-artifacts/**/*.ipa
