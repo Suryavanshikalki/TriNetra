@@ -82,6 +82,8 @@ dependencies:
   mime: ^1.0.6
   # 🚀 FIXED: Upgraded version to resolve incompatibility with cached_network_image_web
   package_info_plus: ^9.0.0
+  # 🔥 MASTER FIX: iOS Apple Vision Error को जड़ से ख़त्म करने के लिए इसे जबरदस्ती जोड़ा गया है
+  device_info_plus: ^10.1.0
 
 dev_dependencies:
   flutter_test:
