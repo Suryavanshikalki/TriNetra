@@ -48,17 +48,24 @@ jobs:
             echo "pubspec.yaml not found" && exit 1
           fi
 
-      - name: Parse Firebase config
-        shell: bash
+      - name: Parse Firebase config (Bulletproof Python Method)
+        shell: python
+        env:
+          FB_CONF: ${{ secrets.FIREBASE_CONFIG }}
         run: |
-          echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
-          echo "FB_API_KEY=$(jq  -r '.apiKey            // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_APP_ID=$(jq   -r '.appId             // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_SENDER=$(jq   -r '.messagingSenderId // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_PROJECT=$(jq  -r '.projectId         // "trinetra-8b846"'                 /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_DOMAIN=$(jq   -r '.authDomain        // "trinetra-8b846.firebaseapp.com"' /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_BUCKET=$(jq   -r '.storageBucket     // "trinetra-8b846.appspot.com"'     /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_MEASURE=$(jq  -r '.measurementId     // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
+          import os, re
+          conf = os.environ.get('FB_CONF', '')
+          def x(k):
+              m = re.search(fr'{k}["\']?\s*:\s*["\']([^"\']+)["\']', conf)
+              return m.group(1) if m else ''
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write(f"FB_API_KEY={x('apiKey')}\n")
+              f.write(f"FB_APP_ID={x('appId')}\n")
+              f.write(f"FB_SENDER={x('messagingSenderId')}\n")
+              f.write(f"FB_PROJECT={x('projectId') or 'trinetra-8b846'}\n")
+              f.write(f"FB_DOMAIN={x('authDomain') or 'trinetra-8b846.firebaseapp.com'}\n")
+              f.write(f"FB_BUCKET={x('storageBucket') or 'trinetra-8b846.appspot.com'}\n")
+              f.write(f"FB_MEASURE={x('measurementId')}\n")
 
       - name: Flutter pub get
         shell: bash
@@ -97,7 +104,7 @@ jobs:
           retention-days: 1
 
   # ─────────────────────────────────────────────────────────────────
-  # 2. Android APK + AAB (🔥 FUSION: Added libsecret-1-dev & AAB Build)
+  # 2. Android APK + AAB
   # ─────────────────────────────────────────────────────────────────
   build-android:
     name: Build Android APK & AAB
@@ -132,15 +139,22 @@ jobs:
             echo "pubspec.yaml not found" && exit 1
           fi
 
-      - name: Parse Firebase config (Android)
-        shell: bash
+      - name: Parse Firebase config (Android - Bulletproof Python)
+        shell: python
+        env:
+          FB_CONF: ${{ secrets.FIREBASE_CONFIG }}
         run: |
-          echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
-          echo "FB_AND_KEY=$(jq -r '.android.apiKey // .apiKey // empty'              /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_AND_APP=$(jq -r '.android.appId  // .appId  // empty'              /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_SENDER=$(jq  -r '.messagingSenderId // empty'                       /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_PROJECT=$(jq -r '.projectId       // "trinetra-8b846"'              /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_BUCKET=$(jq  -r '.storageBucket   // "trinetra-8b846.appspot.com"'  /tmp/fc.json)" >> $GITHUB_ENV
+          import os, re
+          conf = os.environ.get('FB_CONF', '')
+          def x(k):
+              m = re.search(fr'{k}["\']?\s*:\s*["\']([^"\']+)["\']', conf)
+              return m.group(1) if m else ''
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write(f"FB_AND_KEY={x('apiKey')}\n")
+              f.write(f"FB_AND_APP={x('appId')}\n")
+              f.write(f"FB_SENDER={x('messagingSenderId')}\n")
+              f.write(f"FB_PROJECT={x('projectId') or 'trinetra-8b846'}\n")
+              f.write(f"FB_BUCKET={x('storageBucket') or 'trinetra-8b846.appspot.com'}\n")
 
       - name: Setup Android signing
         shell: bash
@@ -215,7 +229,7 @@ jobs:
           path: out/
 
   # ─────────────────────────────────────────────────────────────────
-  # 3. iOS Unsigned IPA (🔥 FIXED: macos-14 for Apple Vision)
+  # 3. iOS Unsigned IPA (🔥 FIXED: Razorpay Swift Bug Ninja Patch)
   # ─────────────────────────────────────────────────────────────────
   build-ios:
     name: Build iOS (Unsigned)
@@ -255,6 +269,11 @@ jobs:
         run: flutter pub upgrade
         working-directory: ${{ env.PROJ }}
 
+      - name: Patch Razorpay iOS Bug
+        shell: bash
+        run: |
+          find /Users/runner/.pub-cache/hosted/pub.dev/razorpay_flutter* -name "RazorpayDelegate.swift" -exec sed -i '' '/subscribeToAnalyticsEvents/d' {} + || true
+
       - name: Flutter build iOS
         shell: bash
         run: |
@@ -281,7 +300,7 @@ jobs:
         continue-on-error: true
 
   # ─────────────────────────────────────────────────────────────────
-  # 4. macOS Unsigned DMG (🔥 FIXED: macos-14)
+  # 4. macOS Unsigned DMG (🔥 FIXED: Removed --no-codesign)
   # ─────────────────────────────────────────────────────────────────
   build-macos:
     name: Build macOS (Unsigned)
@@ -327,7 +346,7 @@ jobs:
       - name: Flutter build macOS
         shell: bash
         run: |
-          flutter build macos --release --no-codesign \
+          flutter build macos --release \
             --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
@@ -411,7 +430,7 @@ jobs:
           path: out/TriNetra-Windows.zip
 
   # ─────────────────────────────────────────────────────────────────
-  # 6. Linux DEB (🔥 FUSION: Added libsecret-1-dev from File 1)
+  # 6. Linux DEB
   # ─────────────────────────────────────────────────────────────────
   build-linux:
     name: Build Linux DEB
