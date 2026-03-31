@@ -123,7 +123,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (🔥 FINAL FIX: Bulletproof Python Patch for Razorpay)
+  # 4. iOS BUILD 🔴 (🔥 FINAL FIX: Native Bug Fix for Vision Pro & Razorpay)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
@@ -140,23 +140,11 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Running Bulletproof Python Script to Neutralize Razorpay iOS Error..."
-          python3 - << 'PYEOF'
-          import os, glob
-          pub_cache = os.path.expanduser('~/.pub-cache/hosted/pub.dev')
+          echo "🔥 Patching Razorpay Bug natively..."
+          find /Users/runner/.pub-cache/hosted/pub.dev/razorpay_flutter* -type f -name "RazorpayDelegate.swift" -exec sed -i '' '/subscribeToAnalyticsEvents/d' {} + || true
           
-          plugin_files = glob.glob(f"{pub_cache}/razorpay_flutter-*/ios/Classes/SwiftRazorpayFlutterPlugin.swift")
-          for path in plugin_files:
-              with open(path, 'w') as f:
-                  f.write("import Flutter\nimport UIKit\npublic class SwiftRazorpayFlutterPlugin: NSObject, FlutterPlugin {\n  public static func register(with registrar: FlutterPluginRegistrar) {}\n}")
-          
-          delegate_files = glob.glob(f"{pub_cache}/razorpay_flutter-*/ios/Classes/RazorpayDelegate.swift")
-          for path in delegate_files:
-              with open(path, 'w') as f:
-                  f.write("import Foundation\npublic class RazorpayDelegate: NSObject {}")
-          
-          print("✅ Razorpay successfully neutralized via Python!")
-          PYEOF
+          echo "🔥 Patching Apple Vision SDK Bug natively..."
+          find /Users/runner/.pub-cache/hosted/pub.dev/device_info_plus* -type f -name "FPPDeviceInfoPlusPlugin.m" -exec sed -i '' 's/isiOSAppOnVision/isiOSAppOnMac/g' {} + || true
 
           flutter build ios --release --no-codesign \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
@@ -169,7 +157,7 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (🔥 FINAL FIX: Bulletproof Python Patch for Target 10.14)
+  # 5. macOS BUILD 🟠 (🔥 FINAL FIX: Bulletproof Ruby Script for Target 10.14)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
@@ -189,26 +177,22 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Upgrading macOS Deployment Target to 10.14 via Python..."
-          python3 - << 'PYEOF'
-          import os, re
-          
-          pbx = 'macos/Runner.xcodeproj/project.pbxproj'
-          if os.path.exists(pbx):
-              with open(pbx, 'r') as f: c = f.read()
-              c = re.sub(r'MACOSX_DEPLOYMENT_TARGET = 10\.\d+;', 'MACOSX_DEPLOYMENT_TARGET = 10.14;', c)
-              with open(pbx, 'w') as f: f.write(c)
-              
-          podfile = 'macos/Podfile'
-          if os.path.exists(podfile):
-              with open(podfile, 'r') as f: c = f.read()
-              c = re.sub(r"platform :osx, '10\.\d+'", "platform :osx, '10.14'", c)
-              if 'MACOSX_DEPLOYMENT_TARGET' not in c:
-                  c = c.replace('flutter_additional_mac_build_settings(target)', 'flutter_additional_mac_build_settings(target)\n      target.build_configurations.each do |config|\n        config.build_settings["MACOSX_DEPLOYMENT_TARGET"] = "10.14"\n      end')
-              with open(podfile, 'w') as f: f.write(c)
-              
-          print("✅ macOS Target safely set to 10.14 via Python!")
-          PYEOF
+          echo "🔥 Forcing macOS Deployment Target to 10.14 via Ruby..."
+          if [ -f "macos/Podfile" ]; then
+            ruby -e "
+            file = 'macos/Podfile'
+            content = File.read(file)
+            content.gsub!(/platform :osx, '10\.\d+'/, %Q{platform :osx, '10.14'})
+            unless content.include?('MACOSX_DEPLOYMENT_TARGET')
+              if content.include?('post_install do |installer|')
+                content.gsub!('post_install do |installer|', %Q{post_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'\n    end\n  end\n})
+              else
+                content += %Q{\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'\n    end\n  end\nend\n}
+              end
+              File.write(file, content)
+            end
+            "
+          fi
           
           export MACOSX_DEPLOYMENT_TARGET=10.14
           flutter build macos --release \
