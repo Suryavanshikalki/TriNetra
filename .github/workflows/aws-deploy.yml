@@ -1,11 +1,12 @@
-name: TriNetra Master Deploy
+name: TriNetra Master AWS Deploy
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  # 🎨 Phase 1: Frontend को S3 पर भेजना
+  build-and-deploy-frontend:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
@@ -19,29 +20,43 @@ jobs:
     - name: Build Frontend
       run: |
         cd frontend
-        # 1. पुराने कचरे को साफ करना
+        # पुराने कचरे को हटाकर ताज़ा इनस्टॉल
         rm -rf node_modules package-lock.json
-        # 2. ताज़ा इनस्टॉल
         npm install
-        # 3. गायब पैकेजेस का ब्रह्मास्त्र
+        # गायब पैकेजेस का ब्रह्मास्त्र
         npm install i18next react-i18next i18next-browser-languagedetector lucide-react
-        # 4. बिल्ड बनाना (Errors को इग्नोर करते हुए)
+        # बिल्ड को फ़ोर्स करना ताकि dist फोल्डर पक्का बने
         CI=false npm run build
 
     - name: Connect to AWS
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        # 🔥 आपकी फोटो 63/64 के हिसाब से एकदम 'प्योर' नाम
+        # 🔥 आपकी तिजोरी वाले असली नाम
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: ap-south-1 
 
     - name: Deploy to S3 Bucket
       run: |
-        # 🔥 फोल्डर चेक और सिंक (Access Denied एरर से बचने के लिए acl हटा दिया गया है)
+        # 🔥 ACL एरर से बचने के लिए सीधा सिंक (Access Denied नहीं आएगा)
         if [ -d "frontend/dist" ]; then
           aws s3 sync frontend/dist/ s3://trinetra-app-live --delete
         else
           echo "TriNetra Error: dist folder missing! Build failed."
           exit 1
         fi
+
+  # 🧠 Phase 2: Backend (App Runner) - इसे AWS वेरिफिकेशन के बाद एक्टिव करेंगे
+  # deploy-backend:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-deploy-frontend
+  #   steps:
+  #   - name: Connect to AWS
+  #     uses: aws-actions/configure-aws-credentials@v4
+  #     with:
+  #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+  #       aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+  #       aws-region: ap-south-1
+  #   - name: Trigger App Runner
+  #     run: |
+  #       aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
