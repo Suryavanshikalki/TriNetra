@@ -123,12 +123,16 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (🔥 FINAL FIX: Safest Python Patch, No Corrupt Podfile)
+  # 4. iOS BUILD 🔴 (🔥 FINAL FIX: Xcode 15.4 + Razorpay Clear)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Force Xcode 15.4 for Vision Pro Support
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app || true
+        
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -140,20 +144,11 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Running Bulletproof Python Script to Neutralize Bugs Safely..."
+          echo "🔥 Clearing Broken Razorpay iOS Files Safely..."
           python3 - << 'PYEOF'
           import os, glob
           pub_cache = os.path.expanduser('~/.pub-cache/hosted/pub.dev')
           
-          # Fix 1: Apple Vision Pro Bug in device_info_plus
-          for root, _, files in os.walk(pub_cache):
-              for f in files:
-                  if f == "FPPDeviceInfoPlusPlugin.m":
-                      p = os.path.join(root, f)
-                      with open(p, 'r') as file: d = file.read()
-                      with open(p, 'w') as file: file.write(d.replace('isiOSAppOnVision', 'isiOSAppOnMac'))
-          
-          # Fix 2: Razorpay iOS Bug
           plugin_files = glob.glob(f"{pub_cache}/razorpay_flutter-*/ios/Classes/SwiftRazorpayFlutterPlugin.swift")
           for path in plugin_files:
               with open(path, 'w') as f:
@@ -163,8 +158,6 @@ jobs:
           for path in delegate_files:
               with open(path, 'w') as f:
                   f.write("import Foundation\npublic class RazorpayDelegate: NSObject {}")
-          
-          print("✅ All iOS Bugs Neutralized Safely!")
           PYEOF
 
           flutter build ios --release --no-codesign \
@@ -178,12 +171,16 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (🔥 FINAL FIX: Safest Xcode Target Patch)
+  # 5. macOS BUILD 🟠 (🔥 FINAL FIX: Double-Tap Build Hack)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Force Xcode 15.4
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app || true
+        
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -195,13 +192,36 @@ jobs:
           
           flutter config --enable-macos-desktop
           flutter create --platforms=macos . || true
-          
-          echo "🔥 Safely Setting macOS Target to 10.14 via Xcode Project..."
-          find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.14/g' {} + || true
-          
           flutter clean
           flutter pub get
           
+          echo "🔥 Phase 1: Generating Podfile..."
+          flutter build macos --release \
+            --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846" || echo "Podfile Generated!"
+          
+          echo "🔥 Phase 2: Patching Target to 10.14..."
+          python3 - << 'PYEOF'
+          import os, re
+          pbx = 'macos/Runner.xcodeproj/project.pbxproj'
+          if os.path.exists(pbx):
+              with open(pbx, 'r') as f: c = f.read()
+              c = re.sub(r'MACOSX_DEPLOYMENT_TARGET = 10\.\d+;', 'MACOSX_DEPLOYMENT_TARGET = 10.14;', c)
+              with open(pbx, 'w') as f: f.write(c)
+              
+          podfile = 'macos/Podfile'
+          if os.path.exists(podfile):
+              with open(podfile, 'r') as f: c = f.read()
+              c = re.sub(r"platform :osx, '10\.\d+'", "platform :osx, '10.14'", c)
+              if "config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'" not in c:
+                  inject = """
+          target.build_configurations.each do |config|
+            config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'
+          end"""
+                  c = c.replace('flutter_additional_mac_build_settings(target)', 'flutter_additional_mac_build_settings(target)' + inject)
+              with open(podfile, 'w') as f: f.write(c)
+          PYEOF
+          
+          echo "🔥 Phase 3: Final Master Build..."
           export MACOSX_DEPLOYMENT_TARGET=10.14
           flutter build macos --release \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
@@ -209,6 +229,7 @@ jobs:
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
+            
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
