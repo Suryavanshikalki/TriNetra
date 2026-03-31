@@ -124,7 +124,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴
+  # 4. iOS BUILD 🔴 (🔥 FIXED: Razorpay Swift Ninja Patch)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
@@ -140,6 +140,11 @@ jobs:
           cd "$APP_DIR"
           flutter clean
           flutter pub get
+          
+          # 🔥 NINJA FIX: Removing bug from Razorpay Swift file silently
+          echo "Patching Razorpay iOS Bug..."
+          find /Users/runner/.pub-cache/hosted/pub.dev/razorpay_flutter* -name "*.swift" -exec sed -i '' 's/.*subscribeToAnalyticsEvents.*/\/\/ patched/g' {} + || true
+
           flutter build ios --release --no-codesign \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
             --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
@@ -151,7 +156,7 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠
+  # 5. macOS BUILD 🟠 (🔥 FIXED: Auto-Upgrade Deployment Target)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
@@ -165,6 +170,15 @@ jobs:
         run: |
           APP_DIR=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
           cd "$APP_DIR"
+          
+          # 🔥 AUTO-UPGRADE FIX: Set macOS Target to 10.14 for Firebase/BoringSSL
+          echo "Upgrading macOS Deployment Target to 10.14..."
+          find "$APP_DIR/macos" -type f -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.14/g' {} + || true
+          if [ -f "$APP_DIR/macos/Podfile" ]; then
+            sed -i '' "s/^# platform :osx.*/platform :osx, '10.14'/g" "$APP_DIR/macos/Podfile" || true
+            sed -i '' "s/^platform :osx.*/platform :osx, '10.14'/g" "$APP_DIR/macos/Podfile" || true
+          fi
+
           flutter config --enable-macos-desktop
           flutter clean
           flutter pub get
@@ -205,6 +219,7 @@ jobs:
             --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
+            
       - name: Deploy to Firebase (Manual & Bulletproof)
         continue-on-error: true
         shell: bash
