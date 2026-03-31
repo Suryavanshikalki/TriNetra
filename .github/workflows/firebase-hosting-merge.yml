@@ -1,0 +1,40 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and Build Frontend
+        run: |
+          cd frontend
+          # 1. पुराने कचरे को साफ करना
+          rm -rf node_modules package-lock.json
+          
+          # 2. ताज़ा इनस्टॉल
+          npm install
+          
+          # 3. इंटरनेट (NPM) से असली पैकेजेस मंगाना (यहाँ पैकेज का आधिकारिक नाम 'i18next' ही होता है)
+          npm install i18next react-i18next i18next-browser-languagedetector lucide-react
+          
+          # 4. बिल्ड को फ़ोर्स करना ताकि हर हाल में dist फोल्डर बने
+          CI=false npm run build
+
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRINETRA }}'
+          channelId: live
+          projectId: trinetra-8b846
