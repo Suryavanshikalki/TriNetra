@@ -192,7 +192,7 @@ jobs:
           path: out/TriNetra.apk
 
   # ─────────────────────────────────────────────────────────────────
-  # 3. iOS Unsigned IPA (🔥 FIXED: macos-14 for Apple Vision Support)
+  # 3. iOS Unsigned IPA (🔥 FIXED: Changed to macos-14)
   # ─────────────────────────────────────────────────────────────────
   build-ios:
     name: Build iOS (Unsigned)
@@ -258,7 +258,7 @@ jobs:
         continue-on-error: true
 
   # ─────────────────────────────────────────────────────────────────
-  # 4. macOS Unsigned DMG (🔥 FIXED: macos-14)
+  # 4. macOS Unsigned DMG (🔥 FIXED: Changed to macos-14)
   # ─────────────────────────────────────────────────────────────────
   build-macos:
     name: Build macOS (Unsigned)
@@ -468,7 +468,7 @@ jobs:
           path: out/TriNetra.deb
 
   # ─────────────────────────────────────────────────────────────────
-  # 7. GitHub Release (🔥 FIXED: Removed Firebase Dependency)
+  # 7. GitHub Release (🔥 FIXED: Changed needs so it still runs without Firebase)
   # ─────────────────────────────────────────────────────────────────
   create-release:
     name: Create GitHub Release
@@ -478,7 +478,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -525,7 +529,7 @@ jobs:
             | macOS | `TriNetra.dmg` | Right-click → Open |
             | Windows | `TriNetra-Windows.zip` | Extract and run |
             | Linux | `TriNetra.deb` | `sudo dpkg -i TriNetra.deb` |
-            | Web PWA | Web Build | Available via AWS S3 |
+            | Web PWA | https://trinetra-8b846.web.app | Auto-deployed |
           files: |
             all-artifacts/**/*.apk
             all-artifacts/**/*.ipa
