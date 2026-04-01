@@ -123,17 +123,20 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (🔥 FINAL FIX: "Double-Tap" Method)
+  # 4. iOS BUILD 🔴 (🔥 REAL FIX: Safe Perl Patch for Razorpay & Vision Pro)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      
       - name: Force Xcode 15.4
         run: sudo xcode-select -s /Applications/Xcode_15.4.app || true
+        
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          
       - name: Build iOS
         shell: bash
         run: |
@@ -142,19 +145,20 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Phase 1: Generating iOS Podfile..."
-          flutter build ios --release --no-codesign || true
+          echo "🔥 Fixing Razorpay & Vision Pro bugs natively with Perl..."
           
-          echo "🔥 Phase 2: Upgrading iOS Target to 13.0..."
-          if [ -f "ios/Podfile" ]; then
-            sed -i '' "s/^# platform :ios.*/platform :ios, '13.0'/g" ios/Podfile || true
-            sed -i '' "s/^platform :ios.*/platform :ios, '13.0'/g" ios/Podfile || true
-          fi
+          # Fix 1: Change isiOSAppOnVision to isiOSAppOnMac safley
+          find ~/.pub-cache/hosted/pub.dev/device_info_plus* -type f -name "FPPDeviceInfoPlusPlugin.m" -exec perl -pi -e 's/isiOSAppOnVision/isiOSAppOnMac/g' {} + || true
           
-          echo "🔥 Phase 3: Patching Razorpay Swift Error..."
-          find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -type f -name "*.swift" -exec sed -i '' '/subscribeToAnalyticsEvents/d' {} + || true
+          # Fix 2: Mute only the broken line in Razorpay, keep the rest of the file intact!
+          find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -type f -name "RazorpayDelegate.swift" -exec perl -pi -e 's/.*subscribeToAnalyticsEvents.*/\/\/ patched/g' {} + || true
 
-          echo "🔥 Phase 4: Final Master Build..."
+          # Fix 3: Ensure iOS Podfile is 13.0
+          if [ -f "ios/Podfile" ]; then
+            perl -pi -e "s/^# platform :ios.*/platform :ios, '13.0'/g" ios/Podfile || true
+            perl -pi -e "s/^platform :ios.*/platform :ios, '13.0'/g" ios/Podfile || true
+          fi
+
           flutter build ios --release --no-codesign \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
             --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
@@ -166,17 +170,20 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (🔥 FINAL FIX: "Double-Tap" Method)
+  # 5. macOS BUILD 🟠 (🔥 REAL FIX: Absolute 10.14 Injection)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      
       - name: Force Xcode 15.4
         run: sudo xcode-select -s /Applications/Xcode_15.4.app || true
+        
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          
       - name: Build macOS
         shell: bash
         run: |
@@ -188,17 +195,26 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Phase 1: Generating macOS Podfile..."
-          flutter build macos --release || true
+          echo "🔥 Injecting macOS Deployment Target 10.14 directly into Xcode & Pods..."
           
-          echo "🔥 Phase 2: Upgrading macOS Target to 10.14 safely..."
-          find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.14/g' {} + || true
+          perl -pi -e 's/MACOSX_DEPLOYMENT_TARGET = 10\.\d+/MACOSX_DEPLOYMENT_TARGET = 10.14/g' macos/Runner.xcodeproj/project.pbxproj || true
+          
           if [ -f "macos/Podfile" ]; then
-            sed -i '' "s/^# platform :osx.*/platform :osx, '10.14'/g" macos/Podfile || true
-            sed -i '' "s/^platform :osx.*/platform :osx, '10.14'/g" macos/Podfile || true
+            perl -pi -e "s/^# platform :osx.*/platform :osx, '10.14'/g" macos/Podfile || true
+            perl -pi -e "s/^platform :osx.*/platform :osx, '10.14'/g" macos/Podfile || true
+            
+            cat << 'EOF' >> macos/Podfile
+
+          post_install do |installer|
+            installer.pods_project.targets.each do |target|
+              target.build_configurations.each do |config|
+                config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'
+              end
+            end
+          end
+          EOF
           fi
           
-          echo "🔥 Phase 3: Final Master Build..."
           export MACOSX_DEPLOYMENT_TARGET=10.14
           flutter build macos --release \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
