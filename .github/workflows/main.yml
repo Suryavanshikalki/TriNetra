@@ -123,15 +123,17 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (🔥 REAL FIX: Safe Perl Patch for Razorpay & Vision Pro)
+  # 4. iOS BUILD 🔴 (🔥 FINAL FIX: Update CocoaPods for Xcode 15.4)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       
-      - name: Force Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app || true
+      - name: Fix Xcode & CocoaPods (The Real Fix for Object Version 56)
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app || true
+          sudo gem install xcodeproj cocoapods
         
       - uses: subosito/flutter-action@v2
         with:
@@ -145,19 +147,9 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Fixing Razorpay & Vision Pro bugs natively with Perl..."
-          
-          # Fix 1: Change isiOSAppOnVision to isiOSAppOnMac safley
+          echo "🔥 Fixing Razorpay & Vision Pro bugs..."
           find ~/.pub-cache/hosted/pub.dev/device_info_plus* -type f -name "FPPDeviceInfoPlusPlugin.m" -exec perl -pi -e 's/isiOSAppOnVision/isiOSAppOnMac/g' {} + || true
-          
-          # Fix 2: Mute only the broken line in Razorpay, keep the rest of the file intact!
           find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -type f -name "RazorpayDelegate.swift" -exec perl -pi -e 's/.*subscribeToAnalyticsEvents.*/\/\/ patched/g' {} + || true
-
-          # Fix 3: Ensure iOS Podfile is 13.0
-          if [ -f "ios/Podfile" ]; then
-            perl -pi -e "s/^# platform :ios.*/platform :ios, '13.0'/g" ios/Podfile || true
-            perl -pi -e "s/^platform :ios.*/platform :ios, '13.0'/g" ios/Podfile || true
-          fi
 
           flutter build ios --release --no-codesign \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
@@ -170,15 +162,17 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (🔥 REAL FIX: Absolute 10.14 Injection)
+  # 5. macOS BUILD 🟠 (🔥 FINAL FIX: Update CocoaPods for Xcode 15.4)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       
-      - name: Force Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app || true
+      - name: Fix Xcode & CocoaPods
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app || true
+          sudo gem install xcodeproj cocoapods
         
       - uses: subosito/flutter-action@v2
         with:
@@ -195,25 +189,8 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Injecting macOS Deployment Target 10.14 directly into Xcode & Pods..."
-          
+          echo "🔥 Setting macOS Deployment Target..."
           perl -pi -e 's/MACOSX_DEPLOYMENT_TARGET = 10\.\d+/MACOSX_DEPLOYMENT_TARGET = 10.14/g' macos/Runner.xcodeproj/project.pbxproj || true
-          
-          if [ -f "macos/Podfile" ]; then
-            perl -pi -e "s/^# platform :osx.*/platform :osx, '10.14'/g" macos/Podfile || true
-            perl -pi -e "s/^platform :osx.*/platform :osx, '10.14'/g" macos/Podfile || true
-            
-            cat << 'EOF' >> macos/Podfile
-
-          post_install do |installer|
-            installer.pods_project.targets.each do |target|
-              target.build_configurations.each do |config|
-                config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'
-              end
-            end
-          end
-          EOF
-          fi
           
           export MACOSX_DEPLOYMENT_TARGET=10.14
           flutter build macos --release \
