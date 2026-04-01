@@ -123,7 +123,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (FIXED: patch device_info_plus, FirebaseSharedSwift, and set Swift 5)
+  # 4. iOS BUILD 🔴
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
@@ -179,12 +179,12 @@ jobs:
             cd ..
           fi
           
-          # --- Patch FirebaseSharedSwift (remove `sending` keyword) ---
-          echo "🔥 Patching FirebaseSharedSwift to remove 'sending'..."
+          # --- Patch FirebaseSharedSwift: remove 'sending' keyword ---
+          echo "🔥 Patching FirebaseSharedSwift (removing 'sending')..."
           FIREBASE_FILE=$(find ios/Pods -name "FirebaseDataEncoder.swift" 2>/dev/null | head -n 1)
           if [ -n "$FIREBASE_FILE" ]; then
-            # Comment out the line containing 'sending' (usually line 288)
-            sed -i '' '/sending/ s/^/\/\//' "$FIREBASE_FILE"
+            # Remove the 'sending' keyword from the file
+            sed -i '' 's/sending\s//g' "$FIREBASE_FILE"
             echo "Patched $FIREBASE_FILE"
           fi
           
@@ -200,7 +200,7 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (FIXED: force deployment target via .xcconfig)
+  # 5. macOS BUILD 🟠
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
@@ -238,8 +238,13 @@ jobs:
             cd ..
           fi
           
-          # 3. Force all .xcconfig files to have the correct deployment target
-          echo "🔥 Overriding deployment target in all pod .xcconfig files..."
+          # 3. Patch the Pods.xcodeproj itself
+          echo "🔥 Patching Pods.xcodeproj to force deployment target..."
+          if [ -d "macos/Pods/Pods.xcodeproj" ]; then
+            find macos/Pods/Pods.xcodeproj -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} \;
+          fi
+          
+          # 4. Also patch all .xcconfig files (extra safety)
           find macos/Pods/Target\ Support\ Files -name "*.xcconfig" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} \;
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
