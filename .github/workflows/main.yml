@@ -123,7 +123,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (FIXED: stub files overwritten)
+  # 4. iOS BUILD 🔴 (FIXED: stub files created with printf)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
@@ -143,21 +143,20 @@ jobs:
           flutter pub get
           
           echo "🔥 Neutralizing Razorpay: Creating stub files..."
-          # Create stub content in temporary files
-          cat > /tmp/stub_plugin.swift << 'EOF'
-import Flutter
-import UIKit
-public class SwiftRazorpayFlutterPlugin: NSObject, FlutterPlugin {
-  public static func register(with registrar: FlutterPluginRegistrar) {}
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {}
-}
-EOF
-
-          cat > /tmp/stub_delegate.swift << 'EOF'
-import Foundation
-public class RazorpayDelegate: NSObject {}
-EOF
-
+          # Create stub plugin file with printf (no heredoc)
+          printf '%s\n' \
+            'import Flutter' \
+            'import UIKit' \
+            'public class SwiftRazorpayFlutterPlugin: NSObject, FlutterPlugin {' \
+            '  public static func register(with registrar: FlutterPluginRegistrar) {}' \
+            '  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {}' \
+            '}' > /tmp/stub_plugin.swift
+          
+          # Create stub delegate file
+          printf '%s\n' \
+            'import Foundation' \
+            'public class RazorpayDelegate: NSObject {}' > /tmp/stub_delegate.swift
+          
           # Overwrite all matching files in the cache
           find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -name "SwiftRazorpayFlutterPlugin.swift" -exec cp /tmp/stub_plugin.swift {} \;
           find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -name "RazorpayDelegate.swift" -exec cp /tmp/stub_delegate.swift {} \;
@@ -173,7 +172,7 @@ EOF
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (FIXED: deployment target 10.14 + post_install hook)
+  # 5. macOS BUILD 🟠 (FIXED: deployment target + post_install with printf)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
@@ -199,23 +198,14 @@ EOF
           # 1. Update Xcode project's deployment target
           find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.14/g' {} + || true
           
-          # 2. Patch Podfile: set platform and add post_install hook
+          # 2. Patch Podfile: set platform and add post_install hook (no heredoc)
           if [ -f "macos/Podfile" ]; then
             # Set platform line
             perl -pi -e "s/^platform :osx.*/platform :osx, '10.14'/g" macos/Podfile
             
             # Add post_install hook if not already present
             if ! grep -q "post_install do" macos/Podfile; then
-              cat >> macos/Podfile << 'EOF'
-
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'
-    end
-  end
-end
-EOF
+              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["MACOSX_DEPLOYMENT_TARGET"] = "10.14"\n    end\n  end\nend\n' >> macos/Podfile
             fi
             
             # Force pod regeneration
