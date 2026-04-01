@@ -123,7 +123,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (no heredocs, using printf)
+  # 4. iOS BUILD 🔴
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
@@ -164,19 +164,29 @@ jobs:
             sed -i '' '/isiOSAppOnVision/s/^/\/\//' "$DEVICE_INFO_FILE"
           fi
           
-          # --- Set iOS deployment target and add post_install hook (no heredoc)---
-          echo "🔥 Configuring Podfile for iOS 13.0 and patching FirebaseSharedSwift..."
-          # Update Xcode project deployment target
+          # --- Set iOS deployment target and modify Podfile ---
+          echo "🔥 Configuring Podfile for iOS 13.0..."
           find ios -name "project.pbxproj" -exec sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/g' {} + || true
           
           if [ -f "ios/Podfile" ]; then
             # Set platform
             perl -pi -e "s/^platform :ios.*/platform :ios, '13.0'/g" ios/Podfile
-            
-            # Append post_install hook if missing (using printf to avoid heredoc)
+            # Add post_install hook if missing
             if ! grep -q "post_install do" ios/Podfile; then
-              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "13.0"\n      config.build_settings["SWIFT_VERSION"] = "5.0"\n    end\n  end\n  # Patch FirebaseSharedSwift to remove "sending"\n  firebase_file = installer.sandbox.pod_dir("FirebaseSharedSwift") + "Sources/third_party/FirebaseDataEncoder/FirebaseDataEncoder.swift"\n  if File.exist?(firebase_file)\n    content = File.read(firebase_file)\n    content = content.gsub(/\bsending\b\s*/, "")\n    File.write(firebase_file, content)\n    puts "Patched #{firebase_file}"\n  end\nend\n' >> ios/Podfile
+              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "13.0"\n      config.build_settings["SWIFT_VERSION"] = "5.0"\n    end\n  end\nend\n' >> ios/Podfile
             fi
+            # Run pod install explicitly
+            cd ios
+            pod install
+            cd ..
+          fi
+          
+          # --- Patch FirebaseSharedSwift (remove 'sending' keyword) ---
+          echo "🔥 Patching FirebaseSharedSwift..."
+          FIREBASE_FILE=$(find ios/Pods -name "FirebaseDataEncoder.swift" 2>/dev/null | head -n 1)
+          if [ -n "$FIREBASE_FILE" ]; then
+            sed -i '' 's/sending\s//g' "$FIREBASE_FILE"
+            echo "Patched $FIREBASE_FILE"
           fi
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
@@ -191,7 +201,7 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (no heredocs)
+  # 5. macOS BUILD 🟠
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
@@ -223,6 +233,15 @@ jobs:
             if ! grep -q "post_install do" macos/Podfile; then
               printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["MACOSX_DEPLOYMENT_TARGET"] = "10.15"\n    end\n  end\nend\n' >> macos/Podfile
             fi
+            # Run pod install explicitly
+            cd macos
+            pod install
+            cd ..
+          fi
+          
+          # Also patch the Pods project directly to ensure all targets have correct deployment target
+          if [ -d "macos/Pods/Pods.xcodeproj" ]; then
+            find macos/Pods/Pods.xcodeproj -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} \;
           fi
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
