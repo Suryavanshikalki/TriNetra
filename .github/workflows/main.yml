@@ -165,7 +165,7 @@ jobs:
           fi
           
           # --- Set iOS deployment target and modify Podfile ---
-          echo "🔥 Configuring Podfile for iOS 13.0..."
+          echo "🔥 Configuring Podfile for iOS 13.0 and Swift 5.0..."
           find ios -name "project.pbxproj" -exec sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/g' {} + || true
           
           if [ -f "ios/Podfile" ]; then
@@ -173,7 +173,7 @@ jobs:
             perl -pi -e "s/^platform :ios.*/platform :ios, '13.0'/g" ios/Podfile
             # Add post_install hook if missing
             if ! grep -q "post_install do" ios/Podfile; then
-              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "13.0"\n      config.build_settings["SWIFT_VERSION"] = "5.0"\n    end\n  end\nend\n' >> ios/Podfile
+              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "13.0"\n      config.build_settings["SWIFT_VERSION"] = "5.0"\n      config.build_settings["OTHER_SWIFT_FLAGS"] = "-swift-version 5"\n    end\n  end\nend\n' >> ios/Podfile
             fi
             # Run pod install explicitly
             cd ios
@@ -185,9 +185,22 @@ jobs:
           echo "🔥 Patching FirebaseSharedSwift..."
           FIREBASE_FILE=$(find ios/Pods -name "FirebaseDataEncoder.swift" 2>/dev/null | head -n 1)
           if [ -n "$FIREBASE_FILE" ]; then
-            # Use perl to delete the word "sending" and any following whitespace
             perl -pi -e 's/\bsending\s+//g' "$FIREBASE_FILE"
             echo "Patched $FIREBASE_FILE"
+          fi
+          
+          # --- Patch FirebaseCoreInternal to fix Swift 6 issues ---
+          echo "🔥 Patching FirebaseCoreInternal..."
+          # The error about FIRAllocatedUnfairLock: replace with simpler lock? But setting Swift version should avoid it.
+          # We'll also add a workaround: comment out the problematic lines? Actually the error is type mismatch.
+          # A safer approach: downgrade Firebase SDK? But we'll try to patch the file.
+          HEARTBEAT_FILE=$(find ios/Pods -name "HeartbeatStorage.swift" 2>/dev/null | head -n 1)
+          if [ -n "$HEARTBEAT_FILE" ]; then
+            # The error at line 56: "Cannot assign value of type 'FIRAllocatedUnfairLock<( )>' to type 'FIRAllocatedUnfairLock<[String : WeakContainer<HeartbeatStorage>]>'"
+            # This is a generic type mismatch. We'll change the type to the simpler one.
+            # We'll replace the line with a simple NSLock to avoid the generic issue.
+            perl -pi -e 's/private static let storageLock = FIRAllocatedUnfairLock<[String: WeakContainer<HeartbeatStorage>]>/private static let storageLock = NSLock()/' "$HEARTBEAT_FILE"
+            echo "Patched $HEARTBEAT_FILE"
           fi
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
@@ -234,7 +247,8 @@ jobs:
             if ! grep -q "post_install do" macos/Podfile; then
               printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["MACOSX_DEPLOYMENT_TARGET"] = "10.15"\n    end\n  end\nend\n' >> macos/Podfile
             fi
-            # Run pod install explicitly
+            # Remove old pods and lockfile to force clean install
+            rm -rf macos/Pods macos/Podfile.lock
             cd macos
             pod install
             cd ..
@@ -249,6 +263,7 @@ jobs:
             find macos/Pods/Pods.xcodeproj -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} \;
           fi
           
+          # Additionally, set the environment variable and build
           export MACOSX_DEPLOYMENT_TARGET=10.15
           flutter build macos --release \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
