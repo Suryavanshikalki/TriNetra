@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart'; // (ठीक किया गया: छोटा 'i')
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/services/firebase_service.dart';
+// Firebase service यहाँ से हटा दिया गया है
 import 'core/services/gemini_service.dart';
 import 'core/services/sentry_service.dart';
 import 'core/services/logrocket_service.dart';
@@ -9,16 +9,13 @@ import 'app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ─── 1. Initialize Firebase ────────────────────────────────
-  await FirebaseService.instance.initialize();
-
-  // ─── 2. Initialize Gemini AI ──────────────────────────────
+  // ─── 1. Initialize Gemini AI ──────────────────────────────
   GeminiService.instance.initialize();
 
-  // ─── 3. Initialize LogRocket ──────────────────────────────
+  // ─── 2. Initialize LogRocket ──────────────────────────────
   LogRocketService.instance.initialize();
 
-  // ─── 4. Initialize Sentry + Run App ───────────────────────
+  // ─── 3. Initialize Sentry + Run App ───────────────────────
   await SentryService.initialize(
     appRunner: () {
       runApp(
