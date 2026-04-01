@@ -8,7 +8,7 @@ env:
 
 jobs:
 
-  # 1. ANDROID BUILD 🟢 (APK + AAB) - 100% SUCCESS ✅
+  # 1. ANDROID BUILD 🟢
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +63,7 @@ jobs:
             **/build/app/outputs/flutter-apk/app-release.apk
             **/build/app/outputs/bundle/release/app-release.aab
 
-  # 2. WINDOWS BUILD 🔵 - 100% SUCCESS ✅
+  # 2. WINDOWS BUILD 🔵
   build-windows:
     runs-on: windows-latest
     steps:
@@ -91,7 +91,7 @@ jobs:
           name: Windows-Release
           path: '**/build/windows/x64/runner/Release/'
 
-  # 3. LINUX BUILD 🟣 - 100% SUCCESS ✅
+  # 3. LINUX BUILD 🟣
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -123,7 +123,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (🔥 REAL FIX: Safe Regex Replacement & Dummy Build)
+  # 4. iOS BUILD 🔴 (🔥 FINAL REAL FIX)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
@@ -142,41 +142,27 @@ jobs:
           flutter clean
           flutter pub get
           
-          # --- Razorpay Stub (DeepSeek's proven fix) ---
-          printf '%s\n' \
-            'import Flutter' \
-            'import UIKit' \
-            'public class SwiftRazorpayFlutterPlugin: NSObject, FlutterPlugin {' \
-            '  public static func register(with registrar: FlutterPluginRegistrar) {}' \
-            '  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {}' \
-            '}' > /tmp/stub_plugin.swift
-          printf '%s\n' \
-            'import Foundation' \
-            'public class RazorpayDelegate: NSObject {}' > /tmp/stub_delegate.swift
-          find ~/.pub-cache/hosted -name "SwiftRazorpayFlutterPlugin.swift" -exec cp /tmp/stub_plugin.swift {} \;
-          find ~/.pub-cache/hosted -name "RazorpayDelegate.swift" -exec cp /tmp/stub_delegate.swift {} \;
+          echo "🔥 Fixing device_info_plus (Avoiding Redefinition)..."
+          find ~/.pub-cache/hosted/pub.dev/device_info_plus* -type f -name "*.m" -exec perl -pi -e 's/isiOSAppOnVision/isDummyVision/g' {} + || true
           
-          # --- device_info_plus Fix (No commenting out, just replacing word safely) ---
-          echo "🔥 Patching device_info_plus safely..."
-          find ~/.pub-cache/hosted -type f -name "FPPDeviceInfoPlusPlugin.m" -exec perl -pi -e 's/isiOSAppOnVision/isiOSAppOnMac/g' {} + || true
-
-          # --- Dummy build to generate Podfile ---
-          echo "🔥 Phase 1: Generating Podfile..."
-          flutter build ios --config-only || flutter build ios || true
+          echo "🔥 Fixing Razorpay (Removing ONLY the broken line)..."
+          find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -type f -name "RazorpayDelegate.swift" -exec perl -pi -e 's/.*subscribeToAnalyticsEvents.*//g' {} + || true
           
-          # --- Set iOS deployment target ---
-          echo "🔥 Configuring Podfile for iOS 13.0..."
-          find ios -name "project.pbxproj" -exec perl -pi -e 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]+/IPHONEOS_DEPLOYMENT_TARGET = 13.0/g' {} + || true
+          echo "🔥 Creating Podfile safely via Dummy Build..."
+          flutter build ios --config-only || true
           
-          if [ -f "ios/Podfile" ]; then
-            perl -pi -e "s/^platform :ios.*/platform :ios, '13.0'/g" ios/Podfile
-            if ! grep -q "post_install do" ios/Podfile; then
-              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "13.0"\n    end\n  end\nend\n' >> ios/Podfile
-            fi
-            rm -rf ios/Pods ios/Podfile.lock
-          fi
+          echo "🔥 Injecting iOS 13.0 Target..."
+          python3 -c "
+          import os, re
+          path = 'ios/Podfile'
+          if os.path.exists(path):
+              with open(path, 'r') as f: c = f.read()
+              c = re.sub(r'^#? ?platform :.*', \"platform :ios, '13.0'\", c, flags=re.MULTILINE)
+              if 'IPHONEOS_DEPLOYMENT_TARGET' not in c:
+                  c += \"\\npost_install do |installer|\\n  installer.pods_project.targets.each do |target|\\n    target.build_configurations.each do |config|\\n      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'\\n    end\\n  end\\nend\\n\"
+              with open(path, 'w') as f: f.write(c)
+          "
           
-          echo "🔥 Phase 2: Final Master Build..."
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
           flutter build ios --release --no-codesign \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
@@ -189,7 +175,7 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (🔥 REAL FIX: Dummy Build + Safe Perl Injection)
+  # 5. macOS BUILD 🟠 (🔥 FINAL REAL FIX)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
@@ -211,25 +197,26 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Phase 1: Generating macOS Podfile..."
+          echo "🔥 Creating Podfile safely via Dummy Build..."
           flutter build macos || true
           
-          echo "🔥 Phase 2: Fixing deployment target for macOS to 10.14..."
-          # Update Xcode project
-          find macos -name "project.pbxproj" -exec perl -pi -e 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]+/MACOSX_DEPLOYMENT_TARGET = 10.14/g' {} + || true
+          echo "🔥 Injecting macOS 10.15 Target..."
+          find macos -name "project.pbxproj" -exec perl -pi -e 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]+/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
           
-          # Patch Podfile
-          if [ -f "macos/Podfile" ]; then
-            perl -pi -e "s/^platform :osx.*/platform :osx, '10.14'/g" macos/Podfile
-            if ! grep -q "post_install do" macos/Podfile; then
-              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["MACOSX_DEPLOYMENT_TARGET"] = "10.14"\n    end\n  end\nend\n' >> macos/Podfile
-            fi
-            # Remove old pods and lockfile to force clean install
-            rm -rf macos/Pods macos/Podfile.lock
-          fi
+          python3 -c "
+          import os, re
+          path = 'macos/Podfile'
+          if os.path.exists(path):
+              with open(path, 'r') as f: c = f.read()
+              c = re.sub(r'^#? ?platform :.*', \"platform :osx, '10.15'\", c, flags=re.MULTILINE)
+              if 'MACOSX_DEPLOYMENT_TARGET' not in c:
+                  c += \"\\npost_install do |installer|\\n  installer.pods_project.targets.each do |target|\\n    target.build_configurations.each do |config|\\n      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.15'\\n    end\\n  end\\nend\\n\"
+              with open(path, 'w') as f: f.write(c)
+          "
           
-          echo "🔥 Phase 3: Final Master Build..."
-          export MACOSX_DEPLOYMENT_TARGET=10.14
+          rm -rf macos/Pods macos/Podfile.lock
+          
+          export MACOSX_DEPLOYMENT_TARGET=10.15
           flutter build macos --release \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
             --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
