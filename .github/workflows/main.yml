@@ -185,7 +185,8 @@ jobs:
           echo "🔥 Patching FirebaseSharedSwift..."
           FIREBASE_FILE=$(find ios/Pods -name "FirebaseDataEncoder.swift" 2>/dev/null | head -n 1)
           if [ -n "$FIREBASE_FILE" ]; then
-            sed -i '' 's/sending\s//g' "$FIREBASE_FILE"
+            # Use perl to delete the word "sending" and any following whitespace
+            perl -pi -e 's/\bsending\s+//g' "$FIREBASE_FILE"
             echo "Patched $FIREBASE_FILE"
           fi
           
@@ -239,7 +240,11 @@ jobs:
             cd ..
           fi
           
-          # Also patch the Pods project directly to ensure all targets have correct deployment target
+          # --- Force all xcconfig files to use 10.15 ---
+          echo "🔥 Patching all pod xcconfig files to 10.15..."
+          find macos/Pods/Target\ Support\ Files -name "*.xcconfig" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} \;
+          
+          # Also patch the Pods project itself
           if [ -d "macos/Pods/Pods.xcodeproj" ]; then
             find macos/Pods/Pods.xcodeproj -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} \;
           fi
