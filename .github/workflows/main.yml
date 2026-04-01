@@ -8,7 +8,7 @@ env:
 
 jobs:
 
-  # 1. ANDROID BUILD 🟢 (APK + AAB) - 100% SUCCESS ✅
+  # 1. ANDROID BUILD 🟢 (APK + AAB)
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +63,7 @@ jobs:
             **/build/app/outputs/flutter-apk/app-release.apk
             **/build/app/outputs/bundle/release/app-release.aab
 
-  # 2. WINDOWS BUILD 🔵 - 100% SUCCESS ✅
+  # 2. WINDOWS BUILD 🔵
   build-windows:
     runs-on: windows-latest
     steps:
@@ -91,7 +91,7 @@ jobs:
           name: Windows-Release
           path: '**/build/windows/x64/runner/Release/'
 
-  # 3. LINUX BUILD 🟣 - 100% SUCCESS ✅
+  # 3. LINUX BUILD 🟣
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -123,7 +123,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (FIXED: deployment target 13.0 + Razorpay stub)
+  # 4. iOS BUILD 🔴 (FIXED: patch device_info_plus + Razorpay stub)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
@@ -143,7 +143,6 @@ jobs:
           flutter pub get
           
           echo "🔥 Neutralizing Razorpay: Creating stub files..."
-          # Create stub plugin file with printf (no heredoc)
           printf '%s\n' \
             'import Flutter' \
             'import UIKit' \
@@ -152,30 +151,30 @@ jobs:
             '  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {}' \
             '}' > /tmp/stub_plugin.swift
           
-          # Create stub delegate file
           printf '%s\n' \
             'import Foundation' \
             'public class RazorpayDelegate: NSObject {}' > /tmp/stub_delegate.swift
           
-          # Overwrite all matching files in the cache
           find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -name "SwiftRazorpayFlutterPlugin.swift" -exec cp /tmp/stub_plugin.swift {} \;
           find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -name "RazorpayDelegate.swift" -exec cp /tmp/stub_delegate.swift {} \;
           
+          echo "🔥 Patching device_info_plus to remove isiOSAppOnVision call..."
+          # Find the device_info_plus plugin file in the cache
+          DEVICE_INFO_FILE=$(find ~/.pub-cache/hosted/pub.dev/device_info_plus* -name "FPPDeviceInfoPlusPlugin.m" | head -n 1)
+          if [ -n "$DEVICE_INFO_FILE" ]; then
+            # Comment out the line that calls isiOSAppOnVision
+            sed -i '' '/isiOSAppOnVision/s/^/\/\//' "$DEVICE_INFO_FILE"
+            echo "Patched $DEVICE_INFO_FILE"
+          fi
+          
           echo "🔥 Setting iOS deployment target to 13.0..."
-          # Patch Xcode project
           find ios -name "project.pbxproj" -exec sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/g' {} + || true
           
-          # Patch Podfile
           if [ -f "ios/Podfile" ]; then
-            # Set platform line
             perl -pi -e "s/^platform :ios.*/platform :ios, '13.0'/g" ios/Podfile
-            
-            # Add post_install hook if not already present
             if ! grep -q "post_install do" ios/Podfile; then
               printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "13.0"\n    end\n  end\nend\n' >> ios/Podfile
             fi
-            
-            # Force pod regeneration
             rm -rf ios/Pods ios/Podfile.lock
             cd ios
             pod install
@@ -194,7 +193,7 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (FIXED: manual pod install + deployment target 10.14)
+  # 5. macOS BUILD 🟠 (FIXED: deployment target 10.15)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
@@ -216,28 +215,23 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Fixing deployment target for macOS..."
+          echo "🔥 Fixing deployment target for macOS to 10.15..."
           # 1. Update Xcode project's deployment target
-          find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.14/g' {} + || true
+          find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
           
-          # 2. Patch Podfile: set platform and add post_install hook (no heredoc)
+          # 2. Patch Podfile
           if [ -f "macos/Podfile" ]; then
-            # Set platform line
-            perl -pi -e "s/^platform :osx.*/platform :osx, '10.14'/g" macos/Podfile
-            
-            # Add post_install hook if not already present
+            perl -pi -e "s/^platform :osx.*/platform :osx, '10.15'/g" macos/Podfile
             if ! grep -q "post_install do" macos/Podfile; then
-              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["MACOSX_DEPLOYMENT_TARGET"] = "10.14"\n    end\n  end\nend\n' >> macos/Podfile
+              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["MACOSX_DEPLOYMENT_TARGET"] = "10.15"\n    end\n  end\nend\n' >> macos/Podfile
             fi
-            
-            # Force pod regeneration and run install
             rm -rf macos/Pods macos/Podfile.lock
             cd macos
             pod install
             cd ..
           fi
           
-          export MACOSX_DEPLOYMENT_TARGET=10.14
+          export MACOSX_DEPLOYMENT_TARGET=10.15
           flutter build macos --release \
             --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
             --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
@@ -251,7 +245,7 @@ jobs:
           name: macOS-Release
           path: '**/build/macos/Build/Products/Release/*.app'
 
-  # 6. WEB PWA & FIREBASE DEPLOY 🟡 - 100% SUCCESS ✅
+  # 6. WEB PWA & FIREBASE DEPLOY 🟡
   deploy-web-firebase:
     runs-on: ubuntu-latest
     steps:
