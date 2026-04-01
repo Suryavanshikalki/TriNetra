@@ -123,17 +123,20 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (🔥 REAL FIX: No Redefinition + DeepSeek Stubs)
+  # 4. iOS BUILD 🔴 (🔥 REAL FIX: Correct Xcode Path & Python Injector)
   build-ios:
     runs-on: macos-14
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Force Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app || true
+      
+      - name: Force Xcode 15.4 (CORRECTED PATH)
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer || true
+        
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          
       - name: Build iOS
         shell: bash
         run: |
@@ -141,9 +144,6 @@ jobs:
           cd "$APP_DIR"
           flutter clean
           flutter pub get
-          
-          echo "🔥 Fixing device_info_plus (Avoiding Redefinition Error)..."
-          find ~/.pub-cache/hosted/pub.dev/device_info_plus* -name "*.m" -exec perl -pi -e 's/isiOSAppOnVision/dummyVisionProp/g' {} + || true
           
           echo "🔥 Neutralizing Razorpay: Creating stub files..."
           printf '%s\n' \
@@ -161,16 +161,26 @@ jobs:
           find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -name "SwiftRazorpayFlutterPlugin.swift" -exec cp /tmp/stub_plugin.swift {} \;
           find ~/.pub-cache/hosted/pub.dev/razorpay_flutter* -name "RazorpayDelegate.swift" -exec cp /tmp/stub_delegate.swift {} \;
           
-          echo "🔥 Configuring Podfile for iOS 13.0..."
+          echo "🔥 Creating Podfile safely via Dummy Build..."
+          flutter build ios --config-only || true
+          
+          echo "🔥 Injecting iOS 13.0 Target..."
           find ios -name "project.pbxproj" -exec sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/g' {} + || true
           
-          if [ -f "ios/Podfile" ]; then
-            perl -pi -e "s/^platform :ios.*/platform :ios, '13.0'/g" ios/Podfile
-            if ! grep -q "post_install do" ios/Podfile; then
-              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "13.0"\n    end\n  end\nend\n' >> ios/Podfile
-            fi
-            rm -rf ios/Pods ios/Podfile.lock
-          fi
+          cat > /tmp/patch_ios.py << 'EOF'
+          import os, re
+          p = 'ios/Podfile'
+          if os.path.exists(p):
+              with open(p, 'r') as f: c = f.read()
+              c = re.sub(r"^#? ?platform :ios.*", "platform :ios, '13.0'", c, flags=re.MULTILINE)
+              hook = "    installer.pods_project.targets.each do |target|\n      target.build_configurations.each do |config|\n        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'\n      end\n    end\n"
+              if "IPHONEOS_DEPLOYMENT_TARGET" not in c:
+                  c = c.replace("flutter_additional_ios_build_settings(installer)", "flutter_additional_ios_build_settings(installer)\n" + hook)
+              with open(p, 'w') as f: f.write(c)
+          EOF
+          python3 /tmp/patch_ios.py
+          
+          rm -rf ios/Pods ios/Podfile.lock
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
           flutter build ios --release --no-codesign \
@@ -184,17 +194,20 @@ jobs:
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}" \
             --dart-define=FIREBASE_PROJECT_ID="trinetra-8b846"
 
-  # 5. macOS BUILD 🟠 (🔥 REAL FIX: Safe Deployment Target)
+  # 5. macOS BUILD 🟠 (🔥 REAL FIX: Correct Xcode Path & Python Injector)
   build-macos:
     runs-on: macos-14
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Force Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app || true
+      
+      - name: Force Xcode 15.4 (CORRECTED PATH)
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer || true
+        
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          
       - name: Build macOS
         shell: bash
         run: |
@@ -206,16 +219,26 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Fixing deployment target for macOS to 10.14..."
-          find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = 10\.[0-9]*/MACOSX_DEPLOYMENT_TARGET = 10.14/g' {} + || true
+          echo "🔥 Creating Podfile safely via Dummy Build..."
+          flutter build macos --config-only || true
           
-          if [ -f "macos/Podfile" ]; then
-            perl -pi -e "s/^platform :osx.*/platform :osx, '10.14'/g" macos/Podfile
-            if ! grep -q "post_install do" macos/Podfile; then
-              printf '\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["MACOSX_DEPLOYMENT_TARGET"] = "10.14"\n    end\n  end\nend\n' >> macos/Podfile
-            fi
-            rm -rf macos/Pods macos/Podfile.lock
-          fi
+          echo "🔥 Injecting macOS 10.14 Target..."
+          find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9.]*/MACOSX_DEPLOYMENT_TARGET = 10.14/g' {} + || true
+          
+          cat > /tmp/patch_macos.py << 'EOF'
+          import os, re
+          p = 'macos/Podfile'
+          if os.path.exists(p):
+              with open(p, 'r') as f: c = f.read()
+              c = re.sub(r"^#? ?platform :osx.*", "platform :osx, '10.14'", c, flags=re.MULTILINE)
+              hook = "    installer.pods_project.targets.each do |target|\n      target.build_configurations.each do |config|\n        config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.14'\n      end\n    end\n"
+              if "MACOSX_DEPLOYMENT_TARGET" not in c:
+                  c = c.replace("flutter_additional_mac_build_settings(installer)", "flutter_additional_mac_build_settings(installer)\n" + hook)
+              with open(p, 'w') as f: f.write(c)
+          EOF
+          python3 /tmp/patch_macos.py
+          
+          rm -rf macos/Pods macos/Podfile.lock
           
           export MACOSX_DEPLOYMENT_TARGET=10.14
           flutter build macos --release \
