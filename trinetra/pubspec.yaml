@@ -47,7 +47,7 @@ dependencies:
   # ─── PDF ─────────────────────────────────────────────────────
   syncfusion_flutter_pdfviewer: ^33.1.44
 
-  # ─── Payments (5 Gateways) ──────────────────────────────────
+  # ─── Payments (5 Gateways, Razorpay Removed) ─────────────────
   flutter_stripe: ^10.2.0
 
   # ─── Ads ─────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.3.3
 
-  # 🔥 THE MASTER FIX: Setting 'any' so Flutter automatically resolves AWS conflicts 🔥
+  # 🔥 The Master Fix: Flutter will automatically solve versions 🔥
   web_socket_channel: any
   mime: any
 
