@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
-import '../../../core/services/firebase_service.dart';
 import '../../../core/services/sentry_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../models/post_model.dart';
@@ -41,79 +39,49 @@ class FeedState {
 
 // ─── Controller ──────────────────────────────────────────────────
 class FeedController extends StateNotifier<FeedState> {
-  final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
   final String? _currentUserId;
 
   static const int _pageSize = 15;
-  DocumentSnapshot? _lastDocument;
   bool _isSubscribed = false;
 
-  FeedController(this._currentUserId)
-      : _firestore = FirebaseService.instance.firestore,
-        _storage = FirebaseService.instance.storage,
-        super(const FeedState()) {
+  FeedController(this._currentUserId) : super(const FeedState()) {
     _subscribeToFeed();
   }
 
-  // ─── Real-time Feed Stream ──────────────────────────────────
-  void _subscribeToFeed() {
+  // ─── Real-time Feed Stream (Prepared for AWS) ──────────────────
+  void _subscribeToFeed() async {
     if (_isSubscribed) return;
     _isSubscribed = true;
     state = state.copyWith(isLoading: true);
 
-    _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .limit(_pageSize)
-        .snapshots()
-        .listen(
-      (snapshot) {
-        final posts = snapshot.docs
-            .map((doc) => PostModel.fromFirestore(doc))
-            .toList();
-        if (snapshot.docs.isNotEmpty) {
-          _lastDocument = snapshot.docs.last;
-        }
-        state = state.copyWith(
-          posts: posts,
-          isLoading: false,
-          hasMore: snapshot.docs.length >= _pageSize,
-        );
-      },
-      onError: (e) {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Failed to load feed.',
-        );
-      },
-    );
+    try {
+      // TODO: AWS Amplify API fetch will replace this
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      state = state.copyWith(
+        posts: [], // Starts empty until AWS is connected
+        isLoading: false,
+        hasMore: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to load feed.',
+      );
+    }
   }
 
   // ─── Load More (Pagination) ─────────────────────────────────
   Future<void> loadMore() async {
-    if (!state.hasMore || state.isLoading || _lastDocument == null) return;
+    if (!state.hasMore || state.isLoading) return;
     state = state.copyWith(isLoading: true);
     try {
-      final snapshot = await _firestore
-          .collection('posts')
-          .orderBy('createdAt', descending: true)
-          .startAfterDocument(_lastDocument!)
-          .limit(_pageSize)
-          .get();
-
-      final morePosts = snapshot.docs
-          .map((doc) => PostModel.fromFirestore(doc))
-          .toList();
-
-      if (snapshot.docs.isNotEmpty) {
-        _lastDocument = snapshot.docs.last;
-      }
+      // TODO: AWS Pagination Logic
+      await Future.delayed(const Duration(milliseconds: 500));
 
       state = state.copyWith(
-        posts: [...state.posts, ...morePosts],
         isLoading: false,
-        hasMore: snapshot.docs.length >= _pageSize,
+        hasMore: false,
       );
     } catch (e, st) {
       state = state.copyWith(isLoading: false, error: 'Failed to load more.');
@@ -133,46 +101,11 @@ class FeedController extends StateNotifier<FeedState> {
     state = state.copyWith(isCreating: true);
 
     try {
-      final userDoc = await _firestore.collection('users').doc(uid).get();
-      final userData = userDoc.data() ?? {};
-
-      final List<String> mediaUrls = [];
-      if (mediaFiles != null && mediaFiles.isNotEmpty) {
-        for (final file in mediaFiles) {
-          final ref = _storage
-              .ref()
-              .child('posts')
-              .child(uid)
-              .child('${DateTime.now().millisecondsSinceEpoch}');
-          await ref.putFile(file);
-          mediaUrls.add(await ref.getDownloadURL());
-        }
-      }
-
-      await _firestore.collection('posts').add({
-        'userId': uid,
-        'userName': userData['displayName'] ?? 'User',
-        'userAvatar': userData['photoUrl'] ?? '',
-        'isVerified': userData['isVerified'] ?? false,
-        'content': content,
-        'mediaUrls': mediaUrls,
-        'mediaType': mediaType,
-        'reactions': {'like': 0, 'love': 0, 'haha': 0, 'wow': 0, 'sad': 0, 'angry': 0},
-        'userReactions': {},
-        'commentsCount': 0,
-        'sharesCount': 0,
-        'createdAt': FieldValue.serverTimestamp(),
-        'isBoosted': false,
-        'location': location,
-      });
-
-      // Update user post count
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .update({'postsCount': FieldValue.increment(1)});
+      // TODO: AWS Storage and GraphQL Mutation
+      await Future.delayed(const Duration(seconds: 1));
 
       state = state.copyWith(isCreating: false);
+      refresh(); // Refresh feed to show new dummy post
       return true;
     } catch (e, st) {
       state = state.copyWith(isCreating: false, error: 'Failed to create post.');
@@ -189,7 +122,6 @@ class FeedController extends StateNotifier<FeedState> {
     final uid = _currentUserId;
     if (uid == null) return;
     try {
-      final postRef = _firestore.collection('posts').doc(postId);
       final postIndex = state.posts.indexWhere((p) => p.id == postId);
       if (postIndex == -1) return;
 
@@ -213,7 +145,7 @@ class FeedController extends StateNotifier<FeedState> {
         newUserReactions[uid] = reaction;
       }
 
-      // Optimistic update
+      // Optimistic update for UI
       final updatedPosts = [...state.posts];
       updatedPosts[postIndex] = post.copyWith(
         reactions: newReactions,
@@ -221,13 +153,8 @@ class FeedController extends StateNotifier<FeedState> {
       );
       state = state.copyWith(posts: updatedPosts);
 
-      // Persist to Firestore
-      await postRef.update({
-        'reactions': newReactions,
-        'userReactions': newUserReactions,
-      });
+      // TODO: Save to AWS Database
     } catch (e, st) {
-      // Revert optimistic update
       await SentryService.instance.captureException(e, stackTrace: st);
     }
   }
@@ -235,7 +162,11 @@ class FeedController extends StateNotifier<FeedState> {
   // ─── Delete Post ────────────────────────────────────────────
   Future<void> deletePost(String postId) async {
     try {
-      await _firestore.collection('posts').doc(postId).delete();
+      // Remove from local UI state instantly
+      final updatedPosts = state.posts.where((p) => p.id != postId).toList();
+      state = state.copyWith(posts: updatedPosts);
+
+      // TODO: AWS Delete logic
     } catch (e, st) {
       await SentryService.instance.captureException(e, stackTrace: st);
     }
@@ -244,7 +175,6 @@ class FeedController extends StateNotifier<FeedState> {
   // ─── Refresh ────────────────────────────────────────────────
   Future<void> refresh() async {
     _isSubscribed = false;
-    _lastDocument = null;
     state = const FeedState();
     _subscribeToFeed();
   }
