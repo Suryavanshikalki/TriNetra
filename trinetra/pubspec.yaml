@@ -47,9 +47,6 @@ dependencies:
   # ─── PDF ─────────────────────────────────────────────────────
   syncfusion_flutter_pdfviewer: ^33.1.44
 
-  # ─── Payments (5 Gateways, Razorpay Removed) ─────────────────
-  flutter_stripe: ^10.2.0
-
   # ─── Ads ─────────────────────────────────────────────────────
   google_mobile_ads: ^5.2.0
 
