@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../../../core/config/app_config.dart';
-import '../../../core/services/firebase_service.dart';
 import '../../../core/services/sentry_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 
@@ -73,7 +71,10 @@ class PayoutRecord {
         amount: (map['amount'] ?? 0).toDouble(),
         method: map['method'] ?? 'upi',
         status: map['status'] ?? 'pending',
-        date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        // 🔥 FIXED: Firebase 'Timestamp' removed, using standard DateTime 🔥
+        date: map['date'] != null 
+            ? DateTime.tryParse(map['date'].toString()) ?? DateTime.now() 
+            : DateTime.now(),
       );
 }
 
@@ -102,17 +103,14 @@ class CreatorState {
         isLoading: isLoading ?? this.isLoading,
         error: error,
         message: message,
-        // don't carry over stats if explicitly setting null
       );
 }
 
 class CreatorController extends StateNotifier<CreatorState> {
-  final FirebaseFirestore _db;
   final String? _userId;
 
-  CreatorController(this._userId)
-      : _db = FirebaseService.instance.firestore,
-        super(const CreatorState()) {
+  // 🔥 FIXED: Firebase _db removed, prepared for AWS Amplify 🔥
+  CreatorController(this._userId) : super(const CreatorState()) {
     if (_userId != null) _loadStats();
   }
 
@@ -120,32 +118,22 @@ class CreatorController extends StateNotifier<CreatorState> {
     if (_userId == null) return;
     state = state.copyWith(isLoading: true);
     try {
-      // creator_analytics doc — created on first activity
-      final doc =
-          await _db.collection('creator_analytics').doc(_userId).get();
+      // TODO: AWS Amplify GraphQL API call goes here. 
+      // Simulating network delay for now to prevent app crash.
+      await Future.delayed(const Duration(milliseconds: 500));
 
-      // Also read user doc for Pro status
-      final userDoc = await _db.collection('users').doc(_userId).get();
-      final isProFromUser =
-          (userDoc.data() ?? {})['isCreatorPro'] as bool? ?? false;
-
-      final data = doc.data() ?? {};
-      data['isCreatorPro'] = isProFromUser;
-
-      // Calculate creator's share based on tier
-      final gross = (data['grossAdRevenue'] ?? 0).toDouble();
-      final share = isProFromUser
-          ? gross * AppConfig.proCreatorRevenueCut
-          : gross * AppConfig.creatorRevenueCut;
-      data['creatorEarnings'] = share;
-
-      // Count posts
-      final postsSnap = await _db
-          .collection('posts')
-          .where('userId', isEqualTo: _userId)
-          .count()
-          .get();
-      data['totalPosts'] = postsSnap.count ?? 0;
+      // Dummy initial data until AWS is connected
+      final data = <String, dynamic>{
+        'isCreatorPro': false,
+        'grossAdRevenue': 0.0,
+        'creatorEarnings': 0.0,
+        'totalPosts': 0,
+        'totalViews': 0,
+        'totalAdImpressions': 0,
+        'pendingPayout': 0.0,
+        'paidOut': 0.0,
+        'payoutHistory': [],
+      };
 
       state = state.copyWith(
         stats: CreatorStats.fromFirestore(data),
@@ -175,29 +163,8 @@ class CreatorController extends StateNotifier<CreatorState> {
 
     state = state.copyWith(isLoading: true);
     try {
-      final ref = _db.collection('payout_requests').doc();
-      await ref.set({
-        'userId': _userId,
-        'amount': amount,
-        'method': method,
-        'destination': destination,
-        'status': 'pending',
-        'requestedAt': FieldValue.serverTimestamp(),
-      });
-
-      // Deduct from pending balance
-      await _db.collection('creator_analytics').doc(_userId).update({
-        'pendingPayout': FieldValue.increment(-amount),
-        'payoutHistory': FieldValue.arrayUnion([
-          {
-            'id': ref.id,
-            'amount': amount,
-            'method': method,
-            'status': 'pending',
-            'date': Timestamp.now(),
-          }
-        ]),
-      });
+      // TODO: AWS Amplify logic to store payout request
+      await Future.delayed(const Duration(seconds: 1));
 
       await _loadStats();
       state = state.copyWith(
@@ -219,16 +186,9 @@ class CreatorController extends StateNotifier<CreatorState> {
   }) async {
     if (_userId == null) return false;
     try {
-      final expiryDays = planType == 'yearly' ? 365 : 30;
-      await _db.collection('users').doc(_userId).update({
-        'isCreatorPro': true,
-        'isVerified': true,
-        'creatorProPlan': planType,
-        'creatorProExpiry': Timestamp.fromDate(
-          DateTime.now().add(Duration(days: expiryDays)),
-        ),
-        'creatorProPaymentId': paymentId,
-      });
+      // TODO: AWS Amplify update logic
+      await Future.delayed(const Duration(seconds: 1));
+      
       await _loadStats();
       return true;
     } catch (e, st) {
