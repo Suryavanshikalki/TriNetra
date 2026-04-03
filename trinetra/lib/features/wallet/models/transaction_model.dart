@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// 🔥 Firebase का import हटा दिया गया है 🔥
 
 /// Transaction Model for TriNetra Pay
 /// Collection: transactions/{txnId}
@@ -29,10 +29,10 @@ class TransactionModel {
     this.metadata = const {},
   });
 
-  factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
-    final d = doc.data() as Map<String, dynamic>;
+  // 🔥 FIXED: DocumentSnapshot को हटाकर नॉर्मल Map कर दिया गया है 🔥
+  factory TransactionModel.fromMap(String docId, Map<String, dynamic> d) {
     return TransactionModel(
-      id: doc.id,
+      id: docId,
       userId: d['userId'] ?? '',
       type: TransactionType.fromString(d['type'] ?? 'payment'),
       amount: (d['amount'] ?? 0).toDouble(),
@@ -41,12 +41,16 @@ class TransactionModel {
       description: d['description'] ?? '',
       referenceId: d['referenceId'],
       paymentMethod: d['paymentMethod'],
-      createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      // 🔥 FIXED: Timestamp को हटाकर DateTime कर दिया गया है 🔥
+      createdAt: d['createdAt'] != null 
+          ? DateTime.tryParse(d['createdAt'].toString()) ?? DateTime.now() 
+          : DateTime.now(),
       metadata: Map<String, dynamic>.from(d['metadata'] ?? {}),
     );
   }
 
-  Map<String, dynamic> toFirestore() => {
+  // 🔥 FIXED: toFirestore को बदलकर toMap कर दिया गया है 🔥
+  Map<String, dynamic> toMap() => {
     'userId': userId,
     'type': type.value,
     'amount': amount,
@@ -55,7 +59,8 @@ class TransactionModel {
     'description': description,
     'referenceId': referenceId,
     'paymentMethod': paymentMethod,
-    'createdAt': FieldValue.serverTimestamp(),
+    // 🔥 FIXED: FieldValue को हटाकर स्टैंडर्ड ISO टाइम कर दिया गया है 🔥
+    'createdAt': createdAt.toIso8601String(),
     'metadata': metadata,
   };
 
