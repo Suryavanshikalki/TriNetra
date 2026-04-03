@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:uuid/uuid.dart'; // Uuid पैकेज इम्पोर्ट किया गया
 import 'aws_service.dart'; // आपकी असली AWS सर्विस जो अभी हमने बनाई
 
 /// 🔥 100% REAL AWS BRIDGE (No Dummy Code) 🔥
@@ -31,7 +32,8 @@ class _RealCollection {
   final String path;
   _RealCollection(this.path);
 
-  _RealDocument doc([String? docId]) => _RealDocument(path, docId ?? UUID.getUUID());
+  // 🔥 Fix: UUID.getUUID() को const Uuid().v4() से रिप्लेस किया गया
+  _RealDocument doc([String? docId]) => _RealDocument(path, docId ?? const Uuid().v4());
   
   _RealCollection where(String field, {dynamic isEqualTo, dynamic isGreaterThan}) => this;
   _RealCollection orderBy(String field, {bool descending = false}) => this;
