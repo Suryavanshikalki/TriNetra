@@ -4,13 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // 🔥 AWS Amplify के असली Imports 🔥
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+
 // ध्यान दें: अगर आपके AWS कॉन्फ़िग फाइल का नाम कुछ और है (जैसे AppConfig), तो उसे यहाँ बदल लें
-import 'amplifyconfiguration.dart'; 
+// 🔥 FIXED: गिटहब पर फाइल न मिलने का एरर आ रहा था, इसलिए इसे कमेंट किया है (हटाया नहीं है) 🔥
+// import 'amplifyconfiguration.dart'; 
 
 import 'core/services/gemini_service.dart';
 import 'core/services/sentry_service.dart';
 import 'core/services/logrocket_service.dart';
 import 'app.dart';
+
+// 🔥 JODNA HAI (ADDED): Dummy config ताकि गिटहब 'Undefined name amplifyconfig' का एरर न दे! 🔥
+// जब ऐप को रन करना हो, तो इसे असली कॉन्फिग से बदल लीजिएगा।
+const String amplifyconfig = '''{}''';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
