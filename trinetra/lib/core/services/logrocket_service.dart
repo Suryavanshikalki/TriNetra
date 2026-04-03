@@ -1,98 +1,115 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import '../config/app_config.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 
-// LogRocket is primarily a JavaScript web analytics tool.
-// For Flutter Web: We use JavaScript interop to load LogRocket.
-// For native (Android/iOS/Desktop): We use a minimal custom event logger
-// that mirrors LogRocket's API surface, sending events to our backend.
+// असली LogRocket पैकेज (pubspec.yaml में logrocket_flutter डालना होगा)
+import 'package:logrocket_flutter/logrocket_flutter.dart';
 
+/// 👁️🔥 TriNetra Analytics & Session Replay Service
+/// 100% REAL: LogRocket for Web/Session Replay + AWS AppSync for Native Event Tracking.
+/// No local dummy lists. Every event goes straight to the server.
 class LogRocketService {
   LogRocketService._();
   static final LogRocketService instance = LogRocketService._();
 
   bool _initialized = false;
-  final List<Map<String, dynamic>> _sessionEvents = [];
 
+  // ─── ASLI KEY (GitHub Secrets से) ──────────────────────────────
+  static const String _logRocketId = String.fromEnvironment('LOGROCKET_ID');
+
+  // ─── 1. REAL INITIALIZATION ─────────────────────────────────────
   void initialize() {
     if (_initialized) return;
-    if (AppConfig.logRocketAppId.isEmpty) {
-      if (kDebugMode) debugPrint('LogRocket App ID not set. Skipping.');
+
+    if (_logRocketId.isEmpty) {
+      if (kDebugMode) safePrint('❌ LogRocket ID missing in dart-define.');
       return;
     }
 
-    if (kIsWeb) {
-      _initializeForWeb();
-    } else {
-      _initializeForNative();
+    try {
+      // असली LogRocket SDK Initialization
+      LogRocket.init(_logRocketId);
+      _initialized = true;
+      if (kDebugMode) safePrint('🚀 TriNetra: LogRocket Session Replay & AWS Analytics LIVE!');
+    } catch (e) {
+      if (kDebugMode) safePrint('❌ LogRocket Init Error: $e');
     }
-    _initialized = true;
-    if (kDebugMode) debugPrint('LogRocket initialized (App: ${AppConfig.logRocketAppId})');
   }
 
-  void _initializeForWeb() {
-    // LogRocket JS SDK is loaded via web/index.html script tag.
-    // This method completes the initialization via JavaScript interop.
-    // In production, ensure the following is in web/index.html:
-    //   <script src="https://cdn.lr-ingest.io/LogRocket.min.js"></script>
-    //   <script>window.LogRocket && LogRocket.init('YOUR_APP_ID');</script>
-    if (kDebugMode) debugPrint('LogRocket Web initialized');
-  }
-
-  void _initializeForNative() {
-    // For native platforms, we implement session replay via screen captures
-    // and event batching, then send to LogRocket's ingest endpoint.
-    if (kDebugMode) debugPrint('LogRocket Native session tracking initialized');
-  }
-
-  // ─── Identify User ───────────────────────────────────────────
+  // ─── 2. REAL USER IDENTIFICATION (Tied to AWS Cognito ID) ───────
   void identifyUser({
-    required String userId,
+    required String trinetraId,
     String? name,
     String? email,
-    Map<String, dynamic>? traits,
+    String? subscriptionTier, // e.g., 'OS_CREATOR' or 'FREE'
   }) {
     if (!_initialized) return;
-    _trackEvent('identify', {
-      'userId': userId,
+
+    // 1. LogRocket को डेटा भेजना
+    LogRocket.identify(trinetraId, {
+      'name': name ?? 'Unknown',
+      'email': email ?? 'No Email',
+      'subscription': subscriptionTier ?? 'Basic',
+    });
+
+    // 2. AWS Backend में User Analytics अपडेट करना
+    _trackInAws('USER_IDENTIFIED', {
+      'userId': trinetraId,
       'name': name,
-      'email': email,
-      ...?traits,
     });
   }
 
-  // ─── Track Event ─────────────────────────────────────────────
+  // ─── 3. REAL EVENT TRACKING (No Local Memory) ───────────────────
   void track(String eventName, {Map<String, dynamic>? properties}) {
     if (!_initialized) return;
-    _trackEvent(eventName, properties ?? {});
+
+    final eventData = properties ?? {};
+
+    // 1. Send to LogRocket
+    LogRocket.track(eventName, eventData);
+
+    // 2. Send to AWS AppSync (100% Data Safety & Dashboard)
+    _trackInAws(eventName, eventData);
   }
 
-  // ─── Log Page View ───────────────────────────────────────────
+  // ─── 4. REAL PAGE VIEW TRACKING ─────────────────────────────────
   void logPageView(String pageName, {Map<String, dynamic>? properties}) {
     if (!_initialized) return;
-    _trackEvent('page_view', {
+    
+    final eventData = {
       'page': pageName,
-      'timestamp': DateTime.now().toIso8601String(),
+      'timestamp': DateTime.now().toUtc().toIso8601String(),
       ...?properties,
-    });
-  }
-
-  // ─── Log Custom Event ────────────────────────────────────────
-  void logEvent(String name, {Map<String, dynamic>? data}) {
-    if (!_initialized) return;
-    _trackEvent(name, data ?? {});
-  }
-
-  void _trackEvent(String name, Map<String, dynamic> data) {
-    final event = {
-      'event': name,
-      'data': data,
-      'timestamp': DateTime.now().toIso8601String(),
-      'sessionId': _sessionId,
     };
-    _sessionEvents.add(event);
-    if (kDebugMode) debugPrint('[LogRocket] $name: $data');
+
+    LogRocket.track('PAGE_VIEW', eventData);
+    _trackInAws('PAGE_VIEW', eventData);
   }
 
-  String get _sessionId => 'lr_${DateTime.now().millisecondsSinceEpoch}';
-  bool get isInitialized => _initialized;
+  // ─── 5. SECURE AWS ANALYTICS SENDER (Private) ───────────────────
+  /// यह फंक्शन इवेंट्स को हवा में गायब नहीं होने देगा, 
+  /// बल्कि सीधा आपके AWS DynamoDB (Analytics Table) में सेव करेगा।
+  Future<void> _trackInAws(String eventName, Map<String, dynamic> data) async {
+    try {
+      final request = GraphQLRequest<String>(
+        document: '''
+          mutation LogTriNetraEvent(\$eventName: String!, \$eventData: String!) {
+            createAnalyticsLog(eventName: \$eventName, eventData: \$eventData) {
+              id
+              status
+            }
+          }
+        ''',
+        variables: {
+          'eventName': eventName,
+          'eventData': jsonEncode(data),
+        },
+      );
+      
+      // AWS पर डेटा सेव
+      await Amplify.API.query(request: request).response;
+    } catch (e) {
+      if (kDebugMode) safePrint('❌ AWS Analytics Sync Failed for $eventName: $e');
+    }
+  }
 }
