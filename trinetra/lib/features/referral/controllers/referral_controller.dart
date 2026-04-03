@@ -1,6 +1,6 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../core/services/firebase_service.dart';
+import 'package:amplify_flutter/amplify_flutter.dart'; // 🔥 THE REAL AWS IMPORT 🔥
 import '../../../core/services/sentry_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../models/referral_model.dart';
@@ -33,28 +33,50 @@ class ReferralState {
 }
 
 class ReferralController extends StateNotifier<ReferralState> {
-  final FirebaseFirestore _firestore;
   final String? _userId;
 
-  ReferralController(this._userId)
-      : _firestore = FirebaseService.instance.firestore,
-        super(const ReferralState()) {
+  ReferralController(this._userId) : super(const ReferralState()) {
     if (_userId != null) _loadOrCreate();
   }
 
+  // ─── Load or Create (REAL AWS API) ──────────────────────────
   Future<void> _loadOrCreate() async {
     final uid = _userId;
     if (uid == null) return;
     state = state.copyWith(isLoading: true);
     try {
-      final doc = await _firestore.collection('referrals').doc(uid).get();
-      if (doc.exists) {
+      // 1. AWS GraphQL Query to get referral data
+      const getQuery = '''
+        query GetReferral(\$id: ID!) {
+          getReferral(id: \$id) {
+            userId
+            referralCode
+            referredByUid
+            referredUserIds
+            totalCoinsEarned
+            coinsAvailable
+            coinsRedeemed
+            createdAt
+          }
+        }
+      ''';
+
+      final request = GraphQLRequest<String>(
+        document: getQuery,
+        variables: {'id': uid},
+      );
+
+      final response = await Amplify.API.query(request: request).response;
+
+      if (response.data != null && jsonDecode(response.data!)['getReferral'] != null) {
+        // Data exists in AWS
+        final dataMap = jsonDecode(response.data!)['getReferral'];
         state = state.copyWith(
-          data: ReferralModel.fromFirestore(doc),
+          data: ReferralModel.fromMap(uid, dataMap),
           isLoading: false,
         );
       } else {
-        // Create referral record for new user
+        // 2. Create new referral record in AWS
         final code = ReferralModel.generateCode(uid);
         final newReferral = ReferralModel(
           userId: uid,
@@ -62,80 +84,90 @@ class ReferralController extends StateNotifier<ReferralState> {
           createdAt: DateTime.now(),
           coinsAvailable: 0,
         );
-        await _firestore
-            .collection('referrals')
-            .doc(uid)
-            .set(newReferral.toFirestore());
+
+        const createMutation = '''
+          mutation CreateReferral(\$input: CreateReferralInput!) {
+            createReferral(input: \$input) { userId }
+          }
+        ''';
+
+        final createReq = GraphQLRequest<String>(
+          document: createMutation,
+          variables: {'input': newReferral.toMap()},
+        );
+
+        await Amplify.API.mutate(request: createReq).response;
         state = state.copyWith(data: newReferral, isLoading: false);
       }
     } catch (e, st) {
-      state = state.copyWith(isLoading: false, error: 'Failed to load referral data.');
+      state = state.copyWith(isLoading: false, error: 'Failed to load AWS referral data.');
       await SentryService.instance.captureException(e, stackTrace: st);
     }
   }
 
-  // ─── Apply Referral Code ────────────────────────────────────
-  /// Called when a new user enters a referral code during signup
+  // ─── Apply Referral Code (REAL AWS API) ─────────────────────
   Future<bool> applyReferralCode(String code) async {
     if (_userId == null) return false;
     state = state.copyWith(isLoading: true);
     try {
-      // Find referrer
-      final query = await _firestore
-          .collection('referrals')
-          .where('referralCode', isEqualTo: code.toUpperCase())
-          .limit(1)
-          .get();
+      // 1. Search for referrer by code in AWS
+      const searchQuery = '''
+        query ListReferrals(\$code: String!) {
+          listReferrals(filter: { referralCode: { eq: \$code } }, limit: 1) {
+            items { userId }
+          }
+        }
+      ''';
 
-      if (query.docs.isEmpty) {
+      final searchReq = GraphQLRequest<String>(
+        document: searchQuery,
+        variables: {'code': code.toUpperCase()},
+      );
+
+      final response = await Amplify.API.query(request: searchReq).response;
+      final items = jsonDecode(response.data ?? '{}')['listReferrals']?['items'] as List?;
+
+      if (items == null || items.isEmpty) {
         state = state.copyWith(isLoading: false, error: 'Invalid referral code.');
         return false;
       }
 
-      final referrerId = query.docs.first.id;
+      final referrerId = items.first['userId'];
       if (referrerId == _userId) {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'You cannot use your own referral code.',
-        );
+        state = state.copyWith(isLoading: false, error: 'You cannot use your own referral code.');
         return false;
       }
 
-      final batch = _firestore.batch();
+      // 2. Update AWS Database (Mutation)
+      const updateMutation = '''
+        mutation ApplyReferral(\$referrerId: ID!, \$newUserId: ID!, \$bonus: Int!, \$refBonus: Int!) {
+          applyReferralCode(referrerId: \$referrerId, newUserId: \$newUserId, bonus: \$bonus, refBonus: \$refBonus)
+        }
+      ''';
 
-      // Award coins to referrer
-      batch.update(
-        _firestore.collection('referrals').doc(referrerId),
-        {
-          'referredUserIds': FieldValue.arrayUnion([_userId]),
-          'totalCoinsEarned': FieldValue.increment(ReferralModel.coinsPerReferral),
-          'coinsAvailable': FieldValue.increment(ReferralModel.coinsPerReferral),
+      final updateReq = GraphQLRequest<String>(
+        document: updateMutation,
+        variables: {
+          'referrerId': referrerId,
+          'newUserId': _userId,
+          'bonus': ReferralModel.welcomeBonus,
+          'refBonus': ReferralModel.coinsPerReferral,
         },
       );
 
-      // Award welcome bonus to new user
-      batch.update(
-        _firestore.collection('referrals').doc(_userId),
-        {
-          'referredByUid': referrerId,
-          'totalCoinsEarned': FieldValue.increment(ReferralModel.welcomeBonus),
-          'coinsAvailable': FieldValue.increment(ReferralModel.welcomeBonus),
-        },
-      );
+      await Amplify.API.mutate(request: updateReq).response;
 
-      await batch.commit();
       await _loadOrCreate();
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e, st) {
-      state = state.copyWith(isLoading: false, error: 'Failed to apply code.');
+      state = state.copyWith(isLoading: false, error: 'Failed to apply code via AWS.');
       await SentryService.instance.captureException(e, stackTrace: st);
       return false;
     }
   }
 
-  // ─── Redeem Coins ───────────────────────────────────────────
-  /// Redeem coins as ad credits or request payout
+  // ─── Redeem Coins (REAL AWS API) ────────────────────────────
   Future<bool> redeemCoins(int amount) async {
     if (_userId == null || state.data == null) return false;
     if (state.data!.coinsAvailable < amount) return false;
@@ -148,28 +180,53 @@ class ReferralController extends StateNotifier<ReferralState> {
 
     state = state.copyWith(isLoading: true);
     try {
-      await _firestore.collection('referrals').doc(_userId).update({
-        'coinsAvailable': FieldValue.increment(-amount),
-        'coinsRedeemed': FieldValue.increment(amount),
-      });
+      // AWS Mutation to deduct coins
+      const redeemMutation = '''
+        mutation RedeemCoins(\$userId: ID!, \$amount: Int!) {
+          redeemUserCoins(userId: \$userId, amount: \$amount)
+        }
+      ''';
+
+      final request = GraphQLRequest<String>(
+        document: redeemMutation,
+        variables: {
+          'userId': _userId,
+          'amount': amount,
+        },
+      );
+
+      await Amplify.API.mutate(request: request).response;
+      
       await _loadOrCreate();
       state = state.copyWith(isLoading: false, redeemed: true);
       return true;
     } catch (e, st) {
-      state = state.copyWith(isLoading: false, error: 'Redemption failed.');
+      state = state.copyWith(isLoading: false, error: 'AWS Redemption failed.');
       await SentryService.instance.captureException(e, stackTrace: st);
       return false;
     }
   }
 
-  // ─── Award Coins (Internal) ─────────────────────────────────
-  /// Award coins for activities (posting, watching ads, etc.)
+  // ─── Award Coins (REAL AWS API) ─────────────────────────────
   Future<void> awardCoins(String uid, int amount, String reason) async {
     try {
-      await _firestore.collection('referrals').doc(uid).update({
-        'totalCoinsEarned': FieldValue.increment(amount),
-        'coinsAvailable': FieldValue.increment(amount),
-      });
+      // AWS Mutation to add coins
+      const awardMutation = '''
+        mutation AwardCoins(\$userId: ID!, \$amount: Int!, \$reason: String!) {
+          awardUserCoins(userId: \$userId, amount: \$amount, reason: \$reason)
+        }
+      ''';
+
+      final request = GraphQLRequest<String>(
+        document: awardMutation,
+        variables: {
+          'userId': uid,
+          'amount': amount,
+          'reason': reason,
+        },
+      );
+
+      await Amplify.API.mutate(request: request).response;
     } catch (e) {
       // Silently fail — coin awarding is non-critical
     }
