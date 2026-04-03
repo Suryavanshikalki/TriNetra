@@ -23,22 +23,23 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   int _secondsLeft = 30;
   bool _canResend = false;
   Timer? _timer;
-  bool _autoVerifying = false;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _startTimer();
+    // Note: OTP is usually sent from the previous screen, 
+    // but keeping your call here as per original logic.
     _sendOtp();
   }
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_secondsLeft > 0) {
-        setState(() => _secondsLeft--);
+        if (mounted) setState(() => _secondsLeft--);
       } else {
-        setState(() => _canResend = true);
+        if (mounted) setState(() => _canResend = true);
         t.cancel();
       }
     });
@@ -55,16 +56,19 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   }
 
   Future<void> _sendOtp() async {
+    if (!mounted) return;
     setState(() => _errorMessage = null);
     await ref.read(authControllerProvider.notifier).sendOtp(
       phoneNumber: widget.phoneNumber,
-      onError: (e) => setState(() => _errorMessage = e),
+      onError: (e) {
+        if (mounted) setState(() => _errorMessage = e);
+      },
       onCodeSent: () {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('OTP sent to ${widget.phoneNumber}'),
-              backgroundColor: AppColors.success,
+              backgroundColor: Colors.green,
               duration: const Duration(seconds: 3),
             ),
           );
@@ -74,21 +78,26 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   }
 
   Future<void> _verifyOtp(String otp) async {
-    if (otp.length != 6) return;
+    if (otp.length != 6 || !mounted) return;
     setState(() => _errorMessage = null);
+    
     await ref.read(authControllerProvider.notifier).verifyOtp(
       otp: otp,
       onError: (e) {
-        setState(() => _errorMessage = e);
-        _otpController.clear();
-        _otpFocus.requestFocus();
+        if (mounted) {
+          setState(() => _errorMessage = e);
+          _otpController.clear();
+          _otpFocus.requestFocus();
+        }
       },
     );
 
-    // Check if authenticated → navigate
-    final status = ref.read(authControllerProvider).status;
-    if (status == AuthStatus.authenticated && mounted) {
-      context.go('/home');
+    // After verification attempt, check the status
+    if (mounted) {
+      final status = ref.read(authControllerProvider).status;
+      if (status == AuthStatus.authenticated) {
+        context.go('/home');
+      }
     }
   }
 
@@ -105,12 +114,10 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.status == AuthStatus.loading;
-    final textColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final subColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    
+    final textColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final subColor = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
 
-    // OTP Pin theme
     final defaultPinTheme = PinTheme(
       width: 52,
       height: 56,
@@ -130,8 +137,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
     );
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       appBar: AppBar(
         backgroundColor: isDark ? AppColors.cardDark : Colors.white,
         elevation: 0,
@@ -150,14 +156,12 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-
-              // ─── OTP Icon ────────────────────────────────
               Container(
                 width: 72,
                 height: 72,
@@ -171,10 +175,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                   size: 34,
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // ─── Title ────────────────────────────────────
               Text(
                 'Verification Code',
                 style: TextStyle(
@@ -197,10 +198,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-
               const SizedBox(height: 36),
-
-              // ─── OTP Input ────────────────────────────────
               Pinput(
                 controller: _otpController,
                 focusNode: _otpFocus,
@@ -220,48 +218,33 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
-
               const SizedBox(height: 16),
-
-              // ─── Error Message ────────────────────────────
               if (_errorMessage != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: AppColors.error, size: 16),
+                      const Icon(Icons.error_outline, color: AppColors.error, size: 16),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(
-                            color: AppColors.error,
-                            fontSize: 13,
-                          ),
+                          style: const TextStyle(color: AppColors.error, fontSize: 13),
                         ),
                       ),
                     ],
                   ),
                 ),
-
               const SizedBox(height: 32),
-
-              // ─── Verify Button ────────────────────────────
               AnimatedOpacity(
                 opacity: isLoading ? 0.7 : 1.0,
                 duration: const Duration(milliseconds: 200),
                 child: ElevatedButton(
-                  onPressed: isLoading
-                      ? null
-                      : () => _verifyOtp(_otpController.text),
+                  onPressed: isLoading ? null : () => _verifyOtp(_otpController.text),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     minimumSize: const Size(double.infinity, 52),
@@ -275,8 +258,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Text(
@@ -289,10 +271,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                         ),
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // ─── Resend OTP ───────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -308,9 +287,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                           }
                         : null,
                     child: Text(
-                      _canResend
-                          ? 'Resend OTP'
-                          : 'Resend in ${_secondsLeft}s',
+                      _canResend ? 'Resend OTP' : 'Resend in ${_secondsLeft}s',
                       style: TextStyle(
                         color: _canResend ? AppColors.primary : subColor,
                         fontSize: 14,
