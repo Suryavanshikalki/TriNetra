@@ -11,51 +11,7 @@ class AppConfig {
   static const String appBuildNumber = '1';
   static const String appWebUrl = 'https://trinetra-8b846.web.app';
 
-  // ─── Firebase (injected via --dart-define) ──────────────────
-  static const String firebaseProjectId = String.fromEnvironment(
-    'FIREBASE_PROJECT_ID',
-    defaultValue: 'trinetra-8b846',
-  );
-  static const String firebaseWebApiKey = String.fromEnvironment(
-    'FIREBASE_WEB_API_KEY',
-    defaultValue: '',
-  );
-  static const String firebaseWebAppId = String.fromEnvironment(
-    'FIREBASE_WEB_APP_ID',
-    defaultValue: '',
-  );
-  static const String firebaseAuthDomain = String.fromEnvironment(
-    'FIREBASE_AUTH_DOMAIN',
-    defaultValue: 'trinetra-8b846.firebaseapp.com',
-  );
-  static const String firebaseStorageBucket = String.fromEnvironment(
-    'FIREBASE_STORAGE_BUCKET',
-    defaultValue: 'trinetra-8b846.appspot.com',
-  );
-  static const String firebaseMessagingSenderId = String.fromEnvironment(
-    'FIREBASE_SENDER_ID',
-    defaultValue: '',
-  );
-  static const String firebaseMeasurementId = String.fromEnvironment(
-    'FIREBASE_MEASUREMENT_ID',
-    defaultValue: '',
-  );
-  static const String firebaseAndroidApiKey = String.fromEnvironment(
-    'FIREBASE_ANDROID_API_KEY',
-    defaultValue: '',
-  );
-  static const String firebaseAndroidAppId = String.fromEnvironment(
-    'FIREBASE_ANDROID_APP_ID',
-    defaultValue: '',
-  );
-  static const String firebaseIosApiKey = String.fromEnvironment(
-    'FIREBASE_IOS_API_KEY',
-    defaultValue: '',
-  );
-  static const String firebaseIosAppId = String.fromEnvironment(
-    'FIREBASE_IOS_APP_ID',
-    defaultValue: '',
-  );
+  // 🔥 Firebase (REMOVED FOR AWS MIGRATION) 🔥
 
   // ─── AI / Gemini ─────────────────────────────────────────────
   static const String geminiApiKey = String.fromEnvironment(
@@ -63,17 +19,25 @@ class AppConfig {
     defaultValue: '',
   );
 
-  // ─── Payments ────────────────────────────────────────────────
-  static const String razorpayKeyId = String.fromEnvironment(
-    'RAZORPAY_KEY_ID',
-    defaultValue: '',
-  );
-  static const String stripePublishableKey = String.fromEnvironment(
-    'STRIPE_PUBLISHABLE_KEY',
-    defaultValue: '',
-  );
+  // ─── Payments (AWS Ready - 5 Real Gateways) ──────────────────
   static const String paypalClientId = String.fromEnvironment(
     'PAYPAL_CLIENT_ID',
+    defaultValue: '',
+  );
+  static const String payuMerchantKey = String.fromEnvironment(
+    'PAYU_MERCHANT_KEY',
+    defaultValue: '',
+  );
+  static const String braintreeToken = String.fromEnvironment(
+    'BRAINTREE_TOKEN',
+    defaultValue: '',
+  );
+  static const String paddleApiKey = String.fromEnvironment(
+    'PADDLE_API_KEY',
+    defaultValue: '',
+  );
+  static const String adyenApiKey = String.fromEnvironment(
+    'ADYEN_API_KEY',
     defaultValue: '',
   );
 
