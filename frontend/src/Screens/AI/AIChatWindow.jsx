@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Image as ImageIcon, Video, Camera, FileText, Send, Download, ShieldCheck, Globe, Loader2, ArrowLeft, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+
+// 🔥 ASLI AWS IMPORTS (No Axios, No Render) 🔥
+import { post } from 'aws-amplify/api';
+import { uploadData, getUrl } from 'aws-amplify/storage';
 
 export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super Agentic AI', onBack }) {
   const { t } = useTranslation();
@@ -16,7 +19,7 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Point 11: Real Multi-Model AI Chat Logic
+  // ─── 1. REAL AWS AI CHAT LOGIC (Point 11: 6-in-1 Brain) ───────────
   const handleAISend = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -27,65 +30,82 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
     setIsLoading(true);
 
     try {
-      // Real API hitting TriNetra AI Controller (File 54)
-      // Background switches between 6 models based on query complexity
-      const res = await axios.post('https://trinetra-umys.onrender.com/api/ai/chat', {
-        userId: currentUser?.trinetraId,
-        message: input,
-        mode: activeMode
+      // 🔥 Asli AWS API Gateway Call (No Render)
+      const restOperation = post({
+        apiName: 'TriNetraAPI', // Your AWS API Gateway Name
+        path: '/ai/chat',
+        options: {
+          body: {
+            userId: currentUser?.trinetraId,
+            message: input,
+            mode: activeMode // Mode A, B, C or OS Creation
+          }
+        }
       });
+      
+      const response = await restOperation.response;
+      const data = await response.body.json();
 
-      if (res.data.success) {
+      if (data.success) {
         const aiResponse = { 
           role: 'ai', 
-          text: res.data.response, 
-          mediaUrl: res.data.mediaUrl || null,
-          mediaType: res.data.mediaType || null,
+          text: data.response, 
+          mediaUrl: data.mediaUrl || null,
+          mediaType: data.mediaType || null,
           timestamp: new Date().toISOString() 
         };
         setMessages(prev => [...prev, aiResponse]);
       }
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'ai', text: t("Connection to Master Brain lost. Check credits (₹9999 plan)."), role: 'error' }]);
+      console.error("AWS AI Error:", err);
+      setMessages(prev => [...prev, { role: 'ai', text: t("Connection to Master Brain lost. AWS Network Error."), isError: true }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Point 11: Real Input Engine (Camera/PDF/Audio Upload to AI for Analysis)
+  // ─── 2. REAL DIRECT AWS S3 UPLOAD (No Middleman) ──────────────────
   const handleAIUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
 
-    const formData = new FormData();
-    formData.append('media', file);
-    formData.append('userId', currentUser?.trinetraId);
-    formData.append('analysisType', type);
-
     try {
-      const res = await axios.post('https://trinetra-umys.onrender.com/api/ai/analyze', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const fileName = `ai_inputs/${currentUser?.trinetraId}_${Date.now()}_${file.name}`;
+      
+      // 🔥 Direct Upload to AWS S3
+      const uploadResult = await uploadData({
+        path: `public/${fileName}`,
+        data: file,
+        options: {
+          contentType: file.type,
+          accessLevel: 'guest'
+        }
+      }).result;
 
-      if (res.data.success) {
-        setMessages(prev => [...prev, { 
-          role: 'user', 
-          text: `${t("Uploaded")} ${type} ${t("for AI Analysis")}`, 
-          mediaUrl: res.data.url, 
-          mediaType: type 
-        }]);
-        // Trigger AI to respond to the file
-        setInput(t("Analyze this file and give me professional insights."));
-      }
+      // 🔥 Get S3 CDN URL
+      const urlResult = await getUrl({ path: `public/${fileName}` });
+      const s3Url = urlResult.url.toString();
+
+      setMessages(prev => [...prev, { 
+        role: 'user', 
+        text: `${t("Uploaded")} ${type} ${t("for AI Analysis")}`, 
+        mediaUrl: s3Url, 
+        mediaType: type 
+      }]);
+
+      // Automatically trigger AI to analyze the uploaded file
+      setInput(t("Analyze this file and give me professional insights based on your Super Agentic Brain."));
+      
     } catch (err) {
-      alert(t("AI Media analysis failed."));
+      console.error("AWS S3 Upload Failed:", err);
+      alert(t("AI Media upload to AWS failed."));
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Point 11: Universal Download for AI Generated Files/Code/Videos
+  // ─── 3. UNIVERSAL DOWNLOAD (Point 11 & 4) ─────────────────────────
   const downloadAIOutput = (url) => {
     if (!url) return;
     const link = document.createElement('a');
@@ -115,10 +135,10 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
         </div>
         <div className="flex items-center gap-4">
            {/* Point 11: Collaboration ID Link */}
-           <button title={t("Connect Collaborator")} className="text-gray-400 hover:text-cyan-400 transition-colors">
+           <button title={t("Connect Collaborator Email")} className="text-gray-400 hover:text-cyan-400 transition-colors">
               <UserPlus size={20} />
            </button>
-           <ShieldCheck size={24} className="text-cyan-500" />
+           <ShieldCheck size={24} className="text-cyan-500" title="100% Emotion Control Active" />
         </div>
       </header>
 
@@ -140,9 +160,11 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
               
               {/* Media Display within AI Chat */}
               {m.mediaUrl && (
-                <div className="w-full min-w-[200px] bg-black/40 rounded-xl mb-3 overflow-hidden relative border border-white/10">
-                  {m.mediaType === 'image' || m.mediaType === 'photo' ? (
+                <div className="w-full min-w-[200px] bg-black/40 rounded-xl mb-3 overflow-hidden relative border border-white/10 group">
+                  {m.mediaType === 'image' || m.mediaType === 'photo' || m.mediaType === 'camera' ? (
                     <img src={m.mediaUrl} className="w-full h-auto object-contain" alt="ai_media" />
+                  ) : m.mediaType === 'video' ? (
+                    <video src={m.mediaUrl} controls className="w-full h-auto" />
                   ) : (
                     <div className="p-6 flex flex-col items-center gap-2">
                        <FileText size={40} className="text-cyan-400" />
@@ -150,7 +172,7 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
                     </div>
                   )}
                   {/* Point 11: Universal Download for AI Outputs */}
-                  <button onClick={() => downloadAIOutput(m.mediaUrl)} className="absolute top-2 right-2 bg-black/60 p-2 rounded-lg text-white hover:text-cyan-400 backdrop-blur-md">
+                  <button onClick={() => downloadAIOutput(m.mediaUrl)} className="absolute top-2 right-2 bg-black/80 p-2 rounded-lg text-white hover:text-cyan-400 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
                     <Download size={18} />
                   </button>
                 </div>
@@ -181,7 +203,7 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
               <ImageIcon size={20}/><input type="file" accept="image/*" className="hidden" onChange={(e) => handleAIUpload(e, 'photo')}/>
             </label>
             <label className="bg-[#0a1014] p-3 rounded-xl border border-gray-800 hover:border-cyan-500 cursor-pointer flex-shrink-0 transition-all active:scale-90">
-              <Camera size={20}/><input type="file" accept="image/*" capture="camera" className="hidden" onChange={(e) => handleAIUpload(e, 'camera')}/>
+              <Camera size={20}/><input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleAIUpload(e, 'camera')}/>
             </label>
             <label className="bg-[#0a1014] p-3 rounded-xl border border-gray-800 hover:border-cyan-500 cursor-pointer flex-shrink-0 transition-all active:scale-90">
               <Video size={20}/><input type="file" accept="video/*" className="hidden" onChange={(e) => handleAIUpload(e, 'video')}/>
@@ -204,8 +226,8 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
           {input.length === 0 ? (
              <button type="button" className="p-3 text-violet-400 hover:text-white transition-colors active:scale-90"><Mic size={22} /></button>
           ) : (
-             <button type="submit" disabled={isLoading} className="p-3 bg-cyan-500 rounded-xl text-black hover:bg-cyan-400 transition-all active:scale-90 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-                {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+             <button type="submit" disabled={isLoading || isUploading} className="p-3 bg-cyan-500 rounded-xl text-black hover:bg-cyan-400 transition-all active:scale-90 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                {isLoading || isUploading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
              </button>
           )}
         </form>
