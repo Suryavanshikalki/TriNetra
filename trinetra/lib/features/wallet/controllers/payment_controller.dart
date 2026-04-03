@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/config/app_config.dart';
 import '../../../core/services/sentry_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../models/transaction_model.dart';
@@ -55,6 +53,7 @@ class PaymentController extends StateNotifier<PaymentState> {
     if (_userId == null) return;
     state = state.copyWith(isLoading: true);
     try {
+      // AWS Loading logic
       await Future.delayed(const Duration(milliseconds: 500));
       state = state.copyWith(
         transactions: [],
@@ -68,43 +67,9 @@ class PaymentController extends StateNotifier<PaymentState> {
     }
   }
 
-  Future<void> openRazorpay({
-    required double amountInRupees,
-    required String description,
-    required String contact,
-    required String name,
-    required void Function(String paymentId) onSuccess,
-    required void Function(String error) onError,
-  }) async {
-    if (AppConfig.razorpayKeyId.isEmpty) {
-      onError('Razorpay not configured. Please add RAZORPAY_KEY_ID secret.');
-      return;
-    }
-    if (kIsWeb) {
-      onError('Razorpay is available on Android/iOS only. Use UPI QR on web.');
-      return;
-    }
-    _openRazorpayNative(
-      amountInPaise: (amountInRupees * 100).toInt(),
-      description: description,
-      contact: contact,
-      name: name,
-      onSuccess: onSuccess,
-      onError: onError,
-    );
-  }
+  // 🔥 RAZORPAY COMPLETELY REMOVED 🔥
 
-  void _openRazorpayNative({
-    required int amountInPaise,
-    required String description,
-    required String contact,
-    required String name,
-    required void Function(String) onSuccess,
-    required void Function(String) onError,
-  }) {
-    onError('Razorpay: Initialize with RAZORPAY_KEY_ID from GitHub Secrets');
-  }
-
+  // ─── UPI Deep Link ──────────────────────────────────────────
   Map<String, String> getUpiDeepLinks({
     required double amount,
     required String payeeVpa,
@@ -125,6 +90,7 @@ class PaymentController extends StateNotifier<PaymentState> {
     };
   }
 
+  // ─── Record Transaction ─────────────────────────────────────
   Future<void> recordTransaction({
     required TransactionType type,
     required double amount,
@@ -142,6 +108,7 @@ class PaymentController extends StateNotifier<PaymentState> {
     }
   }
 
+  // ─── Boost Post ─────────────────────────────────────────────
   Future<bool> boostPost({
     required String postId,
     required double budgetInRupees,
@@ -168,6 +135,7 @@ class PaymentController extends StateNotifier<PaymentState> {
 
   Future<void> refresh() => _loadTransactions();
 
+  // ─── Boost Wallet Top-Up ─────────────────────────────────────
   Future<bool> topUpBoostWallet({
     required double amount,
     required String paymentId,
@@ -194,6 +162,7 @@ class PaymentController extends StateNotifier<PaymentState> {
     }
   }
 
+  // ─── Spend from Boost Wallet ─────────────────────────────────
   Future<bool> spendFromBoostWallet({
     required String postId,
     required double amount,
@@ -223,6 +192,7 @@ class PaymentController extends StateNotifier<PaymentState> {
   }
 }
 
+// ─── Provider ────────────────────────────────────────────────────
 final paymentControllerProvider =
     StateNotifierProvider<PaymentController, PaymentState>((ref) {
   final userId = ref.watch(currentUserProvider)?.uid;
