@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// 🔥 Firebase का import हटा दिया गया है 🔥
 
-/// Firestore Post Model
+/// Post Model (AWS Ready - No Firebase)
 /// Collection: posts/{postId}
 class PostModel {
   final String id;
@@ -39,10 +39,10 @@ class PostModel {
     this.location,
   });
 
-  factory PostModel.fromFirestore(DocumentSnapshot doc) {
-    final d = doc.data() as Map<String, dynamic>;
+  // 🔥 FIXED: DocumentSnapshot को हटाकर नॉर्मल Map कर दिया गया है 🔥
+  factory PostModel.fromMap(String docId, Map<String, dynamic> d) {
     return PostModel(
-      id: doc.id,
+      id: docId,
       userId: d['userId'] ?? '',
       userName: d['userName'] ?? '',
       userAvatar: d['userAvatar'] ?? '',
@@ -56,13 +56,17 @@ class PostModel {
       userReactions: Map<String, String>.from(d['userReactions'] ?? {}),
       commentsCount: d['commentsCount'] ?? 0,
       sharesCount: d['sharesCount'] ?? 0,
-      createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      // 🔥 FIXED: Timestamp को हटाकर DateTime कर दिया गया है 🔥
+      createdAt: d['createdAt'] != null 
+          ? DateTime.tryParse(d['createdAt'].toString()) ?? DateTime.now() 
+          : DateTime.now(),
       isBooted: d['isBoosted'] ?? false,
       location: d['location'],
     );
   }
 
-  Map<String, dynamic> toFirestore() => {
+  // 🔥 FIXED: toFirestore का नाम बदलकर toMap कर दिया गया है 🔥
+  Map<String, dynamic> toMap() => {
     'userId': userId,
     'userName': userName,
     'userAvatar': userAvatar,
@@ -74,7 +78,8 @@ class PostModel {
     'userReactions': userReactions,
     'commentsCount': commentsCount,
     'sharesCount': sharesCount,
-    'createdAt': FieldValue.serverTimestamp(),
+    // 🔥 FIXED: FieldValue को हटाकर स्टैंडर्ड टाइम कर दिया गया है 🔥
+    'createdAt': createdAt.toIso8601String(),
     'isBoosted': isBooted,
     'location': location,
   };
