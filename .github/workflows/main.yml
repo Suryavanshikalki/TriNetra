@@ -1,4 +1,4 @@
-name: TriNetra Final - All 6 Platforms & AWS Launch
+Name: TriNetra Final - All 6 Platforms & AWS Launch
 on:
   push:
     branches: [ main ]
@@ -154,6 +154,13 @@ jobs:
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
             --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
             --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}"
+
+      # 🔥 JODNA HAI (ADDED): यह कोड iOS ऐप को डाउनलोड के लिए सेव करेगा 🔥
+      - name: Upload iOS Artifact (Unsigned)
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS-Release-Unsigned
+          path: '**/build/ios/iphoneos/Runner.app'
 
   # 5. macOS BUILD 🟠
   build-macos:
