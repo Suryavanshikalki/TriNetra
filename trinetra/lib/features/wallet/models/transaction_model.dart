@@ -1,7 +1,4 @@
-// 🔥 Firebase का import हटा दिया गया है 🔥
-
-/// Transaction Model for TriNetra Pay
-/// Collection: transactions/{txnId}
+// 🔥 Firebase Removed 🔥
 class TransactionModel {
   final String id;
   final String userId;
@@ -29,7 +26,6 @@ class TransactionModel {
     this.metadata = const {},
   });
 
-  // 🔥 FIXED: DocumentSnapshot को हटाकर नॉर्मल Map कर दिया गया है 🔥
   factory TransactionModel.fromMap(String docId, Map<String, dynamic> d) {
     return TransactionModel(
       id: docId,
@@ -41,7 +37,6 @@ class TransactionModel {
       description: d['description'] ?? '',
       referenceId: d['referenceId'],
       paymentMethod: d['paymentMethod'],
-      // 🔥 FIXED: Timestamp को हटाकर DateTime कर दिया गया है 🔥
       createdAt: d['createdAt'] != null 
           ? DateTime.tryParse(d['createdAt'].toString()) ?? DateTime.now() 
           : DateTime.now(),
@@ -49,7 +44,6 @@ class TransactionModel {
     );
   }
 
-  // 🔥 FIXED: toFirestore को बदलकर toMap कर दिया गया है 🔥
   Map<String, dynamic> toMap() => {
     'userId': userId,
     'type': type.value,
@@ -59,7 +53,6 @@ class TransactionModel {
     'description': description,
     'referenceId': referenceId,
     'paymentMethod': paymentMethod,
-    // 🔥 FIXED: FieldValue को हटाकर स्टैंडर्ड ISO टाइम कर दिया गया है 🔥
     'createdAt': createdAt.toIso8601String(),
     'metadata': metadata,
   };
@@ -72,16 +65,8 @@ class TransactionModel {
 }
 
 enum TransactionType {
-  payment,
-  upiPayment,
-  adBoost,
-  subscription,
-  marketplaceSale,
-  coinEarned,
-  coinRedeemed,
-  refund,
-  payoutReceived,
-  payoutRequested;
+  payment, upiPayment, adBoost, subscription, marketplaceSale,
+  coinEarned, coinRedeemed, refund, payoutReceived, payoutRequested;
 
   static TransactionType fromString(String s) {
     switch (s) {
@@ -98,42 +83,11 @@ enum TransactionType {
     }
   }
 
-  String get value {
-    switch (this) {
-      case TransactionType.upiPayment: return 'upi_payment';
-      case TransactionType.adBoost: return 'ad_boost';
-      case TransactionType.subscription: return 'subscription';
-      case TransactionType.marketplaceSale: return 'marketplace_sale';
-      case TransactionType.coinEarned: return 'coin_earned';
-      case TransactionType.coinRedeemed: return 'coin_redeemed';
-      case TransactionType.refund: return 'refund';
-      case TransactionType.payoutReceived: return 'payout_received';
-      case TransactionType.payoutRequested: return 'payout_requested';
-      default: return 'payment';
-    }
-  }
-
-  String get displayName {
-    switch (this) {
-      case TransactionType.upiPayment: return 'UPI Payment';
-      case TransactionType.adBoost: return 'Boost Post';
-      case TransactionType.subscription: return 'Creator Pro';
-      case TransactionType.marketplaceSale: return 'Marketplace Sale';
-      case TransactionType.coinEarned: return 'Coins Earned';
-      case TransactionType.coinRedeemed: return 'Coins Redeemed';
-      case TransactionType.refund: return 'Refund';
-      case TransactionType.payoutReceived: return 'Payout Received';
-      case TransactionType.payoutRequested: return 'Payout Requested';
-      default: return 'Payment';
-    }
-  }
+  String get value => name;
 }
 
 enum TransactionStatus {
-  pending,
-  completed,
-  failed,
-  cancelled;
+  pending, completed, failed, cancelled;
 
   static TransactionStatus fromString(String s) {
     switch (s) {
