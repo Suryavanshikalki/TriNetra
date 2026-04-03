@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// 🔥 JODNA HAI (ADDED): AWS AMPLIFY IMPORT 🔥
+import 'package:amplify_flutter/amplify_flutter.dart';
+
 // 🔥 FIXED: इसे सिर्फ कमेंट किया है (हटाया नहीं है) ताकि 'Target of URI' का एरर न आए 🔥
 // import 'package:firebase_auth/firebase_auth.dart';
 
@@ -52,27 +55,49 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   void _init() {
-    _auth.authStateChanges().listen((user) {
-      if (user != null) {
-        state = state.copyWith(
-          status: AuthStatus.authenticated,
-          user: user,
+    // 🔥 JODNA HAI (ADDED): AWS Amplify Session Logic 🔥
+    Amplify.Auth.fetchAuthSession().then((session) async {
+      if (session.isSignedIn) {
+        final authUser = await Amplify.Auth.getCurrentUser();
+        final user = User(
+          uid: authUser.userId,
+          phoneNumber: authUser.username,
+          displayName: 'TriNetra User',
         );
-        SentryService.instance.setUser(
-          id: user.uid,
-          username: user.phoneNumber,
-        );
-        LogRocketService.instance.identifyUser(
-          userId: user.uid,
-          name: user.displayName,
-        );
+        state = state.copyWith(status: AuthStatus.authenticated, user: user);
+        SentryService.instance.setUser(id: user.uid, username: user.phoneNumber);
+        LogRocketService.instance.identifyUser(userId: user.uid, name: user.displayName);
       } else {
-        state = state.copyWith(
-          status: AuthStatus.unauthenticated,
-          user: null,
-        );
+        state = state.copyWith(status: AuthStatus.unauthenticated, user: null);
       }
+    }).catchError((_) {
+      state = state.copyWith(status: AuthStatus.unauthenticated, user: null);
     });
+
+    // 🔥 OLD CODE (Bypassed with if(false) to prevent deletion) 🔥
+    if (false) {
+      _auth.authStateChanges().listen((user) {
+        if (user != null) {
+          state = state.copyWith(
+            status: AuthStatus.authenticated,
+            user: user,
+          );
+          SentryService.instance.setUser(
+            id: user.uid,
+            username: user.phoneNumber,
+          );
+          LogRocketService.instance.identifyUser(
+            userId: user.uid,
+            name: user.displayName,
+          );
+        } else {
+          state = state.copyWith(
+            status: AuthStatus.unauthenticated,
+            user: null,
+          );
+        }
+      });
+    }
   }
 
   // ─── Send OTP ──────────────────────────────────────────────
@@ -82,42 +107,70 @@ class AuthController extends StateNotifier<AuthState> {
     required void Function() onCodeSent,
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
+
+    // 🔥 JODNA HAI (ADDED): AWS Amplify Send OTP Logic 🔥
     try {
-      await _auth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        timeout: const Duration(seconds: 120),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          // Auto-retrieval on Android
-          await _signInWithCredential(credential);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          final msg = _mapFirebaseError(e.code);
-          state = state.copyWith(
-            status: AuthStatus.error,
-            errorMessage: msg,
-          );
-          onError(msg);
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          state = state.copyWith(
-            status: AuthStatus.unauthenticated,
-            verificationId: verificationId,
-            resendToken: resendToken,
-          );
+      await Amplify.Auth.signIn(username: phoneNumber);
+      state = state.copyWith(status: AuthStatus.unauthenticated, verificationId: phoneNumber);
+      onCodeSent();
+      return; // Stop here, AWS handled it
+    } on AuthException catch (e) {
+      if (e.message.toLowerCase().contains('not found') || e.message.contains('UserNotFoundException')) {
+        try {
+          await Amplify.Auth.signUp(username: phoneNumber, password: 'DummyPassword123!');
+          state = state.copyWith(status: AuthStatus.unauthenticated, verificationId: phoneNumber);
           onCodeSent();
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          state = state.copyWith(verificationId: verificationId);
-        },
-        forceResendingToken: state.resendToken,
-      );
-    } catch (e, st) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: 'Something went wrong. Please try again.',
-      );
-      await SentryService.instance.captureException(e, stackTrace: st);
-      onError(state.errorMessage!);
+          return;
+        } catch (_) {}
+      }
+      state = state.copyWith(status: AuthStatus.error, errorMessage: e.message);
+      onError(e.message);
+      return;
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'AWS Error');
+      onError('AWS Error');
+      return;
+    }
+
+    // 🔥 OLD CODE (Bypassed with if(false)) 🔥
+    if (false) {
+      try {
+        await _auth.verifyPhoneNumber(
+          phoneNumber: phoneNumber,
+          timeout: const Duration(seconds: 120),
+          verificationCompleted: (PhoneAuthCredential credential) async {
+            // Auto-retrieval on Android
+            await _signInWithCredential(credential);
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            final msg = _mapFirebaseError(e.code);
+            state = state.copyWith(
+              status: AuthStatus.error,
+              errorMessage: msg,
+            );
+            onError(msg);
+          },
+          codeSent: (String verificationId, int? resendToken) {
+            state = state.copyWith(
+              status: AuthStatus.unauthenticated,
+              verificationId: verificationId,
+              resendToken: resendToken,
+            );
+            onCodeSent();
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {
+            state = state.copyWith(verificationId: verificationId);
+          },
+          forceResendingToken: state.resendToken,
+        );
+      } catch (e, st) {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Something went wrong. Please try again.',
+        );
+        await SentryService.instance.captureException(e, stackTrace: st);
+        onError(state.errorMessage!);
+      }
     }
   }
 
@@ -131,40 +184,81 @@ class AuthController extends StateNotifier<AuthState> {
       return;
     }
     state = state.copyWith(status: AuthStatus.loading);
+
+    // 🔥 JODNA HAI (ADDED): AWS Amplify Verify OTP Logic 🔥
     try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: state.verificationId!,
-        smsCode: otp,
-      );
-      await _signInWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      final msg = _mapFirebaseError(e.code);
-      state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: msg,
-      );
-      onError(msg);
+      final result = await Amplify.Auth.confirmSignIn(confirmationValue: otp);
+      if (result.isSignInComplete) {
+        final authUser = await Amplify.Auth.getCurrentUser();
+        final user = User(uid: authUser.userId, phoneNumber: authUser.username);
+        await _upsertUserProfile(user);
+        state = state.copyWith(status: AuthStatus.authenticated, user: user);
+        return;
+      } else {
+        onError('Invalid OTP. Please try again.');
+        return;
+      }
+    } on AuthException catch (_) {
+      try {
+        await Amplify.Auth.confirmSignUp(username: state.verificationId!, confirmationCode: otp);
+        await Amplify.Auth.signIn(username: state.verificationId!);
+        final authUser = await Amplify.Auth.getCurrentUser();
+        final user = User(uid: authUser.userId, phoneNumber: authUser.username);
+        await _upsertUserProfile(user);
+        state = state.copyWith(status: AuthStatus.authenticated, user: user);
+        return;
+      } catch (err) {
+        state = state.copyWith(status: AuthStatus.error, errorMessage: 'Invalid OTP.');
+        onError('Invalid OTP.');
+        return;
+      }
     } catch (e, st) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: 'Invalid OTP. Please try again.',
-      );
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'Invalid OTP. Please try again.');
       await SentryService.instance.captureException(e, stackTrace: st);
       onError('Invalid OTP. Please try again.');
+      return;
+    }
+
+    // 🔥 OLD CODE (Bypassed with if(false)) 🔥
+    if (false) {
+      try {
+        final credential = PhoneAuthProvider.credential(
+          verificationId: state.verificationId!,
+          smsCode: otp,
+        );
+        await _signInWithCredential(credential);
+      } on FirebaseAuthException catch (e) {
+        final msg = _mapFirebaseError(e.code);
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: msg,
+        );
+        onError(msg);
+      } catch (e, st) {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Invalid OTP. Please try again.',
+        );
+        await SentryService.instance.captureException(e, stackTrace: st);
+        onError('Invalid OTP. Please try again.');
+      }
     }
   }
 
   Future<void> _signInWithCredential(PhoneAuthCredential credential) async {
-    final userCredential = await _auth.signInWithCredential(credential);
-    final user = userCredential.user!;
+    // 🔥 OLD CODE (Bypassed with if(false)) 🔥
+    if (false) {
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user!;
 
-    // Create/update user profile in DB
-    await _upsertUserProfile(user);
+      // Create/update user profile in DB
+      await _upsertUserProfile(user);
 
-    state = state.copyWith(
-      status: AuthStatus.authenticated,
-      user: user,
-    );
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      );
+    }
   }
 
   // 🔥 FIXED: FieldValue.serverTimestamp() और Firestore हटाकर AWS Logic लगाया गया है 🔥
@@ -195,7 +289,13 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   Future<void> signOut() async {
-    await _auth.signOut();
+    // 🔥 JODNA HAI (ADDED): AWS SignOut 🔥
+    try { await Amplify.Auth.signOut(); } catch (_) {}
+
+    // 🔥 OLD CODE (Bypassed with if(false)) 🔥
+    if (false) {
+      await _auth.signOut();
+    }
     await SentryService.instance.clearUser();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
