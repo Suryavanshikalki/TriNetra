@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// 🔥 Firebase का import (cloud_firestore) हटा दिया गया है 🔥
 
-/// TriNetra Coins Referral Model
+/// TriNetra Coins Referral Model (AWS Ready)
 /// Collection: referrals/{uid}
 class ReferralModel {
   final String userId;
@@ -35,28 +35,32 @@ class ReferralModel {
   /// 1 Coin = ₹0.10 (ad credit or payout)
   static const double coinValueInRupees = 0.10;
 
-  factory ReferralModel.fromFirestore(DocumentSnapshot doc) {
-    final d = doc.data() as Map<String, dynamic>;
+  // 🔥 FIXED: DocumentSnapshot हटाकर नॉर्मल Map कर दिया है 🔥
+  factory ReferralModel.fromMap(String docId, Map<String, dynamic> d) {
     return ReferralModel(
-      userId: doc.id,
+      userId: docId,
       referralCode: d['referralCode'] ?? '',
       referredByUid: d['referredByUid'],
       referredUserIds: List<String>.from(d['referredUserIds'] ?? []),
       totalCoinsEarned: d['totalCoinsEarned'] ?? 0,
       coinsAvailable: d['coinsAvailable'] ?? 0,
       coinsRedeemed: d['coinsRedeemed'] ?? 0,
-      createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      // 🔥 FIXED: Timestamp हटाकर स्टैंडर्ड DateTime कर दिया है 🔥
+      createdAt: d['createdAt'] != null 
+          ? DateTime.tryParse(d['createdAt'].toString()) ?? DateTime.now() 
+          : DateTime.now(),
     );
   }
 
-  Map<String, dynamic> toFirestore() => {
+  // 🔥 FIXED: toFirestore को बदलकर toMap कर दिया है और FieldValue हटा दिया है 🔥
+  Map<String, dynamic> toMap() => {
     'referralCode': referralCode,
     'referredByUid': referredByUid,
     'referredUserIds': referredUserIds,
     'totalCoinsEarned': totalCoinsEarned,
     'coinsAvailable': coinsAvailable,
     'coinsRedeemed': coinsRedeemed,
-    'createdAt': FieldValue.serverTimestamp(),
+    'createdAt': createdAt.toIso8601String(),
   };
 
   double get availableValueInRupees => coinsAvailable * coinValueInRupees;
