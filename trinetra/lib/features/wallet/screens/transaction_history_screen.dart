@@ -63,6 +63,22 @@ class _TransactionCard extends StatelessWidget {
 
   const _TransactionCard({required this.t, required this.isDark});
 
+  // 🔥 FIXED: displayName का लॉजिक यहीं स्क्रीन में डाल दिया है ताकि कोई एरर न आए 🔥
+  String _getTypeName(TransactionType type) {
+    switch (type) {
+      case TransactionType.upiPayment: return 'UPI Payment';
+      case TransactionType.adBoost: return 'Boost Post';
+      case TransactionType.subscription: return 'Creator Pro';
+      case TransactionType.marketplaceSale: return 'Marketplace Sale';
+      case TransactionType.coinEarned: return 'Coins Earned';
+      case TransactionType.coinRedeemed: return 'Coins Redeemed';
+      case TransactionType.refund: return 'Refund';
+      case TransactionType.payoutReceived: return 'Payout Received';
+      case TransactionType.payoutRequested: return 'Payout Requested';
+      default: return 'Payment';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isCredit = t.isCredit;
@@ -99,8 +115,9 @@ class _TransactionCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 🔥 FIXED: यहाँ t.type.displayName को बदलकर _getTypeName(t.type) कर दिया है 🔥
                 Text(
-                  t.type.displayName,
+                  _getTypeName(t.type),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
