@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// 🔥 Firebase के imports हटा दिए गए हैं 🔥
 import '../../../core/config/app_config.dart';
 import '../../../core/services/sentry_service.dart';
 import '../../auth/controllers/auth_controller.dart';
@@ -46,7 +45,6 @@ class PaymentState {
 class PaymentController extends StateNotifier<PaymentState> {
   final String? _userId;
 
-  // 🔥 FIXED: FirebaseFirestore _firestore हटा दिया गया है 🔥
   PaymentController(this._userId) : super(const PaymentState()) {
     if (_userId != null) {
       _loadTransactions();
@@ -57,17 +55,11 @@ class PaymentController extends StateNotifier<PaymentState> {
     if (_userId == null) return;
     state = state.copyWith(isLoading: true);
     try {
-      // TODO: AWS Amplify GraphQL query will go here
       await Future.delayed(const Duration(milliseconds: 500));
-
-      final txns = <TransactionModel>[]; // Starts empty until AWS is connected
-      final balance = 0.0;
-      final boostBalance = 0.0;
-
       state = state.copyWith(
-        transactions: txns,
-        walletBalance: balance < 0 ? 0 : balance,
-        boostWalletBalance: boostBalance,
+        transactions: [],
+        walletBalance: 0.0,
+        boostWalletBalance: 0.0,
         isLoading: false,
       );
     } catch (e, st) {
@@ -76,7 +68,6 @@ class PaymentController extends StateNotifier<PaymentState> {
     }
   }
 
-  // ─── Open Razorpay (Android/iOS only) ───────────────────────
   Future<void> openRazorpay({
     required double amountInRupees,
     required String description,
@@ -89,12 +80,10 @@ class PaymentController extends StateNotifier<PaymentState> {
       onError('Razorpay not configured. Please add RAZORPAY_KEY_ID secret.');
       return;
     }
-
     if (kIsWeb) {
       onError('Razorpay is available on Android/iOS only. Use UPI QR on web.');
       return;
     }
-
     _openRazorpayNative(
       amountInPaise: (amountInRupees * 100).toInt(),
       description: description,
@@ -116,7 +105,6 @@ class PaymentController extends StateNotifier<PaymentState> {
     onError('Razorpay: Initialize with RAZORPAY_KEY_ID from GitHub Secrets');
   }
 
-  // ─── UPI Deep Link ──────────────────────────────────────────
   Map<String, String> getUpiDeepLinks({
     required double amount,
     required String payeeVpa,
@@ -126,7 +114,6 @@ class PaymentController extends StateNotifier<PaymentState> {
     final encodedNote = Uri.encodeComponent(transactionNote);
     final encodedName = Uri.encodeComponent(payeeName);
     final amountStr = amount.toStringAsFixed(2);
-
     final upiUrl = 'upi://pay?pa=$payeeVpa&pn=$encodedName&am=$amountStr&tn=$encodedNote&cu=INR';
 
     return {
@@ -138,7 +125,6 @@ class PaymentController extends StateNotifier<PaymentState> {
     };
   }
 
-  // ─── Record Transaction ─────────────────────────────────────
   Future<void> recordTransaction({
     required TransactionType type,
     required double amount,
@@ -149,7 +135,6 @@ class PaymentController extends StateNotifier<PaymentState> {
   }) async {
     if (_userId == null) return;
     try {
-      // 🔥 FIXED: FieldValue.serverTimestamp() हटाकर AWS Logic लगाया गया है 🔥
       await Future.delayed(const Duration(milliseconds: 200));
       await _loadTransactions();
     } catch (e, st) {
@@ -157,7 +142,6 @@ class PaymentController extends StateNotifier<PaymentState> {
     }
   }
 
-  // ─── Boost Post ─────────────────────────────────────────────
   Future<bool> boostPost({
     required String postId,
     required double budgetInRupees,
@@ -166,19 +150,14 @@ class PaymentController extends StateNotifier<PaymentState> {
     if (_userId == null) return false;
     state = state.copyWith(isLoading: true);
     try {
-      // 🔥 FIXED: Timestamp.fromDate() हटाकर AWS Logic लगाया गया है 🔥
       await Future.delayed(const Duration(seconds: 1));
-      
       await recordTransaction(
         type: TransactionType.adBoost,
         amount: budgetInRupees,
         description: 'Boost Post — $durationDays days',
         referenceId: postId,
       );
-      state = state.copyWith(
-        isLoading: false,
-        successMessage: 'Post boosted successfully!',
-      );
+      state = state.copyWith(isLoading: false, successMessage: 'Post boosted successfully!');
       return true;
     } catch (e, st) {
       state = state.copyWith(isLoading: false, error: 'Boost failed. Please retry.');
@@ -189,7 +168,6 @@ class PaymentController extends StateNotifier<PaymentState> {
 
   Future<void> refresh() => _loadTransactions();
 
-  // ─── Boost Wallet Top-Up ─────────────────────────────────────
   Future<bool> topUpBoostWallet({
     required double amount,
     required String paymentId,
@@ -198,9 +176,7 @@ class PaymentController extends StateNotifier<PaymentState> {
     if (_userId == null) return false;
     state = state.copyWith(isLoading: true);
     try {
-      // 🔥 FIXED: FieldValue.increment() हटाकर AWS Logic लगाया गया है 🔥
       await Future.delayed(const Duration(seconds: 1));
-
       await recordTransaction(
         type: TransactionType.payment,
         amount: amount,
@@ -209,10 +185,7 @@ class PaymentController extends StateNotifier<PaymentState> {
         paymentMethod: paymentMethod,
       );
       await _loadTransactions();
-      state = state.copyWith(
-        isLoading: false,
-        successMessage: '₹${amount.toStringAsFixed(0)} added to Boost Wallet!',
-      );
+      state = state.copyWith(isLoading: false, successMessage: '₹${amount.toStringAsFixed(0)} added to Boost Wallet!');
       return true;
     } catch (e, st) {
       state = state.copyWith(isLoading: false, error: 'Top-up failed. Try again.');
@@ -221,7 +194,6 @@ class PaymentController extends StateNotifier<PaymentState> {
     }
   }
 
-  // ─── Spend from Boost Wallet ─────────────────────────────────
   Future<bool> spendFromBoostWallet({
     required String postId,
     required double amount,
@@ -232,9 +204,7 @@ class PaymentController extends StateNotifier<PaymentState> {
 
     state = state.copyWith(isLoading: true);
     try {
-      // 🔥 FIXED: Firebase Batch और FieldValue.increment() हटा दिया गया है 🔥
       await Future.delayed(const Duration(seconds: 1));
-
       await recordTransaction(
         type: TransactionType.adBoost,
         amount: amount,
@@ -242,12 +212,8 @@ class PaymentController extends StateNotifier<PaymentState> {
         referenceId: postId,
         paymentMethod: 'boost_wallet',
       );
-
       await _loadTransactions();
-      state = state.copyWith(
-        isLoading: false,
-        successMessage: 'Post boosted for $durationDays day${durationDays > 1 ? 's' : ''}!',
-      );
+      state = state.copyWith(isLoading: false, successMessage: 'Post boosted for $durationDays day${durationDays > 1 ? 's' : ''}!');
       return true;
     } catch (e, st) {
       state = state.copyWith(isLoading: false, error: 'Boost failed. Try again.');
@@ -257,7 +223,6 @@ class PaymentController extends StateNotifier<PaymentState> {
   }
 }
 
-// ─── Provider ────────────────────────────────────────────────────
 final paymentControllerProvider =
     StateNotifierProvider<PaymentController, PaymentState>((ref) {
   final userId = ref.watch(currentUserProvider)?.uid;
