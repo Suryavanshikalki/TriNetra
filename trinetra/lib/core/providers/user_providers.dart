@@ -8,11 +8,23 @@ final currentUserProfileProvider =
     StreamProvider.autoDispose<Map<String, dynamic>?>((ref) {
   final user = ref.watch(currentUserProvider);
   if (user == null) return Stream.value(null);
+
+  // 🔥 JODNA HAI (ADDED): AWS Amplify / Dummy Stream Logic 🔥
+  // यह ऐप को क्रैश होने से बचाएगा और AWS चालू होने तक काम करेगा
+  return Stream.value({
+    'uid': user.uid,
+    'isCreatorPro': false,
+    'boostWalletBalance': 0.0,
+  });
+
+  // 🔥 OLD CODE (Commented to prevent 'firestore' crash, BUT NOT DELETED) 🔥
+  /*
   return FirebaseService.instance.firestore
       .collection('users')
       .doc(user.uid)
       .snapshots()
       .map((snap) => snap.data());
+  */
 });
 
 /// ─── Is Creator Pro ───────────────────────────────────────────────
@@ -55,6 +67,12 @@ final boostAnalyticsProvider =
     StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
   final user = ref.watch(currentUserProvider);
   if (user == null) return Stream.value([]);
+
+  // 🔥 JODNA HAI (ADDED): AWS Amplify / Dummy Stream Logic 🔥
+  return Stream.value(<Map<String, dynamic>>[]);
+
+  // 🔥 OLD CODE (Commented to prevent 'firestore' crash, BUT NOT DELETED) 🔥
+  /*
   return FirebaseService.instance.firestore
       .collection('boosted_posts')
       .where('userId', isEqualTo: user.uid)
@@ -63,4 +81,5 @@ final boostAnalyticsProvider =
       .map((snap) => snap.docs
           .map((d) => <String, dynamic>{...d.data(), 'id': d.id})
           .toList());
+  */
 });
