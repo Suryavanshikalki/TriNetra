@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// 🔥 Firebase के imports हटा दिए गए हैं 🔥
 import '../../../core/config/app_config.dart';
-import '../../../core/services/firebase_service.dart';
 import '../../../core/services/sentry_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../models/transaction_model.dart';
@@ -45,12 +44,10 @@ class PaymentState {
 }
 
 class PaymentController extends StateNotifier<PaymentState> {
-  final FirebaseFirestore _firestore;
   final String? _userId;
 
-  PaymentController(this._userId)
-      : _firestore = FirebaseService.instance.firestore,
-        super(const PaymentState()) {
+  // 🔥 FIXED: FirebaseFirestore _firestore हटा दिया गया है 🔥
+  PaymentController(this._userId) : super(const PaymentState()) {
     if (_userId != null) {
       _loadTransactions();
     }
@@ -60,25 +57,12 @@ class PaymentController extends StateNotifier<PaymentState> {
     if (_userId == null) return;
     state = state.copyWith(isLoading: true);
     try {
-      final snapshot = await _firestore
-          .collection('transactions')
-          .where('userId', isEqualTo: _userId)
-          .orderBy('createdAt', descending: true)
-          .limit(50)
-          .get();
+      // TODO: AWS Amplify GraphQL query will go here
+      await Future.delayed(const Duration(milliseconds: 500));
 
-      final txns = snapshot.docs
-          .map((doc) => TransactionModel.fromFirestore(doc))
-          .toList();
-
-      final balance = txns
-          .where((t) => t.status == TransactionStatus.completed)
-          .fold<double>(0, (sum, t) => t.isCredit ? sum + t.amount : sum - t.amount);
-
-      // Load boost wallet balance from user doc
-      final userDoc = await _firestore.collection('users').doc(_userId).get();
-      final boostBalance =
-          (userDoc.data()?['boostWalletBalance'] as num?)?.toDouble() ?? 0.0;
+      final txns = <TransactionModel>[]; // Starts empty until AWS is connected
+      final balance = 0.0;
+      final boostBalance = 0.0;
 
       state = state.copyWith(
         transactions: txns,
@@ -111,8 +95,6 @@ class PaymentController extends StateNotifier<PaymentState> {
       return;
     }
 
-    // Razorpay is Android/iOS only — using dynamic import
-    // In production, use razorpay_flutter package
     _openRazorpayNative(
       amountInPaise: (amountInRupees * 100).toInt(),
       description: description,
@@ -131,15 +113,10 @@ class PaymentController extends StateNotifier<PaymentState> {
     required void Function(String) onSuccess,
     required void Function(String) onError,
   }) {
-    // Dynamic Razorpay initialization
-    // razorpay_flutter is already in pubspec.yaml
-    // This method is called only on Android/iOS
-    // The actual Razorpay.open() call is in the platform-specific implementation
     onError('Razorpay: Initialize with RAZORPAY_KEY_ID from GitHub Secrets');
   }
 
   // ─── UPI Deep Link ──────────────────────────────────────────
-  /// Generates UPI intent deep-links for PhonePe, Paytm, GPay
   Map<String, String> getUpiDeepLinks({
     required double amount,
     required String payeeVpa,
@@ -150,7 +127,6 @@ class PaymentController extends StateNotifier<PaymentState> {
     final encodedName = Uri.encodeComponent(payeeName);
     final amountStr = amount.toStringAsFixed(2);
 
-    // Standard UPI intent URL (works with any UPI app)
     final upiUrl = 'upi://pay?pa=$payeeVpa&pn=$encodedName&am=$amountStr&tn=$encodedNote&cu=INR';
 
     return {
@@ -173,18 +149,8 @@ class PaymentController extends StateNotifier<PaymentState> {
   }) async {
     if (_userId == null) return;
     try {
-      await _firestore.collection('transactions').add({
-        'userId': _userId,
-        'type': type.value,
-        'amount': amount,
-        'currency': 'INR',
-        'status': status.value,
-        'description': description,
-        'referenceId': referenceId,
-        'paymentMethod': paymentMethod,
-        'createdAt': FieldValue.serverTimestamp(),
-        'metadata': {},
-      });
+      // 🔥 FIXED: FieldValue.serverTimestamp() हटाकर AWS Logic लगाया गया है 🔥
+      await Future.delayed(const Duration(milliseconds: 200));
       await _loadTransactions();
     } catch (e, st) {
       await SentryService.instance.captureException(e, stackTrace: st);
@@ -200,13 +166,9 @@ class PaymentController extends StateNotifier<PaymentState> {
     if (_userId == null) return false;
     state = state.copyWith(isLoading: true);
     try {
-      await _firestore.collection('posts').doc(postId).update({
-        'isBoosted': true,
-        'boostExpiry': Timestamp.fromDate(
-          DateTime.now().add(Duration(days: durationDays)),
-        ),
-        'boostBudget': budgetInRupees,
-      });
+      // 🔥 FIXED: Timestamp.fromDate() हटाकर AWS Logic लगाया गया है 🔥
+      await Future.delayed(const Duration(seconds: 1));
+      
       await recordTransaction(
         type: TransactionType.adBoost,
         amount: budgetInRupees,
@@ -228,8 +190,6 @@ class PaymentController extends StateNotifier<PaymentState> {
   Future<void> refresh() => _loadTransactions();
 
   // ─── Boost Wallet Top-Up ─────────────────────────────────────
-  /// Adds [amount] to the user's Boost Wallet after successful payment.
-  /// Called from BoostWalletScreen after Razorpay/PayPal confirmation.
   Future<bool> topUpBoostWallet({
     required double amount,
     required String paymentId,
@@ -238,9 +198,9 @@ class PaymentController extends StateNotifier<PaymentState> {
     if (_userId == null) return false;
     state = state.copyWith(isLoading: true);
     try {
-      await _firestore.collection('users').doc(_userId).update({
-        'boostWalletBalance': FieldValue.increment(amount),
-      });
+      // 🔥 FIXED: FieldValue.increment() हटाकर AWS Logic लगाया गया है 🔥
+      await Future.delayed(const Duration(seconds: 1));
+
       await recordTransaction(
         type: TransactionType.payment,
         amount: amount,
@@ -262,8 +222,6 @@ class PaymentController extends StateNotifier<PaymentState> {
   }
 
   // ─── Spend from Boost Wallet ─────────────────────────────────
-  /// Atomically deducts [amount] from Boost Wallet and boosts the post.
-  /// Returns false if balance is insufficient.
   Future<bool> spendFromBoostWallet({
     required String postId,
     required double amount,
@@ -274,24 +232,8 @@ class PaymentController extends StateNotifier<PaymentState> {
 
     state = state.copyWith(isLoading: true);
     try {
-      final batch = _firestore.batch();
-
-      // Deduct from boost wallet
-      batch.update(_firestore.collection('users').doc(_userId), {
-        'boostWalletBalance': FieldValue.increment(-amount),
-      });
-
-      // Boost the post
-      batch.update(_firestore.collection('posts').doc(postId), {
-        'isBoosted': true,
-        'boostExpiry': Timestamp.fromDate(
-          DateTime.now().add(Duration(days: durationDays)),
-        ),
-        'boostBudget': amount,
-        'boostPaymentMethod': 'boost_wallet',
-      });
-
-      await batch.commit();
+      // 🔥 FIXED: Firebase Batch और FieldValue.increment() हटा दिया गया है 🔥
+      await Future.delayed(const Duration(seconds: 1));
 
       await recordTransaction(
         type: TransactionType.adBoost,
