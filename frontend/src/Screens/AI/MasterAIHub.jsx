@@ -1,33 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { BrainCircuit, Cpu, Zap, Globe, Lock, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+
+// 🔥 ASLI AWS IMPORTS (No Axios, No Render) 🔥
+import { generateClient } from 'aws-amplify/api';
+
+const client = generateClient();
 
 export default function MasterAIHub({ currentUser, onLaunchAI }) {
   const { t } = useTranslation();
   const [selectedMode, setSelectedMode] = useState(null);
-  const [userCredits, setUserCredits] = useState({ chatbot: 8, agentic: 20, superAgentic: 0 });
+  
+  // Default values before AWS loads
+  const [userCredits, setUserCredits] = useState({ chatbot: 0, agentic: 0, superAgentic: 0, osCreation: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [isActivating, setIsActivating] = useState(false);
 
-  // 100% Real Fetch: Checking User's Current AI Credits from DB
+  // ─── 1. REAL AWS DATABASE FETCH (Checking User's Credits) ───────────
   useEffect(() => {
     const fetchAICredits = async () => {
+      if (!currentUser?.trinetraId) return;
       try {
-        const res = await axios.get(`https://trinetra-umys.onrender.com/api/ai/credits?userId=${currentUser?.trinetraId}`);
-        if (res.data.success) {
-          setUserCredits(res.data.credits);
+        // 🔥 AWS AppSync (DynamoDB) GraphQL Query
+        const query = `
+          query GetAICredits($userId: ID!) {
+            getUserAICredits(userId: $userId) {
+              chatbot
+              agentic
+              superAgentic
+              osCreation
+            }
+          }
+        `;
+        const res = await client.graphql({
+          query,
+          variables: { userId: currentUser.trinetraId }
+        });
+
+        if (res.data?.getUserAICredits) {
+          setUserCredits(res.data.getUserAICredits);
         }
       } catch (err) {
-        console.error("AI Engine Offline");
+        console.error("❌ AWS AI Engine Offline or DB Error:", err);
       } finally {
         setIsLoading(false);
       }
     };
-    if (currentUser?.trinetraId) fetchAICredits();
+    fetchAICredits();
   }, [currentUser]);
 
-  // Point 11: Real Blueprint Pricing & Modes
+  // ─── 2. POINT 11: THE 4 PRICING & POWER TIERS ──────────────────────
   const aiModes = [
     {
       id: 'ModeA',
@@ -60,34 +82,48 @@ export default function MasterAIHub({ currentUser, onLaunchAI }) {
       id: 'OSMode',
       name: 'OS Creation Tier',
       level: '(Ultimate Power)',
-      credits: 'Restricted Access',
-      desc: 'Most expensive plan. Build a full Operating System using AI.',
+      credits: `${userCredits.osCreation} credits left`,
+      desc: '₹79999/month (5000 Premium Credits). Build a full Operating System using AI.',
       icon: <Lock size={28} className="text-red-400" />,
       color: 'border-red-500/50 hover:border-red-400 bg-red-500/10'
     }
   ];
 
-  // Real Initialization Logic
+  // ─── 3. LAUNCH MASTER AI (AWS Warm-up & Transition) ────────────────
   const handleLaunchAI = async () => {
     if (!selectedMode) return;
     
     // Check if user has credits for the selected mode
-    const modeKey = selectedMode === 'ModeA' ? 'chatbot' : selectedMode === 'ModeB' ? 'agentic' : 'superAgentic';
-    if (selectedMode !== 'OSMode' && userCredits[modeKey] === 0) {
-       alert(t("Insufficient credits. Please recharge your AI Wallet."));
+    const modeKey = selectedMode === 'ModeA' ? 'chatbot' : 
+                    selectedMode === 'ModeB' ? 'agentic' : 
+                    selectedMode === 'ModeC' ? 'superAgentic' : 'osCreation';
+
+    // -1 means unlimited, 0 means no credits
+    if (userCredits[modeKey] === 0) {
+       alert(t("Insufficient AI credits. Please recharge your Wallet."));
        return;
     }
 
     setIsActivating(true);
     try {
-      // Real API hitting your TriNetra Backend to warm up the 6-in-1 AI models
-      await axios.post('https://trinetra-umys.onrender.com/api/ai/initialize', {
-        userId: currentUser?.trinetraId,
-        mode: selectedMode
+      // 🔥 AWS AppSync Mutation: Warm up the required AI models on AWS Server
+      const mutation = `
+        mutation InitializeAIEngine($userId: ID!, $mode: String!) {
+          warmupTriNetraAI(userId: $userId, mode: $mode) {
+            status
+          }
+        }
+      `;
+      await client.graphql({
+        query: mutation,
+        variables: { userId: currentUser?.trinetraId, mode: selectedMode }
       });
-      onLaunchAI(selectedMode); // Opens the AIChatWindow (File 19)
+
+      // Opens the AIChatWindow (which is now AWS ready)
+      onLaunchAI(selectedMode); 
     } catch (err) {
-      alert(t("Failed to connect to the Master 6-in-1 Brain."));
+      console.error("❌ TriNetra 6-in-1 Brain Initialization Failed:", err);
+      alert(t("Failed to connect to the AWS Master Brain."));
     } finally {
       setIsActivating(false);
     }
