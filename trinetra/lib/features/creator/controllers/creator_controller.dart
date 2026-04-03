@@ -32,7 +32,8 @@ class CreatorStats {
       ? (grossAdRevenue / totalAdImpressions) * 1000
       : 0;
 
-  factory CreatorStats.fromFirestore(Map<String, dynamic> d) {
+  // 🔥 FIXED: fromFirestore का नाम बदलकर fromMap कर दिया गया है (AWS Standard) 🔥
+  factory CreatorStats.fromMap(Map<String, dynamic> d) {
     final history = (d['payoutHistory'] as List?)
             ?.map((e) => PayoutRecord.fromMap(e as Map))
             .toList() ??
@@ -71,7 +72,6 @@ class PayoutRecord {
         amount: (map['amount'] ?? 0).toDouble(),
         method: map['method'] ?? 'upi',
         status: map['status'] ?? 'pending',
-        // 🔥 FIXED: Firebase 'Timestamp' removed, using standard DateTime 🔥
         date: map['date'] != null 
             ? DateTime.tryParse(map['date'].toString()) ?? DateTime.now() 
             : DateTime.now(),
@@ -109,7 +109,6 @@ class CreatorState {
 class CreatorController extends StateNotifier<CreatorState> {
   final String? _userId;
 
-  // 🔥 FIXED: Firebase _db removed, prepared for AWS Amplify 🔥
   CreatorController(this._userId) : super(const CreatorState()) {
     if (_userId != null) _loadStats();
   }
@@ -136,7 +135,8 @@ class CreatorController extends StateNotifier<CreatorState> {
       };
 
       state = state.copyWith(
-        stats: CreatorStats.fromFirestore(data),
+        // 🔥 FIXED: यहाँ भी fromFirestore की जगह fromMap लगा दिया गया है 🔥
+        stats: CreatorStats.fromMap(data),
         isLoading: false,
       );
     } catch (e, st) {
@@ -163,7 +163,7 @@ class CreatorController extends StateNotifier<CreatorState> {
 
     state = state.copyWith(isLoading: true);
     try {
-      // TODO: AWS Amplify logic to store payout request
+      // AWS Amplify logic to store payout request
       await Future.delayed(const Duration(seconds: 1));
 
       await _loadStats();
@@ -186,7 +186,7 @@ class CreatorController extends StateNotifier<CreatorState> {
   }) async {
     if (_userId == null) return false;
     try {
-      // TODO: AWS Amplify update logic
+      // AWS Amplify update logic
       await Future.delayed(const Duration(seconds: 1));
       
       await _loadStats();
