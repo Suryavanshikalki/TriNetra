@@ -49,7 +49,9 @@ class AuthController extends StateNotifier<AuthState> {
   final dynamic _auth; 
 
   AuthController()
-      : _auth = FirebaseService.instance.auth,
+      // 🔥 DEEP SEARCH FIX 1: FirebaseService में अब auth नहीं है, इसलिए इसे सिर्फ 'कमेंट' किया है (डिलीट नहीं किया) 🔥
+      // : _auth = FirebaseService.instance.auth,
+      : _auth = null,
         super(const AuthState()) {
     _init();
   }
@@ -113,7 +115,7 @@ class AuthController extends StateNotifier<AuthState> {
       await Amplify.Auth.signIn(username: phoneNumber);
       state = state.copyWith(status: AuthStatus.unauthenticated, verificationId: phoneNumber);
       onCodeSent();
-      return; // Stop here, AWS handled it
+      return; 
     } on AuthException catch (e) {
       if (e.message.toLowerCase().contains('not found') || e.message.contains('UserNotFoundException')) {
         try {
@@ -139,7 +141,6 @@ class AuthController extends StateNotifier<AuthState> {
           phoneNumber: phoneNumber,
           timeout: const Duration(seconds: 120),
           verificationCompleted: (PhoneAuthCredential credential) async {
-            // Auto-retrieval on Android
             await _signInWithCredential(credential);
           },
           verificationFailed: (FirebaseAuthException e) {
@@ -188,7 +189,9 @@ class AuthController extends StateNotifier<AuthState> {
     // 🔥 JODNA HAI (ADDED): AWS Amplify Verify OTP Logic 🔥
     try {
       final result = await Amplify.Auth.confirmSignIn(confirmationValue: otp);
-      if (result.isSignInComplete) {
+      
+      // 🔥 DEEP SEARCH FIX 2: 'isSignInComplete' की जगह 'isSignedIn' कर दिया गया है 🔥
+      if (result.isSignedIn) {
         final authUser = await Amplify.Auth.getCurrentUser();
         final user = User(uid: authUser.userId, phoneNumber: authUser.username);
         await _upsertUserProfile(user);
