@@ -1,86 +1,125 @@
-// ==========================================
-// TRINETRA SUPER APP - MASTER HOME FEED (File 12)
-// Blueprint Points: 4 (Feed & Escalation) & 12 (Multilingual Translation)
-// ==========================================
 import React, { useState, useEffect } from 'react';
 import { 
   Heart, MessageCircle, Share2, Download, ShieldAlert, 
   Search, Plus, MoreHorizontal, Globe, Loader2, Send 
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+
+// 🔥 ASLI AWS IMPORTS (No Axios, No Render) 🔥
+import { generateClient } from 'aws-amplify/api';
+import { getUrl } from 'aws-amplify/storage';
 import { TriNetraLogo } from '../../App';
+import CreatePost from './CreatePost'; // Asli Create Post Component
+import CommentSection from './CommentSection'; // Asli Comment Section
+
+const client = generateClient();
 
 export default function HomeFeed({ currentUser }) {
   const { t, i18n } = useTranslation();
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedComments, setExpandedComments] = useState({});
 
-  // 100% Real Fetch: Social Feed from MongoDB
+  // ─── 1. REAL AWS APPSYNC FETCH (Facebook Style) ─────────────────
   useEffect(() => {
-    const fetchFeed = async () => {
-      try {
-        const res = await axios.get('https://trinetra-umys.onrender.com/api/posts/feed');
-        if (res.data.success) setPosts(res.data.posts);
-      } catch (err) {
-        console.error("TriNetra Feed Offline: Check Render Logs");
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchFeed();
+
+    // 🔥 Real-time Subscription: कोई भी पोस्ट करेगा, फीड खुद रिफ्रेश होगी
+    const sub = client.graphql({
+      query: `subscription OnNewPost { onNewTriNetraPost { id userId text mediaUrl mediaType escalationLevel timestamp } }`
+    }).subscribe({
+      next: ({ data }) => {
+        setPosts(prev => [data.onNewTriNetraPost, ...prev]);
+      }
+    });
+
+    return () => sub.unsubscribe();
   }, []);
 
-  // Point 4: Universal Download Logic (Original Resolution from AWS S3)
-  const downloadOriginalMedia = (url) => {
-    if (!url) return;
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.download = `TriNetra_Original_${Date.now()}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const fetchFeed = async () => {
+    try {
+      // Fetching from secure AWS DynamoDB
+      const res = await client.graphql({
+        query: `query ListPosts { listTriNetraPosts(limit: 50) { items { id userId text mediaUrl mediaType escalationLevel timestamp likes comments } } }`
+      });
+      const sortedPosts = res.data.listTriNetraPosts.items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setPosts(sortedPosts);
+    } catch (err) {
+      console.error("❌ AWS Feed Offline:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Point 4: Real-time Auto-Escalation Trigger (Red Button)
+  // ─── 2. REAL UNIVERSAL DOWNLOAD (Original S3 Quality) ────────────
+  const downloadOriginalMedia = async (url, type) => {
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      const ext = type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : type === 'audio' ? 'mp3' : 'pdf';
+      link.download = `TriNetra_${Date.now()}.${ext}`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("❌ Direct Download Failed:", err);
+    }
+  };
+
+  // ─── 3. THE 30,000/MONTH ESCALATION ENGINE (AWS Lambda) ──────────
   const handleEscalate = async (postId) => {
     const confirm = window.confirm(t("Escalate this issue to the Chain of Command (Local -> MLA -> CM -> Supreme Court)?"));
     if (confirm) {
       try {
-        await axios.post('https://trinetra-umys.onrender.com/api/escalation/trigger', {
-          postId,
-          userId: currentUser?.trinetraId
+        // 🔥 Triggering the AWS Auto-Escalation Engine
+        await client.graphql({
+          query: `mutation TriggerEscalation($postId: ID!, $userId: ID!) {
+            triggerTriNetraEscalation(postId: $postId, userId: $userId) { status level }
+          }`,
+          variables: { postId, userId: currentUser?.trinetraId }
         });
         alert(t("Escalation Active. Case tracked by TriNetra Justice Engine."));
       } catch (err) {
+        console.error("❌ AWS Escalation Failed:", err);
         alert(t("Escalation server connection failed."));
       }
     }
   };
 
-  // Point 12: Real-time Translation (Blueprint Multilingual Requirement)
+  // ─── 4. REAL AI TRANSLATION (Point 12 via Gemini/AWS) ────────────
   const handleTranslate = async (postId, text) => {
     try {
-      const res = await axios.post('https://trinetra-umys.onrender.com/api/utils/translate', {
-        text,
-        targetLang: i18n.language
+      const res = await client.graphql({
+        query: `mutation Translate($text: String!, $targetLang: String!) {
+          translateText(text: $text, targetLang: $targetLang) { translatedText }
+        }`,
+        variables: { text, targetLang: i18n.language }
       });
-      // Updating local state with translated text for that specific post
-      setPosts(posts.map(p => p._id === postId ? { ...p, translatedContent: res.data.translatedText } : p));
+      setPosts(posts.map(p => p.id === postId ? { ...p, translatedContent: res.data.translateText.translatedText } : p));
     } catch (err) {
-      alert(t("Translation Engine currently busy."));
+      console.error("❌ Translation Failed:", err);
     }
+  };
+
+  const toggleComments = (postId) => {
+    setExpandedComments(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
 
   return (
     <div className="flex flex-col h-full bg-[#0a1014] text-white font-sans overflow-y-auto pb-24">
       
-      {/* Real Top Header & Search (Point 1 & 4) */}
-      <header className="p-4 bg-[#111827] sticky top-0 z-50 border-b border-gray-800 flex items-center justify-between">
+      {/* 🚀 Top Header & Search */}
+      <header className="p-4 bg-[#111827] sticky top-0 z-50 border-b border-gray-800 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-2">
-          <TriNetraLogo size={32} />
+          <TriNetraLogo size={32} pulse={true} />
           <h1 className="text-xl font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-white">
             TriNetra
           </h1>
@@ -90,82 +129,104 @@ export default function HomeFeed({ currentUser }) {
           <input 
             type="text" 
             placeholder={t("Search Marketplace, Posts...")}
-            className="w-full bg-[#0a1014] border border-gray-800 rounded-full py-2 pl-10 pr-4 text-xs focus:outline-none focus:border-cyan-500"
+            className="w-full bg-[#0a1014] border border-gray-800 rounded-full py-2 pl-10 pr-4 text-xs focus:outline-none focus:border-cyan-500 transition-colors"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Plus className="text-cyan-400 cursor-pointer active:scale-90" />
+        <Plus className="text-cyan-400 cursor-pointer active:scale-90 hover:text-white transition-transform" />
       </header>
 
+      {/* 📝 Create Post Input */}
+      <div className="max-w-2xl mx-auto w-full pt-4 px-4">
+        <CreatePost currentUser={currentUser} onPostCreated={fetchFeed} />
+      </div>
+
+      {/* 📱 Real Feed Stream */}
       {isLoading ? (
-        <div className="flex-1 flex justify-center items-center"><Loader2 size={40} className="text-cyan-500 animate-spin" /></div>
+        <div className="flex-1 flex justify-center items-center mt-10"><Loader2 size={40} className="text-cyan-500 animate-spin" /></div>
       ) : (
         <div className="max-w-2xl mx-auto w-full p-4 space-y-6">
           {posts.map((post) => (
-            <article key={post._id} className="bg-[#111827] rounded-3xl border border-gray-800 overflow-hidden shadow-2xl">
+            <article key={post.id} className="bg-[#111827] rounded-3xl border border-gray-800 overflow-hidden shadow-2xl animate-fade-in-up">
               
               {/* User Header */}
-              <div className="p-4 flex justify-between items-center">
+              <div className="p-4 flex justify-between items-center border-b border-gray-800/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-800 border border-cyan-500/30 overflow-hidden">
-                    {post.userAvatar && <img src={post.userAvatar} className="w-full h-full object-cover" alt="pfp" />}
+                  <div className="w-10 h-10 rounded-full bg-cyan-900 border border-cyan-500 overflow-hidden flex items-center justify-center font-bold">
+                     {post.userId?.substring(0,2).toUpperCase()}
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm tracking-wide">{post.userName}</h4>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-tighter">{post.timestamp}</p>
+                    <h4 className="font-bold text-sm tracking-wide">{post.userId}</h4>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">{new Date(post.timestamp).toLocaleString()}</p>
                   </div>
                 </div>
-                <MoreHorizontal size={20} className="text-gray-500" />
+                <MoreHorizontal size={20} className="text-gray-500 cursor-pointer hover:text-white" />
               </div>
 
-              {/* Post Content & Media (Point 4) */}
-              <div className="px-4 pb-2">
-                <p className="text-sm leading-relaxed text-gray-200">
-                  {post.translatedContent || post.content}
+              {/* 🚨 Auto-Escalation Alert UI */}
+              {post.escalationLevel && post.escalationLevel !== 'NONE' && (
+                <div className="bg-red-900/30 border-y border-red-900 p-2 flex items-center justify-center gap-2 text-red-500 text-[10px] font-black uppercase tracking-widest shadow-inner">
+                  <ShieldAlert size={14} className="animate-pulse" />
+                  {t("Escalated to:")} {post.escalationLevel} 
+                  <span className="bg-red-500 text-black px-2 py-0.5 rounded ml-2">URGENT</span>
+                </div>
+              )}
+
+              {/* Post Content */}
+              <div className="px-4 pb-2 pt-3">
+                <p className="text-sm leading-relaxed text-gray-200 whitespace-pre-wrap">
+                  {post.translatedContent || post.text}
                 </p>
-                {/* Asli Translate Button (Point 12) */}
-                <button 
-                  onClick={() => handleTranslate(post._id, post.content)}
-                  className="text-[10px] text-cyan-400 font-black uppercase tracking-widest mt-2 hover:text-white transition-colors"
-                >
-                  {t("See Translation")}
-                </button>
+                {post.text && !post.translatedContent && (
+                  <button 
+                    onClick={() => handleTranslate(post.id, post.text)}
+                    className="text-[10px] text-cyan-400 font-black uppercase tracking-widest mt-2 hover:text-white transition-colors"
+                  >
+                    {t("See Translation")}
+                  </button>
+                )}
               </div>
 
+              {/* 🖼️ Media Rendering with Download Button */}
               {post.mediaUrl && (
-                <div className="relative group">
-                  <img src={post.mediaUrl} className="w-full h-auto max-h-[500px] object-cover" alt="post_media" />
-                  {/* Universal Download Overlay (Point 4) */}
+                <div className="relative group bg-black flex justify-center border-y border-gray-800">
+                  {post.mediaType === 'image' && <img src={post.mediaUrl} className="w-full max-h-[500px] object-contain" alt="post_media" />}
+                  {post.mediaType === 'video' && <video src={post.mediaUrl} controls className="w-full max-h-[500px]" />}
+                  {post.mediaType === 'audio' && <audio src={post.mediaUrl} controls className="w-full p-4" />}
+                  
+                  {/* Universal Download Button (Point 4) */}
                   <button 
-                    onClick={() => downloadOriginalMedia(post.mediaUrl)}
-                    className="absolute top-4 right-4 bg-black/60 p-2 rounded-xl border border-white/20 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => downloadOriginalMedia(post.mediaUrl, post.mediaType)}
+                    className="absolute top-4 right-4 bg-black/80 p-2 rounded-xl border border-gray-700 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all hover:text-cyan-400 hover:border-cyan-500 shadow-xl active:scale-90"
+                    title={t("Download Original")}
                   >
                     <Download size={20} />
                   </button>
                 </div>
               )}
 
-              {/* Action Bar (Point 4 & 12A) */}
-              <div className="p-4 border-t border-gray-900 flex justify-between items-center">
+              {/* 🎛️ Action Bar */}
+              <div className="p-4 flex justify-between items-center">
                 <div className="flex gap-6 items-center">
-                  <div className="flex items-center gap-1 text-gray-400 hover:text-red-500 cursor-pointer transition-colors">
-                    <Heart size={22} />
-                    <span className="text-xs font-bold">{post.likes}</span>
+                  <div className="flex items-center gap-1 text-gray-400 hover:text-pink-500 cursor-pointer transition-colors active:scale-90">
+                    <Heart size={22} /> <span className="text-xs font-bold">{post.likes || 0}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-gray-400 hover:text-cyan-400 cursor-pointer transition-colors">
-                    <MessageCircle size={22} />
-                    <span className="text-xs font-bold">{post.comments}</span>
+                  <div 
+                    onClick={() => toggleComments(post.id)}
+                    className={`flex items-center gap-1 cursor-pointer transition-colors active:scale-90 ${expandedComments[post.id] ? 'text-cyan-400' : 'text-gray-400 hover:text-cyan-400'}`}
+                  >
+                    <MessageCircle size={22} /> <span className="text-xs font-bold">{post.comments || 0}</span>
                   </div>
-                  <div className="text-gray-400 hover:text-green-500 cursor-pointer transition-colors">
+                  <div className="text-gray-400 hover:text-green-500 cursor-pointer transition-colors active:scale-90">
                     <Share2 size={22} />
                   </div>
                 </div>
 
-                {/* Point 4: Auto-Escalation Red Button */}
+                {/* Point 4: Escalation Button */}
                 <button 
-                  onClick={() => handleEscalate(post._id)}
-                  className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white p-2.5 rounded-xl border border-red-500/30 transition-all flex items-center gap-2"
+                  onClick={() => handleEscalate(post.id)}
+                  className="bg-red-900/30 hover:bg-red-600 hover:text-white text-red-500 p-2.5 rounded-xl border border-red-500/50 transition-all flex items-center gap-2 shadow-lg active:scale-95"
                   title={t("Escalate for Justice")}
                 >
                   <ShieldAlert size={20} />
@@ -173,17 +234,10 @@ export default function HomeFeed({ currentUser }) {
                 </button>
               </div>
 
-              {/* Real Comment Input (Point 4 - Multi-media soon) */}
-              <div className="px-4 pb-4">
-                <div className="bg-[#0a1014] border border-gray-800 rounded-2xl flex items-center p-1.5 focus-within:border-cyan-500 transition-all">
-                   <input 
-                     type="text" 
-                     placeholder={t("Write a comment...")} 
-                     className="w-full bg-transparent p-2 text-xs focus:outline-none"
-                   />
-                   <button className="p-2 text-cyan-400"><Send size={18} /></button>
-                </div>
-              </div>
+              {/* 💬 Comments Section Link */}
+              {expandedComments[post.id] && (
+                <CommentSection postId={post.id} currentUser={currentUser} />
+              )}
 
             </article>
           ))}
