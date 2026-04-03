@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// 🔥 Firebase का import हटा दिया गया है 🔥
 
-/// Firestore Message Model
+/// Message Model (AWS Ready)
 /// Collection: conversations/{convId}/messages/{msgId}
 class MessageModel {
   final String id;
@@ -29,31 +29,36 @@ class MessageModel {
     this.replyToContent,
   });
 
-  factory MessageModel.fromFirestore(DocumentSnapshot doc) {
-    final d = doc.data() as Map<String, dynamic>;
+  // 🔥 FIXED: DocumentSnapshot को हटाकर नॉर्मल Map कर दिया गया है 🔥
+  factory MessageModel.fromMap(String docId, Map<String, dynamic> d) {
     return MessageModel(
-      id: doc.id,
+      id: docId,
       conversationId: d['conversationId'] ?? '',
       senderId: d['senderId'] ?? '',
       senderName: d['senderName'] ?? '',
       content: d['content'] ?? '',
       type: MessageType.fromString(d['type'] ?? 'text'),
       mediaUrl: d['mediaUrl'],
-      timestamp: (d['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      // 🔥 FIXED: Timestamp को हटाकर DateTime कर दिया गया है 🔥
+      timestamp: d['timestamp'] != null 
+          ? DateTime.tryParse(d['timestamp'].toString()) ?? DateTime.now() 
+          : DateTime.now(),
       isRead: d['isRead'] ?? false,
       replyToId: d['replyToId'],
       replyToContent: d['replyToContent'],
     );
   }
 
-  Map<String, dynamic> toFirestore() => {
+  // 🔥 FIXED: toFirestore को बदलकर toMap कर दिया गया है 🔥
+  Map<String, dynamic> toMap() => {
     'conversationId': conversationId,
     'senderId': senderId,
     'senderName': senderName,
     'content': content,
     'type': type.value,
     'mediaUrl': mediaUrl,
-    'timestamp': FieldValue.serverTimestamp(),
+    // 🔥 FIXED: FieldValue को हटाकर स्टैंडर्ड ISO टाइम कर दिया गया है 🔥
+    'timestamp': timestamp.toIso8601String(),
     'isRead': isRead,
     'replyToId': replyToId,
     'replyToContent': replyToContent,
@@ -82,7 +87,7 @@ enum MessageType {
   String get value => name;
 }
 
-/// Conversation Model
+/// Conversation Model (AWS Ready)
 /// Collection: conversations/{convId}
 class ConversationModel {
   final String id;
@@ -111,16 +116,19 @@ class ConversationModel {
     this.groupAvatar,
   });
 
-  factory ConversationModel.fromFirestore(DocumentSnapshot doc) {
-    final d = doc.data() as Map<String, dynamic>;
+  // 🔥 FIXED: DocumentSnapshot को हटाकर नॉर्मल Map कर दिया गया है 🔥
+  factory ConversationModel.fromMap(String docId, Map<String, dynamic> d) {
     return ConversationModel(
-      id: doc.id,
+      id: docId,
       participantIds: List<String>.from(d['participantIds'] ?? []),
       participantNames: Map<String, String>.from(d['participantNames'] ?? {}),
       participantAvatars: Map<String, String>.from(d['participantAvatars'] ?? {}),
       lastMessage: d['lastMessage'] ?? '',
       lastMessageSenderId: d['lastMessageSenderId'] ?? '',
-      lastMessageTime: (d['lastMessageTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      // 🔥 FIXED: Timestamp को हटाकर DateTime कर दिया गया है 🔥
+      lastMessageTime: d['lastMessageTime'] != null 
+          ? DateTime.tryParse(d['lastMessageTime'].toString()) ?? DateTime.now() 
+          : DateTime.now(),
       unreadCounts: Map<String, int>.from(d['unreadCounts'] ?? {}),
       isGroupChat: d['isGroupChat'] ?? false,
       groupName: d['groupName'],
