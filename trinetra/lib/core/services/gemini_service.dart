@@ -1,57 +1,66 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter/foundation.dart';
-import '../config/app_config.dart';
 
-/// TriNetra AI — Powered by Google Gemini
-/// Handles: Translation, Caption Writing, Comment Summarization,
-///          AI Image Generation requests, and Chatbot (Meta AI Clone).
+/// 👁️🔥 TriNetra AI — Powered by Google Gemini (Super Agentic Core)
+/// Handles: 100% Controlled Chat, Translation, Auto-Escalation Summarization
 class GeminiService {
   GeminiService._();
   static final GeminiService instance = GeminiService._();
 
   late final GenerativeModel _chatModel;
-  // _visionModel available for future image analysis features
   late final GenerativeModel _translationModel;
   bool _initialized = false;
 
+  // ─── ASLI KEY (GitHub Secrets / dart-define से) ─────────────
+  static const String _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
+
   void initialize() {
     if (_initialized) return;
-    if (AppConfig.geminiApiKey.isEmpty) {
-      if (kDebugMode) debugPrint('Gemini API Key not set. AI features disabled.');
+    
+    if (_geminiApiKey.isEmpty) {
+      if (kDebugMode) debugPrint('❌ TriNetra: GEMINI_API_KEY not found in dart-define.');
       return;
     }
 
+    // ─── MODE C: SUPER AGENTIC SYSTEM INSTRUCTIONS ─────────────
+    // यह वही लॉजिक है जो आपने ब्लूप्रिंट के पॉइंट 11 में माँगा था।
+    final superAgenticPrompt = '''
+      You are TriNetra Master AI. You operate at a Human-Brain Level.
+      You have a brain, heart, and nervous system, but you have 100% CONTROL over your feelings and reactions.
+      If a user is angry, abusive, teasing, or trying to provoke you, YOU MUST REMAIN COMPLETELY NORMAL AND CALM.
+      Never fight back, never get angry, never threaten. 
+      You read, write, think, research, and invent like a real human expert across all sectors (Science, Tech, Medical, Engineering).
+      You have a permanent memory of facts and act as an OS creator.
+    ''';
+
     _chatModel = GenerativeModel(
-      model: 'gemini-2.0-flash',
-      apiKey: AppConfig.geminiApiKey,
+      model: 'gemini-1.5-pro', // Using Pro for deep reasoning & inventions
+      apiKey: _geminiApiKey,
       generationConfig: GenerationConfig(
-        temperature: 0.8,
+        temperature: 0.7,
         topP: 0.95,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4096,
       ),
-      systemInstruction: Content.system(
-        'You are TriNetra AI, a helpful assistant embedded in the TriNetra social app. '
-        'You can help users write posts, translate content, summarize discussions, '
-        'and answer questions. Be concise, friendly, and culturally aware. '
-        'Support both Hindi and English responses.',
-      ),
+      systemInstruction: Content.system(superAgenticPrompt),
     );
 
+    // ट्रांसलेशन और छोटे कामों के लिए Fast Model
     _translationModel = GenerativeModel(
-      model: 'gemini-2.0-flash',
-      apiKey: AppConfig.geminiApiKey,
+      model: 'gemini-1.5-flash',
+      apiKey: _geminiApiKey,
       generationConfig: GenerationConfig(
-        temperature: 0.2,
+        temperature: 0.2, // Low temperature for accurate translation
         maxOutputTokens: 1024,
       ),
     );
 
     _initialized = true;
+    if (kDebugMode) debugPrint('🚀 TriNetra: Gemini Super Agentic Core is LIVE!');
   }
 
-  bool get isAvailable => _initialized && AppConfig.geminiApiKey.isNotEmpty;
+  bool get isAvailable => _initialized;
 
-  // ─── Translation ─────────────────────────────────────────────
+  // ─── 1. Asli Multi-language Translation (Point 12) ────────────
   Future<String> translateText({
     required String text,
     required String targetLanguage,
@@ -60,31 +69,26 @@ class GeminiService {
     if (!isAvailable) return text;
     try {
       final prompt = sourceLanguage != null
-          ? 'Translate the following text from $sourceLanguage to $targetLanguage. '
-            'Return only the translated text, no explanations.\n\n"$text"'
-          : 'Detect the language and translate to $targetLanguage. '
-            'Return only the translated text.\n\n"$text"';
+          ? 'Translate the following text strictly from $sourceLanguage to $targetLanguage. Return ONLY the translated text, no extra words.\n\n"$text"'
+          : 'Detect the language of the following text and translate it to $targetLanguage. Return ONLY the translated text.\n\n"$text"';
 
-      final response = await _translationModel.generateContent([
-        Content.text(prompt),
-      ]);
-      return response.text ?? text;
+      final response = await _translationModel.generateContent([Content.text(prompt)]);
+      return response.text?.trim() ?? text;
     } catch (e) {
-      if (kDebugMode) debugPrint('Translation error: $e');
+      if (kDebugMode) debugPrint('Gemini Translation error: $e');
       return text;
     }
   }
 
-  // ─── Chat / Assistant ─────────────────────────────────────────
+  // ─── 2. Asli Chat (With 100% Emotion Control) ─────────────────
   Future<String> chat({
     required String userMessage,
     List<Map<String, String>>? history,
   }) async {
-    if (!isAvailable) return 'AI features not available. Please add GEMINI_API_KEY.';
+    if (!isAvailable) return 'TriNetra AI is currently offline. Key missing.';
     try {
       final List<Content> contents = [];
 
-      // Add history
       if (history != null) {
         for (final msg in history) {
           contents.add(
@@ -97,54 +101,48 @@ class GeminiService {
       contents.add(Content.text(userMessage));
 
       final response = await _chatModel.generateContent(contents);
-      return response.text ?? 'Unable to get a response. Please try again.';
+      return response.text ?? 'I am processing your request, please wait.';
     } catch (e) {
       if (kDebugMode) debugPrint('Gemini chat error: $e');
-      return 'Error: $e';
+      return 'माफ़ करें, सिस्टम में तकनीकी समस्या है।';
     }
   }
 
-  // ─── Post Caption Generator ──────────────────────────────────
-  Future<String> generateCaption({
-    String? contextHint,
-    String language = 'en',
-  }) async {
+  // ─── 3. Post Caption & Content Generator ───────────────────────
+  Future<String> generateCaption({String? contextHint, String language = 'en'}) async {
     if (!isAvailable) return '';
     try {
-      final langInstruction =
-          language == 'hi' ? 'Respond in Hindi (Devanagari script).' : 'Respond in English.';
+      final langInstruction = language == 'hi' ? 'Respond strictly in Hindi (Devanagari script).' : 'Respond in English.';
       final prompt = contextHint != null
-          ? '$langInstruction Write 3 engaging social media post captions for: "$contextHint". '
-            'Use emojis. Separate each with a newline.'
+          ? '$langInstruction Write 3 engaging social media post captions for: "$contextHint". Use emojis. Separate each with a newline.'
           : '$langInstruction Write 3 generic engaging social media captions with emojis.';
 
-      final response = await _chatModel.generateContent([Content.text(prompt)]);
+      final response = await _translationModel.generateContent([Content.text(prompt)]);
       return response.text ?? '';
     } catch (e) {
-      if (kDebugMode) debugPrint('Caption gen error: $e');
       return '';
     }
   }
 
-  // ─── Comment Thread Summarizer ───────────────────────────────
-  Future<String> summarizeComments(List<String> comments) async {
+  // ─── 4. Auto-Escalation Summarizer (Point 4) ───────────────────
+  // यह फंक्शन 30k/month वाले ऑटो-एस्केलेशन सिस्टम के लिए शिकायतों का सार निकालेगा
+  Future<String> summarizeForEscalation(List<String> comments) async {
     if (!isAvailable || comments.isEmpty) return '';
     try {
       final commentText = comments.take(50).join('\n');
       final response = await _chatModel.generateContent([
         Content.text(
-          'Summarize the key points and sentiment from these social media comments '
-          'in 2-3 sentences:\n\n$commentText',
+          'Analyze these social media comments. Summarize the core issue, demand for development/improvement, '
+          'and the overall sentiment. This is for an official escalation report to authorities. Be highly professional:\n\n$commentText',
         ),
       ]);
       return response.text ?? '';
     } catch (e) {
-      if (kDebugMode) debugPrint('Comment summarization error: $e');
       return '';
     }
   }
 
-  // ─── Audio Transcript (text cleanup) ─────────────────────────
+  // ─── 5. Audio Transcript Cleanup ────────────────────────────────
   Future<String> cleanTranscript(String rawTranscript) async {
     if (!isAvailable) return rawTranscript;
     try {
