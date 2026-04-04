@@ -3,13 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#000000" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a1014" />
 
   <title>TriNetra Super App | Master AI & Social Network</title>
-  <meta name="description" content="TriNetra: WhatsApp 2.0, Human-Brain Master AI (Mode C), and Real App Downloads." />
-  <meta name="robots" content="index, follow" />
   
+  <meta name="description" content="TriNetra: WhatsApp 2.0, Human-Brain Master AI (Mode C), and Real-time Justice Engine." />
+  <meta property="og:title" content="TriNetra Super App" />
+  <meta property="og:description" content="The Ultimate 100% Blueprint: Social + AI + Economy." />
+  <meta property="og:image" content="/logo_og_asli.png" />
+  <meta property="og:type" content="website" />
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TriNetra">
@@ -17,17 +22,57 @@
   <link rel="manifest" href="/manifest.json" />
 
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #0a1014; /* TriNetra Main Dark Color */
-      overflow: hidden;
+    :root { --trinetra-dark: #0a1014; --trinetra-cyan: #06b6d4; }
+    body, html {
+      margin: 0; padding: 0;
+      background-color: var(--trinetra-dark);
+      height: 100%; width: 100%;
+      overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    #initial-loader {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background-color: var(--trinetra-dark); z-index: 9999;
+    }
+    .logo-eye {
+      width: 100px; height: 100px;
+      border: 4px solid var(--trinetra-cyan);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.4);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .loader-text {
+      margin-top: 30px;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.5em;
+      font-size: 14px;
+      font-weight: 900;
     }
   </style>
 </head>
 <body>
+  
+  <div id="initial-loader">
+    <div class="logo-eye">
+      <svg viewBox="0 0 100 100" style="width: 60%; fill: var(--trinetra-cyan);">
+        <path d="M15 50C15 30 50 12 50 12C50 12 85 30 85 50C85 70 50 88 50 88C50 88 15 70 15 50Z" stroke="white" stroke-width="4" fill="none"/>
+        <circle cx="50" cy="50" r="15" fill="var(--trinetra-cyan)"/>
+      </svg>
+    </div>
+    <div class="loader-text">TriNetra</div>
+  </div>
+
   <div id="root"></div>
 
   <script type="module" src="/src/index.jsx"></script>
+
+  <noscript>You need to enable JavaScript to run TriNetra Super App.</noscript>
 </body>
 </html>
