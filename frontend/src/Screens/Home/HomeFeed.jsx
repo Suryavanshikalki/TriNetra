@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Heart, MessageCircle, Share2, Download, ShieldAlert, 
-  Search, Plus, MoreHorizontal, Globe, Loader2, Send 
+  Search, Plus, MoreHorizontal, Globe, Loader2, Send, FileText 
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,8 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { generateClient } from 'aws-amplify/api';
 import { getUrl } from 'aws-amplify/storage';
 import { TriNetraLogo } from '../../App';
-import CreatePost from './CreatePost'; // Asli Create Post Component
-import CommentSection from './CommentSection'; // Asli Comment Section
+import CreatePost from './CreatePost'; 
+import CommentSection from './CommentSection'; 
 
 const client = generateClient();
 
@@ -25,7 +25,7 @@ export default function HomeFeed({ currentUser }) {
   useEffect(() => {
     fetchFeed();
 
-    // 🔥 Real-time Subscription: कोई भी पोस्ट करेगा, फीड खुद रिफ्रेश होगी
+    // 🔥 Real-time Subscription: Feed Auto-Refresh
     const sub = client.graphql({
       query: `subscription OnNewPost { onNewTriNetraPost { id userId text mediaUrl mediaType escalationLevel timestamp } }`
     }).subscribe({
@@ -39,7 +39,6 @@ export default function HomeFeed({ currentUser }) {
 
   const fetchFeed = async () => {
     try {
-      // Fetching from secure AWS DynamoDB
       const res = await client.graphql({
         query: `query ListPosts { listTriNetraPosts(limit: 50) { items { id userId text mediaUrl mediaType escalationLevel timestamp likes comments } } }`
       });
@@ -63,7 +62,7 @@ export default function HomeFeed({ currentUser }) {
       const link = document.createElement('a');
       link.href = blobUrl;
       const ext = type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : type === 'audio' ? 'mp3' : 'pdf';
-      link.download = `TriNetra_${Date.now()}.${ext}`;
+      link.download = `TriNetra_Post_${Date.now()}.${ext}`;
       
       document.body.appendChild(link);
       link.click();
@@ -79,7 +78,6 @@ export default function HomeFeed({ currentUser }) {
     const confirm = window.confirm(t("Escalate this issue to the Chain of Command (Local -> MLA -> CM -> Supreme Court)?"));
     if (confirm) {
       try {
-        // 🔥 Triggering the AWS Auto-Escalation Engine
         await client.graphql({
           query: `mutation TriggerEscalation($postId: ID!, $userId: ID!) {
             triggerTriNetraEscalation(postId: $postId, userId: $userId) { status level }
@@ -88,7 +86,6 @@ export default function HomeFeed({ currentUser }) {
         });
         alert(t("Escalation Active. Case tracked by TriNetra Justice Engine."));
       } catch (err) {
-        console.error("❌ AWS Escalation Failed:", err);
         alert(t("Escalation server connection failed."));
       }
     }
@@ -147,7 +144,7 @@ export default function HomeFeed({ currentUser }) {
         <div className="flex-1 flex justify-center items-center mt-10"><Loader2 size={40} className="text-cyan-500 animate-spin" /></div>
       ) : (
         <div className="max-w-2xl mx-auto w-full p-4 space-y-6">
-          {posts.map((post) => (
+          {posts.filter(p => p.text?.toLowerCase().includes(searchQuery.toLowerCase()) || !searchQuery).map((post) => (
             <article key={post.id} className="bg-[#111827] rounded-3xl border border-gray-800 overflow-hidden shadow-2xl animate-fade-in-up">
               
               {/* User Header */}
@@ -190,10 +187,18 @@ export default function HomeFeed({ currentUser }) {
 
               {/* 🖼️ Media Rendering with Download Button */}
               {post.mediaUrl && (
-                <div className="relative group bg-black flex justify-center border-y border-gray-800">
+                <div className="relative group bg-black flex justify-center border-y border-gray-800 w-full">
                   {post.mediaType === 'image' && <img src={post.mediaUrl} className="w-full max-h-[500px] object-contain" alt="post_media" />}
                   {post.mediaType === 'video' && <video src={post.mediaUrl} controls className="w-full max-h-[500px]" />}
                   {post.mediaType === 'audio' && <audio src={post.mediaUrl} controls className="w-full p-4" />}
+                  
+                  {/* 🔥 FIXED: PDF UI Display Added Here */}
+                  {post.mediaType === 'pdf' && (
+                    <div className="w-full p-10 flex flex-col items-center justify-center bg-gray-900 text-red-400 gap-3">
+                      <FileText size={48} className="drop-shadow-lg" />
+                      <span className="text-xs font-black uppercase tracking-widest text-white">TriNetra Document (PDF)</span>
+                    </div>
+                  )}
                   
                   {/* Universal Download Button (Point 4) */}
                   <button 
