@@ -1,31 +1,99 @@
+// ==========================================
+// TRINETRA SUPER APP - USER MASTER CONTEXT (File 26)
+// Exact Path: src/context/UserContext.jsx
+// Blueprint Point: 2, 3, 6 & 11 - 100% ASLI AWS
+// ==========================================
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import api from '../services/api';
+import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { generateClient } from 'aws-amplify/api';
+import LogRocket from 'logrocket';
+import * as Sentry from "@sentry/react";
 
+const client = generateClient();
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // AWS Auth Data
+  const [profile, setProfile] = useState(null); // DynamoDB Profile Data (Point 3)
   const [loading, setLoading] = useState(true);
 
-  // 100% Real: App khulte hi user ka "Asli" data MongoDB se lana
+  // ─── 1. REAL AWS SESSION SYNC (Point 2: Gatekeeper) ─────────────
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem('trn_token');
-      if (token) {
-        try {
-          const res = await api.get('/user/me');
-          if (res.data.success) setUser(res.data.user);
-        } catch (err) {
-          localStorage.removeItem('trn_token');
-        }
-      }
-      setLoading(false);
-    };
-    fetchUser();
+    syncUserSession();
   }, []);
 
+  const syncUserSession = async () => {
+    try {
+      // 🔥 Step 1: AWS Cognito से असली यूजर सेशन उठाना
+      const { username, userId } = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
+
+      const authenticatedUser = {
+        trinetraId: username, // Point 2: Permanent ID
+        email: attributes.email,
+        phone: attributes.phone_number,
+        sub: userId
+      };
+
+      setUser(authenticatedUser);
+
+      // 🔥 Step 2: AWS DynamoDB से यूजर का 'Asli' प्रोफाइल लाना (Point 3 & 6)
+      await fetchFullProfile(username);
+
+      // 🔥 Step 3: Real-time Identity Tracking (Point 12H)
+      LogRocket.identify(username, {
+        name: attributes.name || 'TriNetra User',
+        email: attributes.email,
+      });
+
+    } catch (err) {
+      console.log("🛰️ TriNetra: No active AWS session.");
+      setUser(null);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── 2. FETCH FULL PROFILE (Point 3: Profile & Connections) ─────
+  const fetchFullProfile = async (trinetraId) => {
+    try {
+      const res = await client.graphql({
+        query: `query GetProfile($id: ID!) {
+          getTriNetraProfile(id: $id) {
+            id name bio profilePic coverPic avatarUrl
+            followerCount followingCount
+            walletBalance aiCredits
+            isOSCreator
+          }
+        }`,
+        variables: { id: trinetraId }
+      });
+      
+      if (res.data.getTriNetraProfile) {
+        setProfile(res.data.getTriNetraProfile);
+      }
+    } catch (err) {
+      Sentry.captureException(err);
+      console.error("❌ AWS Profile Sync Failed");
+    }
+  };
+
+  // ─── 3. REFRESH PROFILE (Point 6 & 11: Balance/Credits) ─────────
+  const refreshUserData = () => {
+    if (user?.trinetraId) fetchFullProfile(user.trinetraId);
+  };
+
   return (
-    <UserContext.Provider value={{ user, setUser, loading }}>
+    <UserContext.Provider value={{ 
+      user, 
+      profile, 
+      loading, 
+      setUser, 
+      setProfile, 
+      refreshUserData,
+      isAuthenticated: !!user 
+    }}>
       {children}
     </UserContext.Provider>
   );
