@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Paperclip, Send, Smile, Download, FileText, Globe, Image as ImageIcon, Video, Camera, Loader2, PlayCircle } from 'lucide-react';
+import { Mic, Paperclip, Send, Smile, Download, FileText, Globe, Image as ImageIcon, Video, Camera, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 // 🔥 ASLI AWS IMPORTS (No Fake States) 🔥
@@ -16,14 +16,15 @@ export default function CommentSection({ postId, currentUser }) {
   const [isTranslating, setIsTranslating] = useState({});
   const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  
   const fileInputRef = useRef(null);
+  const audioInputRef = useRef(null); // 🔥 Asli Mic Input Reference
 
-  // ─── 1. REAL AWS REAL-TIME FETCH (Facebook Style) ─────────────────
+  // ─── 1. REAL AWS REAL-TIME FETCH ──────────────────────────────────
   useEffect(() => {
     if (!postId) return;
     fetchComments();
     
-    // AWS AppSync Subscription for Real-time new comments
     const subscription = client.graphql({
       query: `subscription OnNewComment($postId: ID!) {
         onNewTriNetraComment(postId: $postId) { id text mediaUrl mediaType userId timestamp }
@@ -52,28 +53,27 @@ export default function CommentSection({ postId, currentUser }) {
     }
   };
 
-  // ─── 2. REAL DIRECT AWS S3 MEDIA UPLOAD (Point 4) ─────────────────
-  const handleMediaUpload = async (e) => {
+  // ─── 2. REAL DIRECT AWS S3 MEDIA & VOICE UPLOAD ───────────────────
+  const handleMediaUpload = async (e, forceType = null) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const mediaType = file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : file.type.includes('pdf') ? 'pdf' : 'audio';
+      const fileExt = file.name.split('.').pop() || (forceType === 'audio' ? 'mp3' : 'file');
+      const mediaType = forceType || (file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : file.type.includes('pdf') ? 'pdf' : 'audio');
       const fileName = `comments/${postId}/${currentUser?.trinetraId}_${Date.now()}.${fileExt}`;
       
-      // Upload directly to AWS S3
       await uploadData({
         path: `public/${fileName}`,
         data: file,
-        options: { accessLevel: 'guest' }
+        options: { contentType: file.type || 'application/octet-stream', accessLevel: 'guest' }
       }).result;
 
       const urlResult = await getUrl({ path: `public/${fileName}` });
       
-      // Auto-post comment with media
-      await postComment(null, urlResult.url.toString(), mediaType);
+      // Auto-post comment with media or voice note
+      await postComment(forceType === 'audio' ? t("🎤 Voice Comment") : null, urlResult.url.toString(), mediaType);
     } catch (err) {
       alert(t("Media upload failed securely."));
     } finally {
@@ -90,13 +90,7 @@ export default function CommentSection({ postId, currentUser }) {
         query: `mutation CreateComment($postId: ID!, $userId: ID!, $text: String, $mediaUrl: String, $mediaType: String) {
           createTriNetraComment(postId: $postId, userId: $userId, text: $text, mediaUrl: $mediaUrl, mediaType: $mediaType) { id }
         }`,
-        variables: {
-          postId,
-          userId: currentUser?.trinetraId,
-          text: textToPost,
-          mediaUrl,
-          mediaType
-        }
+        variables: { postId, userId: currentUser?.trinetraId, text: textToPost, mediaUrl, mediaType }
       });
       setCommentText('');
     } catch (err) {
@@ -106,18 +100,17 @@ export default function CommentSection({ postId, currentUser }) {
     }
   };
 
-  // ─── 4. REAL AI MULTI-LANGUAGE TRANSLATOR (Point 12) ──────────────
+  // ─── 4. REAL AI MULTI-LANGUAGE TRANSLATOR ─────────────────────────
   const handleTranslate = async (commentId, originalText) => {
     if (!originalText) return;
     setIsTranslating(prev => ({ ...prev, [commentId]: true }));
     
     try {
-      // Hits the Gemini Translation Service via AWS API
       const res = await client.graphql({
         query: `mutation Translate($text: String!, $targetLang: String!) {
           translateText(text: $text, targetLang: "hi") { translatedText }
         }`,
-        variables: { text: originalText, targetLang: 'hi' } // Auto-detect to Hindi for this user
+        variables: { text: originalText, targetLang: 'hi' }
       });
       setTranslatedText(prev => ({ ...prev, [commentId]: res.data.translateText.translatedText }));
     } catch (err) {
@@ -127,16 +120,27 @@ export default function CommentSection({ postId, currentUser }) {
     }
   };
 
-  // ─── 5. UNIVERSAL DOWNLOAD SYSTEM (Point 4) ───────────────────────
-  const downloadMedia = (url, type) => {
+  // ─── 5. TRUE UNIVERSAL DOWNLOAD (Blob Forced) ─────────────────────
+  const downloadMedia = async (url, type) => {
     if (!url) return;
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.download = `TriNetra_Comment_${type}_${Date.now()}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      const ext = type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : type === 'audio' ? 'mp3' : 'pdf';
+      link.download = `TriNetra_Comment_${Date.now()}.${ext}`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Download Error", err);
+      window.open(url, '_blank'); // Fallback
+    }
   };
 
   return (
@@ -154,25 +158,25 @@ export default function CommentSection({ postId, currentUser }) {
               <span className="font-black text-cyan-400 block mb-1 text-xs">{cmd.userId}</span>
               
               {/* Comment Text */}
-              {cmd.text && <p className="whitespace-pre-wrap">{translatedText[cmd.id] || cmd.text}</p>}
+              {cmd.text && <p className="whitespace-pre-wrap leading-relaxed">{translatedText[cmd.id] || cmd.text}</p>}
               
-              {/* Media Attachments (Photo, Video, Audio, PDF) */}
+              {/* Media Attachments */}
               {cmd.mediaUrl && (
                 <div className="mt-3 relative group overflow-hidden rounded-xl border border-gray-700 bg-black max-w-xs">
                   {cmd.mediaType === 'image' && <img src={cmd.mediaUrl} alt="attachment" className="w-full h-auto object-cover max-h-48" />}
                   {cmd.mediaType === 'video' && <video src={cmd.mediaUrl} controls className="w-full max-h-48" />}
-                  {cmd.mediaType === 'audio' && <audio src={cmd.mediaUrl} controls className="w-full" />}
+                  {cmd.mediaType === 'audio' && <audio src={cmd.mediaUrl} controls className="w-full p-2" />}
                   {cmd.mediaType === 'pdf' && (
-                    <div className="p-3 flex items-center gap-2 text-red-400 font-bold bg-gray-900">
-                      <FileText size={20} /> <span>TriNetra_Document.pdf</span>
+                    <div className="p-4 flex items-center gap-2 text-red-400 font-bold bg-gray-900">
+                      <FileText size={24} /> <span className="text-[10px] uppercase tracking-widest">TriNetra_Doc.pdf</span>
                     </div>
                   )}
                   
-                  {/* Real Universal Download Button */}
+                  {/* True Universal Download Button */}
                   <button 
                     onClick={() => downloadMedia(cmd.mediaUrl, cmd.mediaType)} 
-                    className="absolute top-2 right-2 bg-black/80 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:text-cyan-400"
-                    title="Download to Device"
+                    className="absolute top-2 right-2 bg-black/80 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:text-cyan-400 active:scale-90 shadow-lg"
+                    title={t("Download to Device")}
                   >
                     <Download size={16} />
                   </button>
@@ -184,10 +188,10 @@ export default function CommentSection({ postId, currentUser }) {
                 <button 
                   onClick={() => handleTranslate(cmd.id, cmd.text)} 
                   disabled={isTranslating[cmd.id]}
-                  className="text-[10px] uppercase font-bold text-gray-500 mt-2 flex items-center hover:text-cyan-400 transition-colors"
+                  className="text-[10px] uppercase font-black tracking-widest text-gray-500 mt-2 flex items-center hover:text-cyan-400 transition-colors"
                 >
                   {isTranslating[cmd.id] ? <Loader2 size={12} className="mr-1 animate-spin"/> : <Globe size={12} className="mr-1"/>} 
-                  {isTranslating[cmd.id] ? t('Translating...') : t('Translate to Hindi')}
+                  {isTranslating[cmd.id] ? t('Translating...') : t('Translate')}
                 </button>
               )}
             </div>
@@ -198,21 +202,22 @@ export default function CommentSection({ postId, currentUser }) {
       {/* ⌨️ Real Multi-Input Comment Box */}
       <div className="flex items-center bg-[#111827] border border-gray-800 rounded-2xl px-3 py-2 space-x-2 focus-within:border-cyan-500 transition-colors shadow-inner">
         
-        {/* Hidden File Input */}
-        <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*,audio/*,.pdf" onChange={handleMediaUpload} />
+        {/* Hidden File Inputs */}
+        <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*,.pdf" onChange={(e) => handleMediaUpload(e)} />
+        <input type="file" ref={audioInputRef} className="hidden" accept="audio/*" capture="microphone" onChange={(e) => handleMediaUpload(e, 'audio')} />
         
-        <Smile className="text-gray-500 cursor-pointer hover:text-yellow-500 transition-colors" size={20} />
+        <Smile className="text-gray-500 cursor-pointer hover:text-yellow-500 transition-colors active:scale-90" size={20} />
         
         {/* Real Attachment Button */}
         {isUploading ? (
           <Loader2 className="text-cyan-500 animate-spin" size={20} />
         ) : (
-          <Paperclip onClick={() => fileInputRef.current.click()} className="text-gray-500 cursor-pointer hover:text-cyan-400 transition-colors" size={20} />
+          <Paperclip onClick={() => fileInputRef.current.click()} className="text-gray-500 cursor-pointer hover:text-cyan-400 transition-colors active:scale-90" size={20} />
         )}
 
         <input 
           type="text" 
-          placeholder={t("Write a comment, attach media, or use Mic...")}
+          placeholder={t("Write a comment, attach media...")}
           className="flex-1 bg-transparent text-white outline-none text-sm px-2 placeholder-gray-600"
           value={commentText}
           onChange={(e) => setCommentText(e.target.value)}
@@ -225,8 +230,13 @@ export default function CommentSection({ postId, currentUser }) {
             {isSending ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
           </button>
         ) : (
-          /* Mic Interface Ready */
-          <button title="Voice Comment" className="text-violet-500 hover:text-violet-400 active:scale-90 transition-transform">
+          /* 🔥 Asli Mic Integration */
+          <button 
+            onClick={() => audioInputRef.current.click()} 
+            disabled={isUploading}
+            title={t("Voice Comment")} 
+            className="text-violet-500 hover:text-violet-400 active:scale-90 transition-transform"
+          >
             <Mic size={20} />
           </button>
         )}
