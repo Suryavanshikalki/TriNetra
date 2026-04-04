@@ -1,90 +1,62 @@
 // ==========================================
-// 👁️🔥 TRINETRA MASTER BACKEND ENGINE (PURE AWS ARCHITECTURE)
-// File Location: backend/server.js (Main Entry Point)
+// 👁️🔥 TRINETRA MASTER IGNITION - FILE: index.js
+// Role: Real Database Connection & AWS Server Ignition
 // Author: Suryavanshi Kalki
-// Blueprint: A to Z Integrated (All 12 Points)
-// 🚨 DEEP SEARCH FIX: FIREBASE & RAZORPAY PERMANENTLY DELETED 🚨
+// Blueprint: 100% Aligned | AWS Standard | No Dummy Code
 // ==========================================
 
-import express from "express";
-import cors from "cors";
+import app from "./server.js"; 
 import mongoose from "mongoose";
-import helmet from "helmet"; // AWS WAF Level Security Headers
 
-// ─── 1. IMPORTING 100% REAL CONTROLLERS (No Dummy Code) ───
-import { registerOrLogin, updateDeepSettings } from "./controllers/authSettingsController.js"; 
-import { sendMessage, getChatHistory, getMutualFriends, createGroupChat } from "./controllers/chatController.js"; 
-import { processPaymentAndBoost } from "./controllers/paymentController.js"; // Only PayU, PayPal, Braintree, Paddle, Adyen
-import { processAIPrompt } from "./controllers/aiController.js"; // The 6-in-1 Master AI
-import { translateText } from "./controllers/translateController.js"; // Multilingual Translation
-import { triggerEscalation } from "./controllers/escalationController.js"; // Justice Engine
-import { createPost, updateProfile, toggleFollowUser, toggleBlockUser } from "./controllers/userActivityController.js"; 
+// ─── 1. REAL AWS MONGODB CONNECTION ───
+const startDatabase = async () => {
+    try {
+        const dbUri = process.env.MONGODB_URI;
+        if (!dbUri) {
+            console.error("❌ [TriNetra Firewall] FATAL: MONGODB_URI missing in AWS Environment!");
+            process.exit(1); 
+        }
 
-const app = express();
+        await mongoose.connect(dbUri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        
+        console.log("👁️🔥 [TriNetra DB] 100% Locked & Connected to AWS Cloud Instance");
+    } catch (error) {
+        console.error("❌ [TriNetra DB] Connection Failed (Logged to CloudWatch):", error);
+        process.exit(1); 
+    }
+};
 
-// ─── 2. AWS WAF & SECURITY MIDDLEWARE ───
-app.use(helmet()); // हैकर्स और DDoS से बचाने के लिए
-app.use(cors({ origin: true })); // Windows, Mac, Linux, iOS, Android, Web (6 Platforms Supported)
-app.use(express.json({ limit: '50mb' })); // हाई-क्वालिटी ओरिजिनल मीडिया अपलोड के लिए लिमिट
+// ─── 2. START THE AWS PRODUCTION SERVER ───
+const startServer = async () => {
+    await startDatabase();
 
-// ─── 3. REAL AWS MONGODB CONNECTION (From GitHub Secrets) ───
-if (process.env.MONGODB_URI) {
-    mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    }).then(() => console.log("[TriNetra DB] 100% Locked & Connected to AWS Environment"))
-      .catch(err => console.error("[TriNetra DB] Crash Fatal Error (Logged to CloudWatch):", err));
-} else {
-    console.error("[TriNetra DB] MONGODB_URI Key is missing!");
-}
+    const PORT = process.env.PORT || 5000;
 
-// ==========================================
-// 🚀 TRINETRA REAL API ROUTES (100% Blueprint Aligned)
-// ==========================================
+    const server = app.listen(PORT, () => {
+        console.log(`=========================================`);
+        console.log(`👁️🔥 TRINETRA MASTER ENGINE IS LIVE (AWS)`);
+        console.log(`🚀 Identity: Suryavanshi Kalki`);
+        console.log(`📡 Port Bind: ${PORT}`);
+        console.log(`🛡️  Security: AWS WAF & Helmet Active`);
+        console.log(`🚫 Banned Status: Firebase (Deleted), Razorpay (Deleted)`);
+        console.log(`✅ Status: AI Mode C, Justice Engine & Economy Engine Online`);
+        console.log(`=========================================`);
+    });
 
-// 1. AWS Auto-Scaling & Load Balancer Health Check
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ 
-      status: "TriNetra Engine 100% Active", 
-      identity: "Suryavanshi Kalki",
-      infra: "Pure Node.js + AWS EC2 Auto-Scaling + CloudWatch"
-  });
-});
+    // ─── 3. GRACEFUL SHUTDOWN (Professional Facebook Level) ───
+    // अगर AWS सर्वर बंद करता है, तो डेटाबेस को सुरक्षित तरीके से क्लोज करेगा
+    process.on('SIGTERM', () => {
+        console.info('SIGTERM signal received. Closing TriNetra Engine...');
+        server.close(() => {
+            mongoose.connection.close(false, () => {
+                console.log('TriNetra DB connection closed.');
+                process.exit(0);
+            });
+        });
+    });
+};
 
-// 2. THE GATEKEEPER (Point 2 & 12)
-app.post("/api/auth/login", registerOrLogin);
-app.post("/api/settings/update", updateDeepSettings);
-
-// 3. PROFILE, CONNECTIONS & FEED (Point 3 & 4)
-app.post("/api/user/profile", updateProfile);
-app.post("/api/user/follow", toggleFollowUser);
-app.post("/api/user/block", toggleBlockUser);
-app.post("/api/post/create", createPost);
-
-// 4. WHATSAPP 2.0 MESSENGER (Point 5)
-app.post("/api/chat/send", sendMessage);
-app.post("/api/chat/history", getChatHistory);
-app.get("/api/chat/mutual-friends", getMutualFriends);
-app.post("/api/chat/group/create", createGroupChat);
-
-// 5. THE ECONOMY & BOOSTS (Point 6 to 10)
-app.post("/api/payments/process", processPaymentAndBoost);
-
-// 6. JUSTICE ENGINE / AUTO-ESCALATION (Point 4)
-app.post("/api/escalation/trigger", triggerEscalation);
-
-// 7. THE MASTER AI & TRANSLATION (Point 11 & 12)
-app.post("/api/ai/chat", processAIPrompt);
-app.post("/api/ai/translate", translateText); 
-
-// ==========================================
-// 🚨 AWS ENGINE IGNITION (Port Binding for EC2/Load Balancers)
-// ==========================================
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    // यह कंसोल लॉग सीधा AWS CloudWatch में रिकॉर्ड होगा
-    console.log(`👁️🔥 TriNetra Master Engine is LIVE on AWS Port ${PORT}`);
-    console.log(`[System Check] Firebase: BANNED. Razorpay: BANNED.`);
-    console.log(`[System Check] AI Core, Economy Engine, & Justice Engine are completely functional.`);
-});
+startServer();
