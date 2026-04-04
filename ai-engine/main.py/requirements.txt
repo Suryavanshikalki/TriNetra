@@ -1,76 +1,108 @@
 # ==========================================
-# 👁️🔥 TRINETRA AI MASTER ENGINE (Python Microservice)
-# File: main.py
-# Blueprint: Point 11 (Mode A, B, C & OS Tier AI)
-# 🚨 DEEP SEARCH: POWERED BY FASTAPI & LITELLM 🚨
+# 👁️🔥 TRINETRA MASTER AI BRAIN - FILE: main.py
+# Author: Suryavanshi Kalki
+# Blueprint: Point 11 (A, B, C, OS Mode) & Point 12 (Multilingual)
+# 🚨 DEEP SEARCH: 100% REAL AWS PRODUCTION ENGINE - NO FIREBASE 🚨
 # ==========================================
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import litellm # The ultimate router for OpenAI, DeepSeek, Gemini, Meta
+import litellm # The ultimate multi-model router
 import os
 from dotenv import load_dotenv
 
-# AWS Server के लिए Environment Load करें
+# AWS Server / GitHub Secrets लोड करें
 load_dotenv()
 
-app = FastAPI(title="TriNetra Super AI Brain")
+app = FastAPI(title="TriNetra Master AI Brain")
 
-# ─── 1. REAL API KEYS VALIDATION ───
-# AWS पर ये Keys मौजूद होनी चाहिए
+# ─── AWS SECURITY SHIELD (MiddleWare) ───
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Node.js Backend IP will be mapped here in AWS
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ─── 1. REAL API KEYS VALIDATION (From Your History) ───
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY", "")
 os.environ["GEMINI_API_KEY"] = os.getenv("GEMINI_API_KEY", "")
-os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY", "") # For Meta Llama fast inference
+os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY", "")
 os.environ["DEEPSEEK_API_KEY"] = os.getenv("DEEPSEEK_API_KEY", "")
 
 # ─── 2. DATA SECURITY SCHEMA ───
 class AIPromptRequest(BaseModel):
     prompt: str
-    mode: str # "A", "B", "C", "OS"
+    mode: str  # "Mode_A_FreePremium", "Mode_B_Paid", "Mode_C", "OS_Creation"
+    requested_brain: str # "DeepSeek", "Meta", "ChatGPT", "Gemini", "Emergent", "Manus"
     user_id: str
+    target_language: str = "en"
 
-# ─── 3. THE 6-IN-1 SUPER BRAIN CONTROLLER ───
+# ─── 3. THE 6-IN-1 SUPER BRAIN CONTROLLER (Point 11 & 12) ───
 @app.post("/api/v1/brain/process")
 async def process_super_ai(request: AIPromptRequest):
     try:
         model_to_use = ""
-        
-        # 🧠 MODE A: Basic AI (Cheaper, Fast - Meta Llama via Groq)
-        if request.mode == "A":
-            model_to_use = "groq/llama3-70b-8192" 
-            
-        # 🧠 MODE B: Advanced AI (Gemini Pro - Good for reasoning)
-        elif request.mode == "B":
-            model_to_use = "gemini/gemini-1.5-pro"
-            
-        # 🧠 MODE C: Master AI (The Ultimate 6-in-1 Brain - GPT-4o or DeepSeek)
-        elif request.mode == "C":
-            # You can dynamically route this based on who answers better/cheaper
-            model_to_use = "gpt-4o" 
-            
-        else:
-            raise HTTPException(status_code=400, detail="Invalid TriNetra AI Mode")
+        system_prompt = ""
 
-        # 🚨 REAL AI EXECUTION VIA LITELLM (No Dummy Code)
+        # --- MODE C & OS GUARDRAILS (Blueprint Strict Rule) ---
+        # 🚨 100% EMOTION CONTROL GUARD: Stay professional even if user is abusive.
+        base_guardrail = (
+            "You are TriNetra AI, created by Suryavanshi Kalki. "
+            "EMOTION CONTROL: Remain calm and professional even if provoked, teased, or abused. "
+            "MEMORY: Permanent and Human-like reasoning."
+        )
+
+        # --- BRAIN ROUTING LOGIC ---
+        if request.requested_brain == "DeepSeek" or request.mode == "Mode_C":
+            model_to_use = "deepseek/deepseek-reasoner"
+            system_prompt = f"{base_guardrail} You are TriNetra Mode C: Super Agentic AI. You research, invent, and understand like a human expert."
+        
+        elif request.requested_brain == "Meta" or request.mode == "Mode_A_FreePremium":
+            model_to_use = "groq/llama3-70b-8192"
+            system_prompt = f"{base_guardrail} You are TriNetra Basic AI. Be helpful and fast."
+
+        elif request.requested_brain == "Gemini" or request.mode == "Mode_B_Paid":
+            model_to_use = "gemini/gemini-1.5-pro"
+            system_prompt = f"{base_guardrail} You are Manus Agentic AI. Focus on coding and complex tasks."
+
+        elif request.requested_brain == "Emergent" or request.mode == "OS_Creation":
+            model_to_use = "gpt-4o" # Using GPT-4o for heavy OS architecture tasks
+            system_prompt = "You are TriNetra OS Maker. Build ultimate operating systems and professional architectures."
+
+        else:
+            # Fallback to Llama 3 via Groq for speed
+            model_to_use = "groq/llama3-70b-8192"
+            system_prompt = base_guardrail
+
+        # 🚨 POINT 12: MULTILINGUAL INJECTION (अगर भाषा बदली है)
+        if request.target_language != "en":
+            system_prompt += f" Respond ONLY in {request.target_language}."
+
+        # 🚀 REAL AI EXECUTION (No Dummy Code)
         response = litellm.completion(
             model=model_to_use,
             messages=[
-                {"role": "system", "content": "You are TriNetra Master AI, an advanced intelligence engine created by Suryavanshi Kalki."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": request.prompt}
             ],
             temperature=0.7
         )
 
-        # Return the pure output to the Node.js Server
         return {
             "status": "success",
             "ai_response": response.choices[0].message.content,
-            "tokens_used": response.usage.total_tokens,
-            "engine_used": model_to_use
+            "engine_used": model_to_use,
+            "tokens": response.usage.total_tokens
         }
 
     except Exception as e:
-        print(f"❌ [AI Brain Crash]: {str(e)}")
-        raise HTTPException(status_code=500, detail="TriNetra AI Engine Overload or Error")
+        print(f"❌ [TriNetra AI Crash]: {str(e)}")
+        raise HTTPException(status_code=500, detail="TriNetra AI Engine Overload")
 
-# Start Command for AWS: uvicorn main:app --host 0.0.0.0 --port 8000
+# Health Check for AWS WAF/Load Balancer
+@app.get("/api/health")
+async def health():
+    return {"status": "Active", "identity": "Suryavanshi Kalki"}
