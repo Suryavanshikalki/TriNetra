@@ -3,35 +3,38 @@
 // Exact Path: src/screens/Reels/ReelsPlayer.jsx
 // ==========================================
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, Share2, Download, Music, UserPlus, Check } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Download, Music, UserPlus, Check, Loader2, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
 
-export default function ReelsPlayer({ reels = [], currentUser, onOpenComments }) {
+// 🔥 ASLI AWS IMPORTS (No Axios, No Render Dummy) 🔥
+import { generateClient } from 'aws-amplify/api';
+
+const client = generateClient();
+
+export default function ReelsPlayer({ reels = [], currentUser, onOpenComments, onBoostReel }) {
   const { t } = useTranslation();
   
-  // States for real-time UI updates (Optimistic UI)
   const [likedReels, setLikedReels] = useState(new Set());
   const [followedUsers, setFollowedUsers] = useState(new Set());
+  const [isActionLoading, setIsActionLoading] = useState({});
   
-  // Refs for tracking video elements to play/pause on scroll
   const videoRefs = useRef({});
 
-  // 100% Real: Auto Play/Pause video when scrolling (Intersection Observer)
+  // ─── 1. REAL-TIME INTERSECTION OBSERVER (Smooth Auto-Play) ────────
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           const video = entry.target;
           if (entry.isIntersecting) {
-            video.play().catch(e => console.log("Autoplay prevented by browser"));
+            video.play().catch(() => console.log("Autoplay blocked"));
           } else {
             video.pause();
-            video.currentTime = 0; // Reset video when swiped away
+            video.currentTime = 0;
           }
         });
       },
-      { threshold: 0.6 } // When 60% of video is visible, it plays
+      { threshold: 0.8 } // 80% visibility required for play
     );
 
     Object.values(videoRefs.current).forEach((video) => {
@@ -41,157 +44,154 @@ export default function ReelsPlayer({ reels = [], currentUser, onOpenComments })
     return () => observer.disconnect();
   }, [reels]);
 
-  // 100% Real: Original Quality Download (Point 4)
-  const handleDownload = (url) => {
+  // ─── 2. TRUE UNIVERSAL DOWNLOAD (Point 4: Force Save to Gallery) ──
+  const handleDownload = async (url, reelId) => {
     if (!url) return;
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.download = `TriNetra_Reel_${Date.now()}.mp4`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setIsActionLoading(prev => ({ ...prev, [reelId]: true }));
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `TriNetra_Reel_${Date.now()}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("❌ Download Failed:", err);
+    } finally {
+      setIsActionLoading(prev => ({ ...prev, [reelId]: false }));
+    }
   };
 
-  // 100% Real: API Call for Like
+  // ─── 3. REAL AWS LIKE MUTATION ────────────────────────────────────
   const handleLike = async (reelId) => {
     const isLiked = likedReels.has(reelId);
     
-    // Instant UI update
+    // Optimistic UI Update
     const newLiked = new Set(likedReels);
     if (isLiked) newLiked.delete(reelId);
     else newLiked.add(reelId);
     setLikedReels(newLiked);
 
     try {
-      await axios.post('https://trinetra-umys.onrender.com/api/reels/like', {
-        reelId: reelId,
-        userId: currentUser?.trinetraId,
-        action: isLiked ? 'unlike' : 'like'
+      await client.graphql({
+        query: `mutation LikeReel($id: ID!, $userId: ID!) { 
+          likeTriNetraReel(id: $id, userId: $userId) { id likesCount } 
+        }`,
+        variables: { id: reelId, userId: currentUser?.trinetraId }
       });
     } catch (error) {
-      console.error("Like API offline or failed");
-      // Optional: Revert state if API fails
+      console.error("AWS Like Error");
     }
   };
 
-  // 100% Real: API Call for Follow (Mutual Connection Rule Starter)
+  // ─── 4. REAL AWS FOLLOW (Mutual Connection Start) ────────────────
   const handleFollow = async (targetUserId) => {
     if (!currentUser || currentUser.trinetraId === targetUserId) return;
 
-    // Instant UI update
     const newFollowed = new Set(followedUsers);
     newFollowed.add(targetUserId);
     setFollowedUsers(newFollowed);
 
     try {
-      await axios.post('https://trinetra-umys.onrender.com/api/user/follow', {
-        followerId: currentUser.trinetraId,
-        targetId: targetUserId
+      await client.graphql({
+        query: `mutation FollowUser($reqId: ID!, $recId: ID!) { 
+          sendConnectionRequest(requesterId: $reqId, receiverId: $recId) { status } 
+        }`,
+        variables: { reqId: currentUser.trinetraId, recId: targetUserId }
       });
     } catch (error) {
-      console.error("Follow API offline or failed");
-    }
-  };
-
-  // 100% Real: Native OS Share Dialog
-  const handleShare = async (reel) => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `TriNetra Reel by @${reel.username}`,
-          text: reel.caption,
-          url: reel.videoUrl
-        });
-      } catch (error) {
-        console.log("Share cancelled or failed");
-      }
-    } else {
-      // Fallback for PC/Unsupported browsers
-      navigator.clipboard.writeText(reel.videoUrl);
-      alert(t("Link copied to clipboard!"));
+      console.error("AWS Follow Error");
     }
   };
 
   return (
     <div className="h-screen w-full bg-black snap-y snap-mandatory overflow-y-scroll hide-scrollbar scroll-smooth">
-      {reels.length === 0 ? (
-        <div className="h-full flex items-center justify-center text-gray-500 font-bold uppercase tracking-widest">
-            {t("No Reels Available")}
-        </div>
-      ) : reels.map((reel) => {
+      {reels.map((reel) => {
         const isLiked = likedReels.has(reel._id) || reel.isLikedByMe;
         const isFollowed = followedUsers.has(reel.userId) || reel.isFollowedByMe;
 
         return (
-          <div key={reel._id} className="h-screen w-full snap-start relative flex items-center justify-center overflow-hidden bg-black">
+          <div key={reel._id} className="h-screen w-full snap-start relative flex items-center justify-center bg-black">
             
             <video 
               ref={el => videoRefs.current[reel._id] = el}
               src={reel.videoUrl} 
               className="h-full w-full object-cover" 
               loop 
-              muted={false} // Users want sound on reels
               playsInline 
+              onClick={(e) => e.target.paused ? e.target.play() : e.target.pause()}
             />
 
-            {/* Action Buttons */}
-            <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center z-10">
+            {/* ⚡ Right Action Sidebar (Premium Design) */}
+            <div className="absolute right-4 bottom-24 flex flex-col gap-5 items-center z-20">
               
-              {/* Like Button */}
-              <div className="flex flex-col items-center gap-1 group">
-                  <button onClick={() => handleLike(reel._id)} className="p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 active:scale-75 transition-transform">
-                      <Heart size={28} className={isLiked ? "text-red-500 fill-red-500" : "text-white"} />
+              {/* Creator Profile with Follow Plus */}
+              <div className="relative mb-2">
+                <div className="w-12 h-12 rounded-full border-2 border-cyan-500 p-0.5 bg-black shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                    <img src={reel.avatar || "https://trinetra-logo.png"} className="w-full h-full rounded-full object-cover" alt="user" />
+                </div>
+                {!isFollowed && currentUser?.trinetraId !== reel.userId && (
+                  <button 
+                    onClick={() => handleFollow(reel.userId)}
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-cyan-500 text-black rounded-full p-0.5 border-2 border-black"
+                  >
+                    <UserPlus size={12} strokeWidth={4} />
                   </button>
-                  <span className="text-[10px] font-black text-white">
-                    {isLiked ? (reel.likes + 1) : reel.likes}
-                  </span>
-              </div>
-              
-              {/* Comment Button (Triggers Parent Function) */}
-              <div className="flex flex-col items-center gap-1 group">
-                  <button onClick={() => onOpenComments && onOpenComments(reel._id)} className="p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 active:scale-75 transition-transform">
-                      <MessageCircle size={28} className="text-white" />
-                  </button>
-                  <span className="text-[10px] font-black text-white">{reel.comments}</span>
+                )}
               </div>
 
-              {/* Download Button */}
-              <button onClick={() => handleDownload(reel.videoUrl)} className="p-3 bg-cyan-500/20 backdrop-blur-md rounded-full border border-cyan-500/50 text-cyan-400 active:scale-75 transition-transform">
-                 <Download size={28} />
+              {/* Like */}
+              <div className="flex flex-col items-center">
+                  <button onClick={() => handleLike(reel._id)} className="p-3 bg-black/40 backdrop-blur-md rounded-full border border-white/10 active:scale-75 transition-all">
+                      <Heart size={26} className={isLiked ? "text-red-500 fill-red-500" : "text-white"} />
+                  </button>
+                  <span className="text-[10px] font-black text-white mt-1 drop-shadow-md">{reel.likesCount || 0}</span>
+              </div>
+              
+              {/* Comment */}
+              <div className="flex flex-col items-center">
+                  <button onClick={() => onOpenComments(reel._id)} className="p-3 bg-black/40 backdrop-blur-md rounded-full border border-white/10 active:scale-75 transition-all">
+                      <MessageCircle size={26} className="text-white" />
+                  </button>
+                  <span className="text-[10px] font-black text-white mt-1">{reel.commentsCount || 0}</span>
+              </div>
+
+              {/* 💸 Point 6: Boost Button (Bijli) */}
+              <button onClick={() => onBoostReel(reel._id)} className="p-3 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-full border border-white/20 shadow-[0_0_20px_rgba(139,92,246,0.4)] active:scale-75 transition-all">
+                 <Zap size={26} className="text-white fill-white" />
               </button>
 
-              {/* Share Button */}
-              <button onClick={() => handleShare(reel)} className="p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 active:scale-75 transition-transform">
-                  <Share2 size={24} className="text-white" />
+              {/* Universal Download (Original Format) */}
+              <button onClick={() => handleDownload(reel.videoUrl, reel._id)} className="p-3 bg-black/40 backdrop-blur-md rounded-full border border-white/10 text-white active:scale-75 transition-all">
+                 {isActionLoading[reel._id] ? <Loader2 size={26} className="animate-spin text-cyan-400" /> : <Download size={26} />}
+              </button>
+
+              {/* Share */}
+              <button onClick={() => navigator.share({ url: reel.videoUrl })} className="p-3 bg-black/40 backdrop-blur-md rounded-full border border-white/10 active:scale-75 transition-all">
+                  <Share2 size={26} className="text-white" />
               </button>
             </div>
 
-            {/* User Info */}
-            <div className="absolute left-0 bottom-20 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
-              <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full border-2 border-cyan-500 overflow-hidden bg-gray-900">
-                      {reel.avatar ? (
-                        <img src={reel.avatar} className="w-full h-full object-cover" alt="user" />
-                      ) : (
-                        <span className="text-cyan-500 font-bold h-full w-full flex items-center justify-center">{reel.username?.charAt(0)}</span>
-                      )}
+            {/* 📝 Bottom Info (Caption & Audio) */}
+            <div className="absolute left-0 bottom-0 w-full p-6 bg-gradient-to-t from-black via-black/40 to-transparent z-10">
+              <h4 className="font-black text-sm tracking-wide text-white mb-2 flex items-center gap-2">
+                @{reel.username} {isFollowed && <span className="text-[9px] bg-white/20 px-2 py-0.5 rounded uppercase tracking-widest">{t("Requested")}</span>}
+              </h4>
+              <p className="text-xs text-gray-200 line-clamp-2 mb-4 pr-20 leading-relaxed font-medium">{reel.caption}</p>
+              
+              <div className="flex items-center gap-2">
+                  <div className="bg-white/10 backdrop-blur-lg p-2 rounded-full animate-spin-slow">
+                     <Music size={14} className="text-cyan-400" />
                   </div>
-                  <h4 className="font-black text-sm tracking-wide text-white">@{reel.username}</h4>
-                  
-                  {/* Follow Button Logic */}
-                  {currentUser?.trinetraId !== reel.userId && !isFollowed && (
-                    <button onClick={() => handleFollow(reel.userId)} className="bg-cyan-500 text-black px-3 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1 active:scale-95">
-                        <UserPlus size={10} /> {t("Follow")}
-                    </button>
-                  )}
-                  {isFollowed && (
-                    <span className="text-[9px] font-black uppercase flex items-center gap-1 text-cyan-400">
-                       <Check size={10} /> {t("Requested")}
-                    </span>
-                  )}
+                  <marquee className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest w-40">
+                      {reel.audioName || t("Original Audio - TriNetra Beats")}
+                  </marquee>
               </div>
-              <p className="text-xs text-gray-200 line-clamp-2 mb-4 pr-16">{reel.caption}</p>
             </div>
           </div>
         );
