@@ -1,0 +1,19 @@
+# ==========================================
+# TRINETRA SUPER APP - .gitignore
+# Rule: Never upload node_modules or secret keys to GitHub/AWS directly
+# ==========================================
+
+# 🚨 Dependencies
+node_modules/
+
+# 🚨 Secret Keys (AWS will use environment variables, not this file)
+.env
+
+# Logs and Debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
