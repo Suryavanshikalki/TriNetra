@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Search, Plus, Tag, Loader2, Upload, X, CheckCircle } from 'lucide-react';
+import { ShoppingBag, Search, Plus, Tag, Loader2, Upload, X, CheckCircle, Video, FileText, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-// 🔥 ASLI AWS IMPORTS (No Axios, No Fake APIs) 🔥
+// 🔥 ASLI AWS IMPORTS (A to Z Functional) 🔥
 import { generateClient } from 'aws-amplify/api';
 import { uploadData, getUrl } from 'aws-amplify/storage';
 
@@ -14,11 +14,12 @@ export default function Marketplace({ currentUser, onProductSelect }) {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Real 'Sell Item' Modal States
+  // Real 'Sell Item' States
   const [showAddModal, setShowAddModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [newItem, setNewItem] = useState({ title: '', price: '', category: '', desc: '' });
   const [selectedFile, setSelectedFile] = useState(null);
+  const [mediaType, setMediaType] = useState('image'); // 'image' or 'video'
   const fileInputRef = useRef(null);
 
   // ─── 1. REAL AWS DYNAMODB FETCH (Live Market) ───────────────────
@@ -28,14 +29,12 @@ export default function Marketplace({ currentUser, onProductSelect }) {
 
   const fetchMarketplaceItems = async () => {
     try {
-      // Fetch active products from AWS DynamoDB
       const res = await client.graphql({
         query: `query ListMarketplaceItems {
-          listTriNetraProducts(limit: 100) { items { id sellerId title price category mediaUrl timestamp } }
+          listTriNetraProducts(limit: 100) { items { id sellerId title price category mediaUrl mediaType timestamp } }
         }`
       });
-      // Sort newest first
-      const sortedItems = res.data.listTriNetraProducts.items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const sortedItems = res.data.listMarketplaceItems.items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       setItems(sortedItems);
     } catch (err) {
       console.error("❌ AWS Marketplace Offline:", err);
@@ -51,10 +50,10 @@ export default function Marketplace({ currentUser, onProductSelect }) {
     
     setIsUploading(true);
     try {
-      // Step A: Secure Photo Upload to AWS S3
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `marketplace/${currentUser?.trinetraId}/${Date.now()}_product.${fileExt}`;
       
+      // Step A: Secure Photo/Video Upload to AWS S3
       await uploadData({
         path: `public/${fileName}`,
         data: selectedFile,
@@ -64,10 +63,10 @@ export default function Marketplace({ currentUser, onProductSelect }) {
       const urlResult = await getUrl({ path: `public/${fileName}` });
       const finalMediaUrl = urlResult.url.toString();
 
-      // Step B: Save Product to AWS DynamoDB
+      // Step B: Save Product with Media Type to AWS DynamoDB
       await client.graphql({
-        query: `mutation CreateProduct($sellerId: ID!, $title: String!, $price: Float!, $category: String!, $desc: String, $mediaUrl: String!) {
-          createTriNetraProduct(sellerId: $sellerId, title: $title, price: $price, category: $category, desc: $desc, mediaUrl: $mediaUrl) { id }
+        query: `mutation CreateProduct($sellerId: ID!, $title: String!, $price: Float!, $category: String!, $desc: String, $mediaUrl: String!, $mediaType: String!) {
+          createTriNetraProduct(sellerId: $sellerId, title: $title, price: $price, category: $category, desc: $desc, mediaUrl: $mediaUrl, mediaType: $mediaType) { id }
         }`,
         variables: {
           sellerId: currentUser?.trinetraId,
@@ -75,16 +74,16 @@ export default function Marketplace({ currentUser, onProductSelect }) {
           price: parseFloat(newItem.price),
           category: newItem.category,
           desc: newItem.desc,
-          mediaUrl: finalMediaUrl
+          mediaUrl: finalMediaUrl,
+          mediaType: mediaType
         }
       });
 
-      // Close modal, reset, and refresh market
       setShowAddModal(false);
       setNewItem({ title: '', price: '', category: '', desc: '' });
       setSelectedFile(null);
       fetchMarketplaceItems();
-      alert(t("Product is now LIVE in the market!"));
+      alert(t("Product is now LIVE with Video/Photo support!"));
 
     } catch (err) {
       console.error("❌ AWS Product Listing Failed:", err);
@@ -94,7 +93,22 @@ export default function Marketplace({ currentUser, onProductSelect }) {
     }
   };
 
-  // Filter items by search
+  // ─── 3. UNIVERSAL DOWNLOAD (Point 4) ───────────────────────────
+  const downloadProductMedia = async (url, title) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `TriNetra_Market_${title}_${Date.now()}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (e) { alert("Download Failed."); }
+  };
+
   const filteredItems = items.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
@@ -134,22 +148,32 @@ export default function Marketplace({ currentUser, onProductSelect }) {
           {filteredItems.map(item => (
             <div 
               key={item.id} 
-              onClick={() => onProductSelect(item)} // Connects to ProductDetails.jsx
               className="bg-[#111827] rounded-2xl border border-gray-800 overflow-hidden shadow-lg group cursor-pointer hover:border-cyan-500/50 transition-all animate-fade-in-up"
             >
-              <div className="h-40 bg-black relative overflow-hidden">
-                <img src={item.mediaUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="product" />
+              <div className="h-44 bg-black relative overflow-hidden" onClick={() => onProductSelect(item)}>
+                {item.mediaType === 'video' ? (
+                  <video src={item.mediaUrl} className="w-full h-full object-cover" />
+                ) : (
+                  <img src={item.mediaUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="product" />
+                )}
+                
                 <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-black text-green-400 border border-green-500/30 shadow-lg">
                   ₹{item.price}
                 </div>
+                
+                {item.mediaType === 'video' && <div className="absolute inset-0 flex items-center justify-center bg-black/20"><Video size={24} className="text-white/50" /></div>}
               </div>
+
               <div className="p-3">
-                <h3 className="font-bold text-xs truncate group-hover:text-cyan-400 transition-colors">{item.title}</h3>
-                <div className="flex justify-between items-center mt-1">
+                <div className="flex justify-between items-start">
+                  <h3 className="font-bold text-xs truncate flex-1" onClick={() => onProductSelect(item)}>{item.title}</h3>
+                  <Download size={14} className="text-gray-500 hover:text-cyan-400 ml-2" onClick={() => downloadProductMedia(item.mediaUrl, item.title)} />
+                </div>
+                <div className="flex justify-between items-center mt-2">
                   <p className="text-[9px] text-gray-500 flex items-center gap-1 uppercase tracking-tighter">
                     <Tag size={10}/> {item.category}
                   </p>
-                  <p className="text-[8px] text-gray-600 font-bold tracking-widest">{item.sellerId.substring(0,8)}...</p>
+                  <p className="text-[8px] text-gray-600 font-bold tracking-widest">{item.sellerId?.substring(0,8)}...</p>
                 </div>
               </div>
             </div>
@@ -157,9 +181,9 @@ export default function Marketplace({ currentUser, onProductSelect }) {
         </div>
       )}
 
-      {/* ➕ REAL 'SELL ITEM' UPLOAD MODAL (S3 + DynamoDB) */}
+      {/* ➕ REAL 'SELL ITEM' MODAL (Photo/Video Support) */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex justify-center items-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex justify-center items-center p-4 animate-fade-in">
           <form onSubmit={handleAddProduct} className="bg-[#111827] w-full max-w-md p-6 rounded-3xl border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.1)] relative">
             <button type="button" onClick={() => setShowAddModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-red-500 active:scale-90"><X size={24}/></button>
             
@@ -167,27 +191,41 @@ export default function Marketplace({ currentUser, onProductSelect }) {
               <ShoppingBag size={20}/> {t("List a Product")}
             </h2>
 
-            {/* S3 Image Uploader */}
+            {/* S3 Photo/Video Uploader */}
             <div 
-              className="w-full h-32 bg-[#0a1014] border-2 border-dashed border-gray-700 hover:border-cyan-500 rounded-2xl flex flex-col items-center justify-center cursor-pointer mb-4 transition-colors relative overflow-hidden"
+              className="w-full h-36 bg-[#0a1014] border-2 border-dashed border-gray-700 hover:border-cyan-500 rounded-2xl flex flex-col items-center justify-center cursor-pointer mb-4 transition-colors relative overflow-hidden"
               onClick={() => fileInputRef.current.click()}
             >
               {selectedFile ? (
-                <img src={URL.createObjectURL(selectedFile)} className="w-full h-full object-cover opacity-60" alt="preview" />
+                mediaType === 'video' ? (
+                   <video src={URL.createObjectURL(selectedFile)} className="w-full h-full object-cover opacity-60" />
+                ) : (
+                   <img src={URL.createObjectURL(selectedFile)} className="w-full h-full object-cover opacity-60" alt="preview" />
+                )
               ) : (
                 <>
                   <Upload className="text-cyan-500 mb-2" size={24} />
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t("Tap to upload photo")}</span>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t("Upload Photo or Video Demo")}</span>
                 </>
               )}
-              {selectedFile && <CheckCircle className="absolute text-green-500 z-10" size={32} />}
-              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} />
+              {selectedFile && <CheckCircle className="absolute text-green-500 z-10 shadow-lg" size={32} />}
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*,video/*" 
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setSelectedFile(file);
+                    setMediaType(file.type.startsWith('video') ? 'video' : 'image');
+                  }
+                }} 
+              />
             </div>
 
-            {/* Real Inputs */}
             <div className="space-y-3">
               <input type="text" placeholder={t("Product Title")} required className="w-full bg-[#0a1014] border border-gray-800 p-3 rounded-xl text-sm focus:border-cyan-500 outline-none" value={newItem.title} onChange={e => setNewItem({...newItem, title: e.target.value})} />
-              
               <div className="flex gap-3">
                 <input type="number" placeholder={t("Price (₹)")} required className="w-1/2 bg-[#0a1014] border border-gray-800 p-3 rounded-xl text-sm focus:border-green-500 outline-none text-green-400 font-bold" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
                 <select className="w-1/2 bg-[#0a1014] border border-gray-800 p-3 rounded-xl text-sm focus:border-cyan-500 outline-none text-gray-300" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})}>
@@ -198,7 +236,6 @@ export default function Marketplace({ currentUser, onProductSelect }) {
                   <option value="Other">Other</option>
                 </select>
               </div>
-              
               <textarea placeholder={t("Description")} rows="3" className="w-full bg-[#0a1014] border border-gray-800 p-3 rounded-xl text-sm focus:border-cyan-500 outline-none resize-none" value={newItem.desc} onChange={e => setNewItem({...newItem, desc: e.target.value})} />
             </div>
 
