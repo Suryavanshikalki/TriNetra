@@ -1,11 +1,27 @@
-// File: backend/utils/paypalConfig.js
-// PayPal Global Setup (Stripe can also be added here later)
-const paypal = require('paypal-rest-sdk');
+// ==========================================
+// TRINETRA BACKEND - FILE 57: utils/paypalConfig.js
+// Blueprint: Point 6 (The Economy - PayPal Real Integration)
+// 🚨 DEEP SEARCH UPDATE: ES6 FIXED, NO DUMMY KEYS, SYNCED WITH SCREENSHOT 🚨
+// ==========================================
+import paypal from 'paypal-rest-sdk';
 
+// 1. 🚨 STRICT REAL KEY VALIDATION (From your exact GitHub Screenshot)
+const clientId = process.env.PAYPAL_CLIENT_ID;
+const clientSecret = process.env.PAYPAL_SECRET; // Screenshot me exactly yahi naam tha
+
+// Gatekeeper Firewall: Agar keys missing hain to server ko alert karo
+if (!clientId || !clientSecret) {
+    console.error("[TriNetra Economy Firewall] FATAL: PayPal Real Keys Missing from AWS Secrets.");
+}
+
+// 2. 🚨 DYNAMIC ENVIRONMENT & CONFIGURATION
 paypal.configure({
-  'mode': 'live', // sandbox or live
-  'client_id': process.env.PAYPAL_CLIENT_ID || 'TriNetra_PayPal_Client_Key',
-  'client_secret': process.env.PAYPAL_CLIENT_SECRET || 'TriNetra_PayPal_Secret_Key'
+  // AWS Environment ke hisaab se auto-switch (Testing me 'sandbox', Asli app me 'live')
+  'mode': process.env.NODE_ENV === 'production' ? 'live' : 'sandbox', 
+  
+  'client_id': clientId,
+  'client_secret': clientSecret
 });
 
-module.exports = paypal;
+// 3. 🚨 ES6 EXPORT (Matching our entire backend architecture)
+export default paypal;
