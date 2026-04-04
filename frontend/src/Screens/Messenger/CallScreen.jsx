@@ -20,6 +20,7 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
   // UI States
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(!isVideo); // Audio call = video off by default
+  const [isFrontCamera, setIsFrontCamera] = useState(true); // 🔥 New: Camera State
   const [callTimer, setCallTimer] = useState(0);
   const [statusText, setStatusText] = useState("Authenticating Securely...");
 
@@ -33,8 +34,7 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
       try {
         setStatusText("Requesting AWS Token...");
         
-        // 🔥 Step 1: Securely Fetch Zego Token from AWS Backend (Lambda)
-        // Never expose ServerSecret on the frontend!
+        // Securely Fetch Zego Token from AWS Backend
         const res = await client.graphql({
           query: `query GetCallToken($userId: ID!, $roomId: String!) {
             generateZegoToken(userId: $userId, roomId: $roomId) { token appId }
@@ -46,11 +46,11 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
 
         setStatusText("Connecting to TriNetra Satellite...");
 
-        // 🔥 Step 2: Initialize Zego Express WebRTC Engine
+        // Initialize Zego Express WebRTC Engine
         const zegoEngine = new ZegoExpressEngine(appId, "wss://webliveroom-api.zegocloud.com/ws");
         setZg(zegoEngine);
 
-        // 🔥 Step 3: Listen for Remote Stream (When friend picks up)
+        // Listen for Remote Stream
         zegoEngine.on('roomStreamUpdate', async (roomID, updateType, streamList) => {
           if (updateType === 'ADD') {
             setIsCallConnected(true);
@@ -64,10 +64,10 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
           }
         });
 
-        // 🔥 Step 4: Login to Secure Room
+        // Login to Secure Room
         await zegoEngine.loginRoom(roomId, token, { userID: currentUser.trinetraId, userName: currentUser.name || "TriNetraUser" });
 
-        // 🔥 Step 5: Create Local Stream (Camera/Mic)
+        // Create Local Stream (Camera/Mic)
         const lStream = await zegoEngine.createStream({ camera: { video: isVideo, audio: true } });
         setLocalStream(lStream);
         
@@ -75,7 +75,7 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
           localVideoRef.current.srcObject = lStream;
         }
 
-        // 🔥 Step 6: Publish Local Stream to Room
+        // Publish Local Stream to Room
         zegoEngine.startPublishingStream(`${roomId}_${currentUser.trinetraId}`, lStream);
         
         setStatusText("Ringing...");
@@ -88,11 +88,10 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
 
     initCall();
 
-    // Cleanup on unmount
     return () => { handleEndCall(); };
   }, []);
 
-  // ─── 2. REAL CALL TIMER (Starts only when connected) ──────────────
+  // ─── 2. REAL CALL TIMER ───────────────────────────────────────────
   useEffect(() => {
     let interval;
     if (isCallConnected) {
@@ -107,27 +106,38 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // ─── 3. REAL HARDWARE CONTROLS (Mute / Camera Off) ────────────────
+  // ─── 3. REAL HARDWARE CONTROLS (Mute / Camera Off / Switch) ───────
   const toggleMute = () => {
     if (zg && localStream) {
-      zg.muteMicrophone(!isMuted); // Real ZegoCloud Hardware Command
+      zg.muteMicrophone(!isMuted); 
       setIsMuted(!isMuted);
     }
   };
 
   const toggleVideo = () => {
     if (zg && localStream && isVideo) {
-      zg.mutePublishStreamVideo(!isVideoOff); // Real ZegoCloud Hardware Command
+      zg.mutePublishStreamVideo(!isVideoOff); 
       setIsVideoOff(!isVideoOff);
+    }
+  };
+
+  // 🔥 FIXED: REAL CAMERA SWITCH LOGIC
+  const toggleCamera = async () => {
+    if (zg && localStream && isVideo && !isVideoOff) {
+      try {
+        // True hardware command to switch mobile camera lens
+        await zg.useFrontCamera(localStream, !isFrontCamera);
+        setIsFrontCamera(!isFrontCamera);
+      } catch (err) {
+        console.error("Camera switch failed:", err);
+      }
     }
   };
 
   // ─── 4. SECURE CALL TERMINATION ───────────────────────────────────
   const handleEndCall = () => {
     if (zg) {
-      if (localStream) {
-        zg.destroyStream(localStream);
-      }
+      if (localStream) zg.destroyStream(localStream);
       zg.logoutRoom(roomId);
     }
     onEndCall();
@@ -166,10 +176,9 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
       {/* 🎥 REAL ZEGOCLOUD VIDEO CONTAINER AREA */}
       <div className="flex-1 bg-black relative flex items-center justify-center overflow-hidden">
         
-        {/* Background gradient for Audio Calls */}
         {!isVideo && <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 to-black opacity-80"></div>}
         
-        {/* Remote Video Stream (Friend's Camera) */}
+        {/* Remote Video Stream */}
         {isVideo && (
             <div className="w-full h-full bg-[#0a1014] flex items-center justify-center relative">
                  <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
@@ -177,7 +186,7 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
             </div>
         )}
 
-        {/* Local Video Preview (Your Camera) */}
+        {/* Local Video Preview */}
         {isVideo && (
             <div className="absolute bottom-40 right-6 w-32 h-48 bg-[#111827] rounded-2xl border-2 border-cyan-500 shadow-[0_0_30px_rgba(0,0,0,0.8)] overflow-hidden z-40 transition-all">
                  {isVideoOff ? (
@@ -185,16 +194,16 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
                         <VideoOff size={24} className="text-gray-600" />
                      </div>
                  ) : (
-                     <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover mirror-mode" />
+                     <video ref={localVideoRef} autoPlay playsInline muted className={`w-full h-full object-cover ${isFrontCamera ? 'mirror-mode' : ''}`} />
                  )}
             </div>
         )}
       </div>
 
-      {/* 📱 Real Call Controls (WhatsApp 2.0 Style) */}
+      {/* 📱 Real Call Controls */}
       <div className="bg-[#111827]/90 backdrop-blur-2xl p-8 flex justify-around items-center pb-14 rounded-t-[3rem] border-t border-cyan-900/50 shadow-[0_-10px_50px_rgba(0,0,0,0.8)] relative z-40">
         
-        {/* Real Mute Button */}
+        {/* Mute Button */}
         <button 
             onClick={toggleMute}
             className={`p-5 rounded-[2rem] transition-all shadow-lg active:scale-90 ${isMuted ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-[#0a1014] text-white hover:bg-gray-800 border border-gray-700'}`}
@@ -202,7 +211,7 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
           {isMuted ? <MicOff size={24}/> : <Mic size={24}/>}
         </button>
 
-        {/* Real Video Toggle */}
+        {/* Video Toggle & Camera Switch */}
         {isVideo && (
             <>
                 <button 
@@ -212,13 +221,19 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
                   {isVideoOff ? <VideoOff size={24}/> : <Video size={24}/>}
                 </button>
                 
-                <button title="Switch Camera" className="bg-[#0a1014] p-5 rounded-[2rem] text-white hover:bg-gray-800 border border-gray-700 transition-all shadow-lg active:scale-90">
+                {/* 🔥 REAL CAMERA SWITCH BUTTON */}
+                <button 
+                    onClick={toggleCamera}
+                    disabled={isVideoOff}
+                    title="Switch Camera" 
+                    className={`p-5 rounded-[2rem] transition-all shadow-lg active:scale-90 ${isVideoOff ? 'bg-gray-800 text-gray-600 cursor-not-allowed border-transparent' : 'bg-[#0a1014] text-white hover:bg-gray-800 border border-gray-700'}`}
+                >
                     <SwitchCamera size={24}/>
                 </button>
             </>
         )}
 
-        {/* Real End Call Button */}
+        {/* End Call Button */}
         <button 
             onClick={handleEndCall} 
             className="bg-red-600 p-6 rounded-[2.5rem] text-white hover:bg-red-500 transition-all shadow-[0_10px_30px_rgba(239,68,68,0.5)] active:scale-95"
@@ -227,7 +242,7 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
         </button>
       </div>
 
-      {/* 🔒 TriNetra Encryption Tag */}
+      {/* 🔒 Encryption Tag */}
       <div className="absolute bottom-5 w-full text-center z-50">
         <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-2">
            <ShieldCheck size={12} className="text-green-500"/> TriNetra End-to-End Encrypted
