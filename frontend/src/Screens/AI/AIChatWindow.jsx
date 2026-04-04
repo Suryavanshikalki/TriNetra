@@ -12,7 +12,9 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  
   const messagesEndRef = useRef(null);
+  const audioRef = useRef(null); // 🔥 Real Mic Input Reference
 
   // Auto-scroll to latest AI response
   useEffect(() => {
@@ -21,7 +23,7 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
 
   // ─── 1. REAL AWS AI CHAT LOGIC (Point 11: 6-in-1 Brain) ───────────
   const handleAISend = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const userMessage = { role: 'user', text: input, timestamp: new Date().toISOString() };
@@ -30,15 +32,15 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
     setIsLoading(true);
 
     try {
-      // 🔥 Asli AWS API Gateway Call (No Render)
+      // 🔥 Asli AWS API Gateway Call
       const restOperation = post({
-        apiName: 'TriNetraAPI', // Your AWS API Gateway Name
+        apiName: 'TriNetraAPI', 
         path: '/ai/chat',
         options: {
           body: {
             userId: currentUser?.trinetraId,
             message: input,
-            mode: activeMode // Mode A, B, C or OS Creation
+            mode: activeMode 
           }
         }
       });
@@ -64,23 +66,21 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
     }
   };
 
-  // ─── 2. REAL DIRECT AWS S3 UPLOAD (No Middleman) ──────────────────
+  // ─── 2. REAL DIRECT AWS S3 UPLOAD (For All Media + MIC) ───────────
   const handleAIUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
 
     try {
-      const fileName = `ai_inputs/${currentUser?.trinetraId}_${Date.now()}_${file.name}`;
+      const fileExt = file.name.split('.').pop() || (type === 'audio' ? 'mp3' : 'file');
+      const fileName = `ai_inputs/${currentUser?.trinetraId}_${Date.now()}_input.${fileExt}`;
       
       // 🔥 Direct Upload to AWS S3
-      const uploadResult = await uploadData({
+      await uploadData({
         path: `public/${fileName}`,
         data: file,
-        options: {
-          contentType: file.type,
-          accessLevel: 'guest'
-        }
+        options: { contentType: file.type || 'application/octet-stream', accessLevel: 'guest' }
       }).result;
 
       // 🔥 Get S3 CDN URL
@@ -89,13 +89,16 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
 
       setMessages(prev => [...prev, { 
         role: 'user', 
-        text: `${t("Uploaded")} ${type} ${t("for AI Analysis")}`, 
+        text: type === 'audio' ? t("🎤 Sent Voice Note for AI Analysis") : `${t("Uploaded")} ${type} ${t("for AI Analysis")}`, 
         mediaUrl: s3Url, 
         mediaType: type 
       }]);
 
       // Automatically trigger AI to analyze the uploaded file
-      setInput(t("Analyze this file and give me professional insights based on your Super Agentic Brain."));
+      setInput(t(`Analyze this ${type} and give me professional insights based on your Super Agentic Brain.`));
+      
+      // Give UI a tiny delay before sending the auto-prompt
+      setTimeout(() => handleAISend(), 500);
       
     } catch (err) {
       console.error("AWS S3 Upload Failed:", err);
@@ -106,21 +109,31 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
   };
 
   // ─── 3. UNIVERSAL DOWNLOAD (Point 11 & 4) ─────────────────────────
-  const downloadAIOutput = (url) => {
+  const downloadAIOutput = async (url) => {
     if (!url) return;
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.download = `TriNetra_AI_Output_${Date.now()}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      // 🔥 Force Download using Blob (Like we did in HomeFeed)
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `TriNetra_AI_Output_${Date.now()}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Download fallback");
+      window.open(url, '_blank'); // Fallback if CORS prevents blob fetch
+    }
   };
 
   return (
     <div className="flex flex-col h-full bg-[#0a1014] text-white font-sans fixed inset-0 z-50 overflow-hidden">
       
-      {/* 🧠 AI Header with Collaboration Option */}
+      {/* 🧠 AI Header */}
       <header className="p-4 bg-[#111827] border-b border-gray-800 flex justify-between items-center shadow-2xl">
         <div className="flex items-center gap-3">
           <ArrowLeft onClick={onBack} className="text-cyan-400 cursor-pointer active:scale-90" />
@@ -134,7 +147,7 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
           </div>
         </div>
         <div className="flex items-center gap-4">
-           {/* Point 11: Collaboration ID Link */}
+           {/* Point 11: Collaboration */}
            <button title={t("Connect Collaborator Email")} className="text-gray-400 hover:text-cyan-400 transition-colors">
               <UserPlus size={20} />
            </button>
@@ -156,7 +169,7 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
 
         {messages.map((m, i) => (
           <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} w-full animate-fade-in-up`}>
-            <div className={`p-4 rounded-2xl max-w-[85%] shadow-xl ${m.role === 'user' ? 'bg-cyan-600 text-black rounded-tr-none' : 'bg-[#111827] text-white border border-gray-800 rounded-tl-none'}`}>
+            <div className={`p-4 rounded-2xl max-w-[85%] shadow-xl ${m.role === 'user' ? 'bg-cyan-600 text-black rounded-tr-none' : m.isError ? 'bg-red-900/30 border border-red-500 text-red-100 rounded-tl-none' : 'bg-[#111827] text-white border border-gray-800 rounded-tl-none'}`}>
               
               {/* Media Display within AI Chat */}
               {m.mediaUrl && (
@@ -165,6 +178,8 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
                     <img src={m.mediaUrl} className="w-full h-auto object-contain" alt="ai_media" />
                   ) : m.mediaType === 'video' ? (
                     <video src={m.mediaUrl} controls className="w-full h-auto" />
+                  ) : m.mediaType === 'audio' ? (
+                    <audio src={m.mediaUrl} controls className="w-full p-2" />
                   ) : (
                     <div className="p-6 flex flex-col items-center gap-2">
                        <FileText size={40} className="text-cyan-400" />
@@ -197,6 +212,9 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
       {/* ⌨️ Master Input Engine (Point 11: 8 Inputs) */}
       <div className="p-4 bg-[#111827] border-t border-gray-800 pb-10">
         
+        {/* Hidden Audio Input for Mic */}
+        <input type="file" accept="audio/*" capture="microphone" className="hidden" ref={audioRef} onChange={(e) => handleAIUpload(e, 'audio')} />
+
         {/* Multi-Media Input Tray */}
         <div className="flex gap-3 mb-4 text-cyan-400 overflow-x-auto hide-scrollbar pb-2">
             <label className="bg-[#0a1014] p-3 rounded-xl border border-gray-800 hover:border-cyan-500 cursor-pointer flex-shrink-0 transition-all active:scale-90">
@@ -224,7 +242,15 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
             disabled={isLoading || isUploading}
           />
           {input.length === 0 ? (
-             <button type="button" className="p-3 text-violet-400 hover:text-white transition-colors active:scale-90"><Mic size={22} /></button>
+             <button 
+                type="button" 
+                onClick={() => audioRef.current.click()} 
+                disabled={isLoading || isUploading}
+                title="Send Voice Note to AI"
+                className="p-3 text-violet-400 hover:text-white transition-colors active:scale-90"
+             >
+                <Mic size={22} />
+             </button>
           ) : (
              <button type="submit" disabled={isLoading || isUploading} className="p-3 bg-cyan-500 rounded-xl text-black hover:bg-cyan-400 transition-all active:scale-90 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
                 {isLoading || isUploading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
