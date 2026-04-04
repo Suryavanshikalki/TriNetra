@@ -1,4 +1,4 @@
-Name: TriNetra — Build All Platforms & Deploy
+name: TriNetra — Build All Platforms & Deploy AWS
 
 on:
   push:
@@ -15,11 +15,12 @@ on:
 env:
   FLUTTER_VERSION: '3.41.2'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  APP_NAME: 'TriNetra'
 
 jobs:
 
   # ─────────────────────────────────────────────────────────────────
-  # 1. Web PWA
+  # 1. Web PWA (AWS Master Build)
   # ─────────────────────────────────────────────────────────────────
   build-web:
     name: Build Web PWA
@@ -48,34 +49,16 @@ jobs:
             echo "pubspec.yaml not found" && exit 1
           fi
 
-      - name: Parse Firebase config
-        shell: bash
-        run: |
-          echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
-          echo "FB_API_KEY=$(jq  -r '.apiKey            // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_APP_ID=$(jq   -r '.appId             // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_SENDER=$(jq   -r '.messagingSenderId // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_PROJECT=$(jq  -r '.projectId         // "trinetra-8b846"'                 /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_DOMAIN=$(jq   -r '.authDomain        // "trinetra-8b846.firebaseapp.com"' /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_BUCKET=$(jq   -r '.storageBucket     // "trinetra-8b846.appspot.com"'     /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_MEASURE=$(jq  -r '.measurementId     // empty'                            /tmp/fc.json)" >> $GITHUB_ENV
-
       - name: Flutter pub get
         shell: bash
         run: flutter pub upgrade
         working-directory: ${{ env.PROJ }}
 
+      # 🔥 FIREBASE REMOVED - ONLY ASLI KEYS INJECTED
       - name: Flutter build web
         shell: bash
         run: |
           flutter build web --release \
-            --dart-define=FIREBASE_WEB_API_KEY=${{ env.FB_API_KEY }} \
-            --dart-define=FIREBASE_WEB_APP_ID=${{ env.FB_APP_ID }} \
-            --dart-define=FIREBASE_SENDER_ID=${{ env.FB_SENDER }} \
-            --dart-define=FIREBASE_PROJECT_ID=${{ env.FB_PROJECT }} \
-            --dart-define=FIREBASE_AUTH_DOMAIN=${{ env.FB_DOMAIN }} \
-            --dart-define=FIREBASE_STORAGE_BUCKET=${{ env.FB_BUCKET }} \
-            --dart-define=FIREBASE_MEASUREMENT_ID=${{ env.FB_MEASURE }} \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }} \
             --dart-define=META_API_KEY=${{ secrets.META_API_KEY }} \
@@ -133,16 +116,6 @@ jobs:
             echo "pubspec.yaml not found" && exit 1
           fi
 
-      - name: Parse Firebase config (Android)
-        shell: bash
-        run: |
-          echo '${{ secrets.FIREBASE_CONFIG }}' > /tmp/fc.json
-          echo "FB_AND_KEY=$(jq -r '.android.apiKey // .apiKey // empty'              /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_AND_APP=$(jq -r '.android.appId  // .appId  // empty'              /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_SENDER=$(jq  -r '.messagingSenderId // empty'                       /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_PROJECT=$(jq -r '.projectId       // "trinetra-8b846"'              /tmp/fc.json)" >> $GITHUB_ENV
-          echo "FB_BUCKET=$(jq  -r '.storageBucket   // "trinetra-8b846.appspot.com"'  /tmp/fc.json)" >> $GITHUB_ENV
-
       - name: Setup Android signing
         shell: bash
         run: |
@@ -170,11 +143,6 @@ jobs:
         shell: bash
         run: |
           flutter build apk --release \
-            --dart-define=FIREBASE_ANDROID_API_KEY=${{ env.FB_AND_KEY }} \
-            --dart-define=FIREBASE_ANDROID_APP_ID=${{ env.FB_AND_APP }} \
-            --dart-define=FIREBASE_SENDER_ID=${{ env.FB_SENDER }} \
-            --dart-define=FIREBASE_PROJECT_ID=${{ env.FB_PROJECT }} \
-            --dart-define=FIREBASE_STORAGE_BUCKET=${{ env.FB_BUCKET }} \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }} \
             --dart-define=META_API_KEY=${{ secrets.META_API_KEY }} \
@@ -251,7 +219,6 @@ jobs:
         shell: bash
         run: |
           flutter build ios --release --no-codesign \
-            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }} \
             --dart-define=META_API_KEY=${{ secrets.META_API_KEY }} \
@@ -334,7 +301,6 @@ jobs:
         shell: bash
         run: |
           flutter build macos --release --no-codesign \
-            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }} \
             --dart-define=META_API_KEY=${{ secrets.META_API_KEY }} \
@@ -346,9 +312,7 @@ jobs:
             --dart-define=PAYPAL_SECRET=${{ secrets.PAYPAL_SECRET }} \
             --dart-define=ZEGO_APP_ID=${{ secrets.ZEGO_APP_ID }} \
             --dart-define=ZEGO_SERVER_SECRET=${{ secrets.ZEGO_SERVER_SECRET }} \
-            --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
-            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
-            --dart-define=LOGROCKET_APP_ID=${{ secrets.LOGROCKET_APP_ID }}
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
         working-directory: ${{ env.PROJ }}
 
       - name: Create DMG
@@ -409,7 +373,6 @@ jobs:
         shell: bash
         run: |
           flutter build windows --release \
-            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }} \
             --dart-define=META_API_KEY=${{ secrets.META_API_KEY }} \
@@ -421,9 +384,7 @@ jobs:
             --dart-define=PAYPAL_SECRET=${{ secrets.PAYPAL_SECRET }} \
             --dart-define=ZEGO_APP_ID=${{ secrets.ZEGO_APP_ID }} \
             --dart-define=ZEGO_SERVER_SECRET=${{ secrets.ZEGO_SERVER_SECRET }} \
-            --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
-            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
-            --dart-define=LOGROCKET_APP_ID=${{ secrets.LOGROCKET_APP_ID }}
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
         working-directory: ${{ env.PROJ }}
 
       - name: Package as ZIP
@@ -485,7 +446,6 @@ jobs:
         shell: bash
         run: |
           flutter build linux --release \
-            --dart-define=FIREBASE_PROJECT_ID=trinetra-8b846 \
             --dart-define=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
             --dart-define=DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }} \
             --dart-define=META_API_KEY=${{ secrets.META_API_KEY }} \
@@ -497,9 +457,7 @@ jobs:
             --dart-define=PAYPAL_SECRET=${{ secrets.PAYPAL_SECRET }} \
             --dart-define=ZEGO_APP_ID=${{ secrets.ZEGO_APP_ID }} \
             --dart-define=ZEGO_SERVER_SECRET=${{ secrets.ZEGO_SERVER_SECRET }} \
-            --dart-define=RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
-            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
-            --dart-define=LOGROCKET_APP_ID=${{ secrets.LOGROCKET_APP_ID }}
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }}
         working-directory: ${{ env.PROJ }}
 
       - name: Package as DEB
@@ -533,10 +491,10 @@ jobs:
           path: out/TriNetra.deb
 
   # ─────────────────────────────────────────────────────────────────
-  # 7. Assemble downloads/ + Deploy to Firebase
+  # 7. Assemble downloads/ + Deploy to AWS S3 (Replaced Firebase)
   # ─────────────────────────────────────────────────────────────────
-  deploy-firebase:
-    name: Assemble & Deploy to Firebase
+  deploy-aws:
+    name: Assemble & Deploy to AWS S3
     runs-on: ubuntu-latest
     needs: [build-web, build-android, build-ios, build-macos, build-windows, build-linux]
     if: ${{ !cancelled() && needs.build-web.result == 'success' }}
@@ -647,14 +605,16 @@ jobs:
               print('placeholder not found'); sys.exit(1)
           PYEOF
 
-      - name: Deploy to Firebase
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > sa.json
-          export GOOGLE_APPLICATION_CREDENTIALS=sa.json
-          npx firebase-tools deploy --only hosting
-          rm sa.json
-        shell: bash
-        working-directory: ${{ env.PROJ }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ap-south-1 # You can change this to your AWS region
+        continue-on-error: true
+
+      - name: Deploy to AWS S3
+        run: aws s3 sync ${{ env.PROJ }}/build/web/ s3://trinetra-web-hosting-bucket --delete
         continue-on-error: true
 
   # ─────────────────────────────────────────────────────────────────
@@ -663,7 +623,7 @@ jobs:
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [deploy-firebase]
+    needs: [deploy-aws]
     if: github.ref == 'refs/heads/main' || github.event.inputs.create_release == 'true'
     steps:
       - name: Checkout Code
@@ -710,7 +670,7 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            ## TriNetra v${{ steps.ver.outputs.v }} — 6-Platform Super-App
+            ## TriNetra v${{ steps.ver.outputs.v }} — 6-Platform Super-App (AWS Powered)
 
             | Platform | File | Notes |
             |---|---|---|
@@ -719,7 +679,7 @@ jobs:
             | macOS | `TriNetra.dmg` | Right-click → Open |
             | Windows | `TriNetra-Windows.zip` | Extract and run |
             | Linux | `TriNetra.deb` | `sudo dpkg -i TriNetra.deb` |
-            | Web PWA | https://trinetra-8b846.web.app | Auto-deployed |
+            | Web PWA | `AWS S3 Live` | Auto-deployed via AWS |
           files: |
             all-artifacts/**/*.apk
             all-artifacts/**/*.ipa
