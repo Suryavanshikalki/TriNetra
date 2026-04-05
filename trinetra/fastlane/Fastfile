@@ -1,21 +1,54 @@
-# TriNetra Fastlane Configuration
+# ==============================================================
+# 🔥 TRINETRA MASTER FASTFILE (Facebook 2026 Standard)
 # Automates deployment to:
 #   - Google Play Store (Android)
 #   - Apple App Store (iOS)
 #   - Mac App Store (macOS)
-#   - Microsoft Store (via manual upload for now)
+#   - AWS S3 (Web Hub & OTA Updates) - AWS Master Rule
+# ==============================================================
 
 default_platform(:ios)
 
 # ─────────────────────────────────────────────────────────────────
-# SHARED HELPERS
+# 🛠️ SHARED HELPERS & THE ULTIMATE 17 KEYS + 5 PAYMENTS INJECTION
 # ─────────────────────────────────────────────────────────────────
 
 def flutter_build(platform, extra_defines = '')
+  # 🚨 FIREBASE AUR RAZORPAY 100% DELETE HO CHUKE HAIN 🚨
+  # Yahan tumhari A to Z saari Asli Keys aur Gateways ka rasta khola gaya hai
   defines = [
+    # 1. AWS Master Keys (Backend & S3)
+    "AWS_ACCESS_KEY=#{ENV['AWS_ACCESS_KEY']}",
+    "AWS_SECRET_KEY=#{ENV['AWS_SECRET_KEY']}",
+    
+    # 2. 6-in-1 Master AI Keys (Point 11)
+    "DEEPSEEK_API_KEY=#{ENV['DEEPSEEK_API_KEY']}",
     "GEMINI_API_KEY=#{ENV['GEMINI_API_KEY']}",
+    "GROQ_API_KEY=#{ENV['GROQ_API_KEY']}",
+    "META_API_KEY=#{ENV['META_API_KEY']}",
+    "OPENAI_API_KEY=#{ENV['OPENAI_API_KEY']}",
+    
+    # 3. WhatsApp 2.0 Calling (ZegoCloud - Point 5)
+    "ZEGO_APP_ID=#{ENV['ZEGO_APP_ID']}",
+    "ZEGO_SERVER_SECRET=#{ENV['ZEGO_SERVER_SECRET']}",
+    
+    # 4. The 5 Asli Payment Gateways (Point 6 - Economy)
+    "PAYPAL_CLIENT_ID=#{ENV['PAYPAL_CLIENT_ID']}",
+    "PAYPAL_SECRET=#{ENV['PAYPAL_SECRET']}",
+    "PAYU_MERCHANT_KEY=#{ENV['PAYU_MERCHANT_KEY']}",
+    "BRAINTREE_TOKENIZATION_KEY=#{ENV['BRAINTREE_TOKENIZATION_KEY']}",
+    "ADYEN_CLIENT_KEY=#{ENV['ADYEN_CLIENT_KEY']}",
+    "PADDLE_API_KEY=#{ENV['PADDLE_API_KEY']}",
+    
+    # 5. Security, Tracking & Database (Point 12)
     "SENTRY_DSN=#{ENV['SENTRY_DSN']}",
-    "FIREBASE_PROJECT_ID=#{ENV['FIREBASE_PROJECT_ID'] || 'trinetra'}",
+    "GH_PAT_TOKEN=#{ENV['GH_PAT_TOKEN']}",
+    "GOOGLE_VERIFICATION_TAG=#{ENV['GOOGLE_VERIFICATION_TAG']}",
+    "MONGODB_URI=#{ENV['MONGODB_URI']}",
+    
+    # 6. Monetization & Ads (Point 6)
+    "APPLOVIN_SDK_KEY=#{ENV['APPLOVIN_SDK_KEY']}",
+    
     extra_defines
   ].reject(&:empty?).map { |d| "--dart-define=#{d}" }.join(' ')
 
@@ -23,7 +56,7 @@ def flutter_build(platform, extra_defines = '')
 end
 
 # ─────────────────────────────────────────────────────────────────
-# iOS PLATFORM
+# 🍏 iOS PLATFORM
 # ─────────────────────────────────────────────────────────────────
 
 platform :ios do
@@ -39,7 +72,8 @@ platform :ios do
   desc 'Build and submit to TestFlight'
   lane :beta do
     certificates
-    flutter_build('ios', "FIREBASE_IOS_API_KEY=#{ENV['FIREBASE_IOS_API_KEY']}&FIREBASE_IOS_APP_ID=#{ENV['FIREBASE_IOS_APP_ID']}")
+    # 🔥 Firebase removed from extra_defines
+    flutter_build('ios') 
     build_app(
       workspace: 'ios/Runner.xcworkspace',
       scheme: 'Runner',
@@ -56,7 +90,8 @@ platform :ios do
   desc 'Build and submit to App Store'
   lane :release do
     certificates
-    flutter_build('ios', "FIREBASE_IOS_API_KEY=#{ENV['FIREBASE_IOS_API_KEY']}")
+    # 🔥 Firebase removed from extra_defines
+    flutter_build('ios') 
     build_app(
       workspace: 'ios/Runner.xcworkspace',
       scheme: 'Runner',
@@ -92,13 +127,14 @@ platform :ios do
 end
 
 # ─────────────────────────────────────────────────────────────────
-# ANDROID PLATFORM
+# 🤖 ANDROID PLATFORM
 # ─────────────────────────────────────────────────────────────────
 
 platform :android do
   desc 'Build and upload to Google Play Internal Testing'
   lane :beta do
-    flutter_build('appbundle', "FIREBASE_ANDROID_API_KEY=#{ENV['FIREBASE_ANDROID_API_KEY']}&FIREBASE_ANDROID_APP_ID=#{ENV['FIREBASE_ANDROID_APP_ID']}&RAZORPAY_KEY_ID=#{ENV['RAZORPAY_KEY_ID']}")
+    # 🔥 Firebase aur Razorpay removed from extra_defines
+    flutter_build('appbundle') 
     upload_to_play_store(
       track: 'internal',
       aab: 'build/app/outputs/bundle/release/app-release.aab',
@@ -118,5 +154,27 @@ platform :android do
       skip_upload_screenshots: true,
       skip_upload_changelogs: false,
     )
+  end
+end
+
+# ─────────────────────────────────────────────────────────────────
+# 🌐 AWS S3 DIRECT WEBSITE HUB (Point 1 - OTA Updates) - THE MASTER RULE
+# ─────────────────────────────────────────────────────────────────
+
+platform :aws do
+  desc 'Build Web & APK and deploy directly to AWS S3 Website Hub'
+  lane :deploy_hub do
+    # 1. Direct Android download ke liye APK Build
+    flutter_build('apk')
+    
+    # 2. Web App (100% same UI) Build
+    flutter_build('web')
+
+    # 3. AWS S3 par upload (Asli Keys ka use karke)
+    sh("aws s3 cp build/app/outputs/flutter-apk/app-release.apk s3://trinetra-download-hub/android/TriNetra.apk --acl public-read")
+    sh("aws s3 sync build/web s3://trinetra-download-hub/web --acl public-read")
+    
+    # 4. CloudWatch/CloudFront Cache Invalidation (Auto-Update OTA)
+    sh("aws cloudfront create-invalidation --distribution-id #{ENV['AWS_CLOUDFRONT_ID']} --paths '/*'")
   end
 end
