@@ -1,108 +1,63 @@
-/// TriNetra Compile-Time Configuration
-/// All sensitive keys are injected via --dart-define in GitHub Actions.
-/// Never hardcode secrets in this file.
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER APP CONFIGURATION (Facebook 2026 Standard)
+// 100% AWS | 6-in-1 AI | WhatsApp 2.0 | 5 Payments & Economy
+// ==============================================================
+
 class AppConfig {
   AppConfig._();
 
-  // ─── App Identity ────────────────────────────────────────────
+  // ─── 1. APP IDENTITY (6-Platform Ready) ──────────────────────
   static const String appName = 'TriNetra';
   static const String appPackageId = 'com.trinetra.app';
   static const String appVersion = '1.0.0';
   static const String appBuildNumber = '1';
-  static const String appWebUrl = 'https://trinetra-8b846.web.app';
+  // 100% AWS Web URL (No Firebase)
+  static const String appWebUrl = 'https://trinetra-master.awsapps.com';
 
-  // 🔥 Firebase (REMOVED FOR AWS MIGRATION) 🔥
+  // ─── 2. THE 6-IN-1 MASTER AI BRAIN (Point 11) ─────────────────
+  static String get openAiApiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
+  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
+  static String get deepSeekApiKey => dotenv.env['DEEPSEEK_API_KEY'] ?? '';
+  static String get metaAiKey => dotenv.env['META_API_KEY'] ?? '';
+  static String get groqApiKey => dotenv.env['GROQ_API_KEY'] ?? '';
 
-  // ─── AI / Gemini ─────────────────────────────────────────────
-  static const String geminiApiKey = String.fromEnvironment(
-    'GEMINI_API_KEY',
-    defaultValue: '',
-  );
+  // ─── 3. WHATSAPP 2.0 CALLING ENGINE (ZegoCloud - Point 5) ─────
+  static String get zegoAppId => dotenv.env['ZEGO_APP_ID'] ?? '';
+  static String get zegoServerSecret => dotenv.env['ZEGO_SERVER_SECRET'] ?? '';
 
-  // ─── Payments (AWS Ready - 5 Real Gateways) ──────────────────
-  static const String paypalClientId = String.fromEnvironment(
-    'PAYPAL_CLIENT_ID',
-    defaultValue: '',
-  );
-  static const String payuMerchantKey = String.fromEnvironment(
-    'PAYU_MERCHANT_KEY',
-    defaultValue: '',
-  );
-  static const String braintreeToken = String.fromEnvironment(
-    'BRAINTREE_TOKEN',
-    defaultValue: '',
-  );
-  static const String paddleApiKey = String.fromEnvironment(
-    'PADDLE_API_KEY',
-    defaultValue: '',
-  );
-  static const String adyenApiKey = String.fromEnvironment(
-    'ADYEN_API_KEY',
-    defaultValue: '',
-  );
+  // ─── 4. THE ECONOMY - 5 REAL GATEWAYS (Point 6) ───────────────
+  static String get paypalClientId => dotenv.env['PAYPAL_CLIENT_ID'] ?? '';
+  static String get payuMerchantKey => dotenv.env['PAYU_MERCHANT_KEY'] ?? '';
+  static String get braintreeToken => dotenv.env['BRAINTREE_TOKEN'] ?? '';
+  static String get paddleApiKey => dotenv.env['PADDLE_API_KEY'] ?? '';
+  static String get adyenApiKey => dotenv.env['ADYEN_API_KEY'] ?? '';
 
-  // ─── Monitoring ──────────────────────────────────────────────
-  static const String sentryDsn = String.fromEnvironment(
-    'SENTRY_DSN',
-    defaultValue: '',
-  );
-  static const String logRocketAppId = String.fromEnvironment(
-    'LOGROCKET_APP_ID',
-    defaultValue: '',
-  );
+  // ─── 5. SECURITY, CRASH TRACKING & AWS ────────────────────────
+  static String get sentryDsn => dotenv.env['SENTRY_DSN'] ?? '';
+  static String get logRocketAppId => dotenv.env['LOGROCKET_APP_ID'] ?? '';
+  
+  static String get awsAccessKey => dotenv.env['AWS_ACCESS_KEY'] ?? '';
+  static String get awsSecretKey => dotenv.env['AWS_SECRET_KEY'] ?? '';
+  static String get awsRegion => dotenv.env['AWS_REGION'] ?? 'ap-south-1';
 
-  // ─── AWS ─────────────────────────────────────────────────────
-  static const String awsAccessKey = String.fromEnvironment(
-    'AWS_ACCESS_KEY',
-    defaultValue: '',
-  );
-  static const String awsSecretKey = String.fromEnvironment(
-    'AWS_SECRET_KEY',
-    defaultValue: '',
-  );
-  static const String awsS3Bucket = String.fromEnvironment(
-    'AWS_S3_BUCKET',
-    defaultValue: 'trinetra-media',
-  );
-  static const String awsRegion = String.fromEnvironment(
-    'AWS_REGION',
-    defaultValue: 'ap-south-1',
-  );
+  // ─── 6. TRINETRA MASTER PRICING ENGINE (From Blueprint) ───────
+  
+  // A. Boost & Revenue Models (Point 6)
+  static const double freeBoostTriNetraCut = 0.70; // 70% to Platform
+  static const double freeBoostUserCut = 0.30;     // 30% to User
+  
+  static const double paidBoostPrice = 349.0;      // ₹349/day (25/75 Split)
+  static const double paidBoostProPrice = 799.0;   // ₹799/day (100% User)
+  static const double autoBoostProPrice = 28000.0; // ₹28,000/month
 
-  // ─── AdMob (injected via --dart-define) ─────────────────────
-  static const String admobAndroidAppId = String.fromEnvironment(
-    'ADMOB_ANDROID_APP_ID',
-    defaultValue: 'ca-app-pub-3940256099942544~3347511713', // Google test
-  );
-  static const String admobIosAppId = String.fromEnvironment(
-    'ADMOB_IOS_APP_ID',
-    defaultValue: 'ca-app-pub-3940256099942544~1458002511', // Google test
-  );
+  // B. 6-in-1 Master AI Tiers (Point 11)
+  static const double aiChatbotPaid = 2499.0;      // ₹2499/month
+  static const double aiAgenticPaid = 2999.0;      // ₹2999/month
+  static const double aiSuperAgenticPaid = 9999.0; // ₹9999/month (Human-Brain)
+  static const double aiOsCreatorPaid = 79999.0;   // ₹79999/month (5000 Premium Credits)
 
-  // ─── API Base URL (native platforms) ─────────────────────────
-  static const String apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: '',
-  );
-
-  // ─── Creator Revenue Split ───────────────────────────────────
-  static const double platformRevenueCut = 0.70;    // 70% to platform (free tier)
-  static const double creatorRevenueCut = 0.30;     // 30% to creator (free tier)
-  static const double proCreatorRevenueCut = 0.70;  // 70% to creator Pro (30% to platform)
-
-  // ─── Subscription ─────────────────────────────────────────────
-  static const double creatorProMonthlyUsd = 9.99;
-  static const double creatorProYearlyUsd = 99.99;
-  static const double marketplaceFeePercent = 0.05; // 5% fee
-
-  // ─── AppLovin / Meta Audience Network (PLACEHOLDER) ──────────
-  // TODO: Replace with production keys when live.
-  static const String appLovinSdkKey = String.fromEnvironment(
-    'APPLOVIN_SDK_KEY',
-    defaultValue: '', // inject via --dart-define when live
-  );
-  static const String metaAudienceNetworkAppId = String.fromEnvironment(
-    'META_AUDIENCE_NETWORK_APP_ID',
-    defaultValue: '', // inject via --dart-define when live
-  );
+  // C. Auto-Escalation Complaint System (Point 4)
+  static const double autoEscalationSystemPrice = 30000.0; // ₹30,000/month
 }
