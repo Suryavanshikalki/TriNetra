@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI PREMIUM HAPTICS
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../controllers/auth_controller.dart';
+import '../auth/controllers/auth_controller.dart';
+import '../../../core/services/sentry_service.dart'; // 🔥 CRASH TRACKING
+import '../../../core/services/logrocket_service.dart'; // 🔥 ANALYTICS
 
-/// TriNetra Premium Splash Screen
-/// Animated logo reveal → routes based on auth state
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER SPLASH SCREEN (Facebook 2026 Standard)
+// 100% REAL: Custom Animated Logo, AWS Auth Sync, Haptics, Tracking
+// ==============================================================
+
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -22,10 +28,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<Offset> _textSlide;
   late Animation<double> _taglineOpacity;
   late Animation<double> _bgOpacity;
+  
+  bool _animationCompleted = false;
 
   @override
   void initState() {
     super.initState();
+    
+    // 🔥 ASLI TRACKING: App open intent recorded
+    SentryService.instance.addBreadcrumb('Splash Screen Loaded');
+    LogRocketService.instance.logPageView('Splash_Screen');
+
     _setupAnimations();
     _startSequence();
   }
@@ -88,25 +101,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _startSequence() async {
     await _controller.forward();
-    // Wait a beat then navigate
+    
+    // 🔥 PREMIUM VIBE: Heartbeat vibration when logo is fully visible
+    HapticFeedback.lightImpact();
+    
+    // Wait a beat then set animation as complete
     await Future.delayed(const Duration(milliseconds: 600));
-    if (mounted) _navigate();
+    
+    if (mounted) {
+      setState(() => _animationCompleted = true);
+      _checkAuthAndNavigate();
+    }
   }
 
-  void _navigate() {
+  // 🔥 100% ASLI AWS SYNCED NAVIGATION LOGIC (No Fake Delays/Loops)
+  void _checkAuthAndNavigate() {
+    if (!_animationCompleted) return; // Wait for logo animation
+
     final authStatus = ref.read(authControllerProvider).status;
-    switch (authStatus) {
-      case AuthStatus.authenticated:
-        context.go('/home');
-        break;
-      case AuthStatus.unknown:
-        // Wait briefly for AWS auth state to resolve
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) _navigate();
-        });
-        break;
-      default:
-        context.go('/login');
+    
+    // Wait for AWS to tell us who is logged in
+    if (authStatus == AuthStatus.unknown || authStatus == AuthStatus.loading) {
+      return; 
+    }
+
+    HapticFeedback.selectionClick(); // Vibrate on navigation
+
+    if (authStatus == AuthStatus.authenticated) {
+      context.go('/home'); // Asli App Entry
+    } else {
+      context.go('/login'); // Gatekeeper Entry
     }
   }
 
@@ -118,6 +142,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 LISTEN FOR AWS AUTH STATE CHANGES REAL-TIME
+    ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      if (_animationCompleted && next.status != AuthStatus.unknown && next.status != AuthStatus.loading) {
+        _checkAuthAndNavigate();
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: AnimatedBuilder(
@@ -131,7 +162,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  // 🔥 FIXED: withValues को वापस withOpacity कर दिया गया है 🔥
                   const Color(0xFF0B1426).withOpacity(_bgOpacity.value),
                   const Color(0xFF0A1628).withOpacity(_bgOpacity.value),
                   const Color(0xFF061020).withOpacity(_bgOpacity.value),
@@ -141,18 +171,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // ─── Animated Logo ───────────────────────────
+                // ─── Animated Logo (Retained) ───────────────────
                 Opacity(
                   opacity: _logoOpacity.value,
                   child: Transform.scale(
                     scale: _logoScale.value,
-                    child: _TriNetraLogo(),
+                    child: const _TriNetraLogo(),
                   ),
                 ),
 
                 const SizedBox(height: 24),
 
-                // ─── App Name ─────────────────────────────────
+                // ─── App Name (Retained) ────────────────────────
                 SlideTransition(
                   position: _textSlide,
                   child: Opacity(
@@ -171,7 +201,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                 const SizedBox(height: 8),
 
-                // ─── Tagline ──────────────────────────────────
+                // ─── Tagline (Retained) ─────────────────────────
                 Opacity(
                   opacity: _taglineOpacity.value,
                   child: const Text(
@@ -213,8 +243,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 }
 
-/// Animated 3-Eye (TriNetra) Logo
+// ─── Animated 3-Eye (TriNetra) Logo (Retained) ────────────────
 class _TriNetraLogo extends StatelessWidget {
+  const _TriNetraLogo();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -232,7 +264,6 @@ class _TriNetraLogo extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            // 🔥 FIXED: withValues को वापस withOpacity कर दिया गया है 🔥
             color: AppColors.primary.withOpacity(0.5),
             blurRadius: 40,
             spreadRadius: 8,
@@ -261,7 +292,7 @@ class _EyeIcon extends StatelessWidget {
   }
 }
 
-/// Custom painter for the TriNetra 3-eye symbol
+// ─── Custom painter for the TriNetra 3-eye symbol (Retained) ──
 class _TriNetraEyePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -278,7 +309,6 @@ class _TriNetraEyePainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height / 2;
 
-    // Draw stylized TriNetra symbol (3 nested arcs/eyes)
     // Outer eye shape
     final outerPath = Path()
       ..moveTo(cx - 28, cy)
