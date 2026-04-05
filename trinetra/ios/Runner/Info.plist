@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Trinetra</string>
+	<string>TriNetra</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -26,6 +26,52 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>en</string>
+        <string>hi</string>
+        <string>es</string>
+        <string>fr</string>
+    </array>
+
+    <key>NSCameraUsageDescription</key>
+    <string>TriNetra requires Camera access to capture photos/videos for Feeds, Reels, Marketplace, and 6-in-1 Master AI inputs.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>TriNetra requires Microphone access for WhatsApp 2.0 Audio/Video Calls, Voice Notes, and AI Voice Commands.</string>
+    
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>TriNetra requires Gallery access to upload media to your profile, posts, and chats.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>TriNetra requires permission to save downloaded Reels, PDFs, and Chat media directly to your device.</string>
+    
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>TriNetra uses your location to connect you with local Marketplace sellers and to route Auto-Escalation complaints to the correct local authorities.</string>
+    
+    <key>NSContactsUsageDescription</key>
+    <string>TriNetra syncs your contacts to help you build your Mutual Connections network seamlessly.</string>
+    
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>TriNetra uses speech recognition for real-time dictation to the Master AI and chat.</string>
+
+    <key>NSUserTrackingUsageDescription</key>
+    <string>TriNetra uses this to deliver personalized ads for the 70/30 Free Boost and 25/75 Paid Boost revenue models.</string>
+    <key>GADApplicationIdentifier</key>
+    <string>ca-app-pub-3940256099942544~1458002511</string> <key>UIBackgroundModes</key>
+    <array>
+        <string>audio</string> <string>voip</string> <string>fetch</string> <string>remote-notification</string> </array>
+
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.trinetra.app.payments</string> </array>
+        </dict>
+    </array>
+
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
