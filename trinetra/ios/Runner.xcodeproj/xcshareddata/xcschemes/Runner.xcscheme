@@ -61,7 +61,7 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      enableGPUValidationMode = "1"
+      enableGPUValidationMode = "0" 
       allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
@@ -97,5 +97,5 @@
    <ArchiveAction
       buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
-   </ArchiveAction>
+      </ArchiveAction>
 </Scheme>
