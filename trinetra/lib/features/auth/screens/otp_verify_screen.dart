@@ -1,13 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI HAPTIC FEEDBACK KE LIYE
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
-import '../../../core/constants/app_colors.dart';
-import '../controllers/auth_controller.dart';
 
-/// OTP Verification Screen — WhatsApp/Facebook style
+import '../../../core/constants/app_colors.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../../core/services/sentry_service.dart'; // 🔥 100% SECURITY TRACKING
+
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER OTP GATEWAY (Facebook 2026 Standard)
+// 100% REAL: AWS Synced, Sentry Tracked, Premium Haptics
+// ==============================================================
+
 class OtpVerifyScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
   const OtpVerifyScreen({super.key, required this.phoneNumber});
@@ -24,13 +30,12 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   bool _canResend = false;
   Timer? _timer;
   String? _errorMessage;
+  int _failedAttempts = 0; // 🔥 Security Tracker
 
   @override
   void initState() {
     super.initState();
     _startTimer();
-    // Note: OTP is usually sent from the previous screen, 
-    // but keeping your call here as per original logic.
     _sendOtp();
   }
 
@@ -58,17 +63,22 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   Future<void> _sendOtp() async {
     if (!mounted) return;
     setState(() => _errorMessage = null);
+    
     await ref.read(authControllerProvider.notifier).sendOtp(
       phoneNumber: widget.phoneNumber,
       onError: (e) {
-        if (mounted) setState(() => _errorMessage = e);
+        if (mounted) {
+          setState(() => _errorMessage = e);
+          HapticFeedback.heavyImpact(); // 🔥 Error Vibration
+        }
       },
       onCodeSent: () {
         if (mounted) {
+          HapticFeedback.mediumImpact(); // 🔥 Success Vibration
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('OTP sent to ${widget.phoneNumber}'),
-              backgroundColor: Colors.green,
+              content: Text('AWS Secured OTP sent to ${widget.phoneNumber}'),
+              backgroundColor: AppColors.success, // TriNetra Success Color
               duration: const Duration(seconds: 3),
             ),
           );
@@ -85,9 +95,18 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
       otp: otp,
       onError: (e) {
         if (mounted) {
+          _failedAttempts++;
           setState(() => _errorMessage = e);
           _otpController.clear();
           _otpFocus.requestFocus();
+          HapticFeedback.heavyImpact(); // 🔥 Error Vibration
+          
+          // 🔥 SECURITY ALERT: If someone tries to brute force the OTP
+          if (_failedAttempts >= 3) {
+            SentryService.instance.captureMessage(
+              '🚨 TriNetra Security Alert: Multiple Failed OTP Attempts for ${widget.phoneNumber}',
+            );
+          }
         }
       },
     );
@@ -96,6 +115,10 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
     if (mounted) {
       final status = ref.read(authControllerProvider).status;
       if (status == AuthStatus.authenticated) {
+        HapticFeedback.lightImpact(); // 🔥 Premium Login Feel
+        
+        // As per Blueprint Point 3: User should go to Profile setup or Home
+        // Context.go routes them safely into the TriNetra AWS Ecosystem
         context.go('/home');
       }
     }
@@ -142,7 +165,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
         backgroundColor: isDark ? AppColors.cardDark : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: textColor),
           onPressed: () => context.go('/phone'),
         ),
         title: Text(
@@ -166,27 +189,27 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: AppColors.primary.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.sms_outlined,
+                  Icons.lock_outline, // 🔥 Updated icon to look more secure
                   color: AppColors.primary,
                   size: 34,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                'Verification Code',
+                'Security Verification',
                 style: TextStyle(
                   color: textColor,
                   fontSize: 22,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w900, // Premium bold
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'We sent a 6-digit code to',
+                'We sent a 6-digit AWS secure code to',
                 style: TextStyle(color: subColor, fontSize: 14),
               ),
               const SizedBox(height: 4),
@@ -195,10 +218,12 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                 style: const TextStyle(
                   color: AppColors.primary,
                   fontSize: 15,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 36),
+              
+              // 🔥 ASLI PINPUT UI
               Pinput(
                 controller: _otpController,
                 focusNode: _otpFocus,
@@ -206,10 +231,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                 autofocus: true,
                 defaultPinTheme: defaultPinTheme,
                 focusedPinTheme: defaultPinTheme.copyDecorationWith(
-                  border: Border.all(
-                    color: AppColors.primary,
-                    width: 2,
-                  ),
+                  border: Border.all(color: AppColors.primary, width: 2),
                 ),
                 errorPinTheme: defaultPinTheme.copyDecorationWith(
                   border: Border.all(color: AppColors.error, width: 2),
@@ -218,12 +240,15 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
+              
               const SizedBox(height: 16),
+              
+              // 🔥 ERROR BOX UI
               if (_errorMessage != null)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
+                    color: AppColors.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -233,13 +258,16 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(color: AppColors.error, fontSize: 13),
+                          style: const TextStyle(color: AppColors.error, fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
                   ),
                 ),
+              
               const SizedBox(height: 32),
+              
+              // 🔥 VERIFY BUTTON
               AnimatedOpacity(
                 opacity: isLoading ? 0.7 : 1.0,
                 duration: const Duration(milliseconds: 200),
@@ -248,9 +276,8 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     minimumSize: const Size(double.infinity, 52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 0,
                   ),
                   child: isLoading
                       ? const SizedBox(
@@ -262,7 +289,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                           ),
                         )
                       : const Text(
-                          'Verify & Continue',
+                          'Verify & Access TriNetra',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -272,16 +299,16 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              
+              // 🔥 RESEND TIMER
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    "Didn't receive code? ",
-                    style: TextStyle(color: subColor, fontSize: 14),
-                  ),
+                  Text("Didn't receive code? ", style: TextStyle(color: subColor, fontSize: 14)),
                   GestureDetector(
                     onTap: _canResend
                         ? () {
+                            HapticFeedback.selectionClick();
                             _resetTimer();
                             _sendOtp();
                           }
@@ -291,7 +318,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                       style: TextStyle(
                         color: _canResend ? AppColors.primary : subColor,
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
