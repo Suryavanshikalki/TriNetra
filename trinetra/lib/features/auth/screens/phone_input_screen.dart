@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI HAPTIC FEEDBACK
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 
-/// Facebook-style Phone Number Entry Screen
+import '../../../core/constants/app_colors.dart';
+import '../controllers/auth_controller.dart'; // 🔥 ASLI AWS AUTH CONTROLLER
+import '../../../core/services/sentry_service.dart'; // 🔥 100% SECURITY TRACKING
+import '../../../core/services/logrocket_service.dart'; // 🔥 ANALYTICS
+
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER PHONE INPUT (Facebook 2026 Standard)
+// 100% REAL: AWS Cognito OTP Trigger, Sentry Tracked, Haptics
+// ==============================================================
+
 class PhoneInputScreen extends ConsumerStatefulWidget {
   const PhoneInputScreen({super.key});
 
@@ -18,6 +26,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   final FocusNode _phoneFocus = FocusNode();
   String _countryCode = '+91';
   bool _isValid = false;
+  bool _isLoading = false; // 🔥 Asli Loading State for AWS Call
 
   @override
   void initState() {
@@ -26,6 +35,9 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _phoneFocus.requestFocus();
     });
+    
+    // Log Analytics Event
+    LogRocketService.instance.logPageView('Phone_Input_Screen');
   }
 
   void _validatePhone() {
@@ -33,10 +45,45 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
     setState(() => _isValid = digits.length >= 7 && digits.length <= 15);
   }
 
-  void _onContinue() {
-    if (!_isValid) return;
+  // 🔥 100% ASLI AWS OTP TRIGGER
+  Future<void> _onContinue() async {
+    if (!_isValid || _isLoading) return;
+    
+    HapticFeedback.selectionClick(); // Premium Click Feel
+    FocusScope.of(context).unfocus(); // Keyboard hide
+
     final fullPhone = '$_countryCode${_phoneController.text.trim()}';
-    context.go('/otp', extra: fullPhone);
+    
+    setState(() => _isLoading = true);
+
+    // Track intent
+    SentryService.instance.addBreadcrumb('Requesting AWS OTP for $fullPhone');
+    LogRocketService.instance.track('OTP_Request_Initiated');
+
+    // Trigger Real AWS Cognito OTP
+    await ref.read(authControllerProvider.notifier).sendOtp(
+      phoneNumber: fullPhone,
+      onError: (errorMsg) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        HapticFeedback.heavyImpact(); // Error Vibration
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      },
+      onCodeSent: () {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        HapticFeedback.mediumImpact(); // Success Vibration
+        
+        // AWS OTP Sent successfully, NOW navigate to OTP screen
+        context.go('/otp', extra: fullPhone);
+      },
+    );
   }
 
   @override
@@ -62,8 +109,11 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
         backgroundColor: isDark ? AppColors.cardDark : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => context.go('/login'),
+          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: textColor),
+          onPressed: () {
+            HapticFeedback.selectionClick();
+            context.go('/login');
+          },
         ),
         title: Text(
           'Enter Phone Number',
@@ -89,12 +139,12 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                 style: TextStyle(
                   color: textColor,
                   fontSize: 22,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800, // Premium Bold
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                "We'll send you an OTP to verify your number.",
+                "We'll send you an AWS secure OTP to verify your number.", // 🔥 Secure Branding
                 style: TextStyle(
                   color: subColor,
                   fontSize: 14,
@@ -157,7 +207,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                         style: TextStyle(
                           color: textColor,
                           fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Mobile number',
@@ -177,6 +227,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                       IconButton(
                         icon: Icon(Icons.cancel, color: subColor, size: 18),
                         onPressed: () {
+                          HapticFeedback.selectionClick();
                           _phoneController.clear();
                           _phoneFocus.requestFocus();
                         },
@@ -194,29 +245,39 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
 
               const SizedBox(height: 32),
 
-              // ─── Continue Button ──────────────────────────
+              // ─── Continue Button (AWS Trigger) ──────────
               AnimatedOpacity(
-                opacity: _isValid ? 1.0 : 0.5,
+                opacity: _isValid && !_isLoading ? 1.0 : 0.5,
                 duration: const Duration(milliseconds: 200),
                 child: ElevatedButton(
-                  onPressed: _isValid ? _onContinue : null,
+                  onPressed: _isValid && !_isLoading ? _onContinue : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     disabledBackgroundColor:
-                        AppColors.primary.withValues(alpha: 0.5),
+                        AppColors.primary.withOpacity(0.5),
                     minimumSize: const Size(double.infinity, 52),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
+                    elevation: 0,
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          'Continue',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
             ],
