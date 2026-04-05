@@ -1,3 +1,6 @@
+# ==============================================================
+# 🔥 TRINETRA MASTER FLATPAK (Linux Deployment - Point 1)
+# ==============================================================
 app-id: com.trinetra.app
 runtime: org.freedesktop.Platform
 runtime-version: '23.08'
@@ -12,7 +15,17 @@ finish-args:
   - --socket=wayland
   - --socket=pulseaudio
   - --device=dri
+  
+  # 🔥 TRINETRA MASTER UPGRADE 1 (Point 5: WhatsApp 2.0)
+  # ZegoCloud Video Calling ke liye Camera/Webcam ki 100% Asli Permission
+  - --device=all
+  
   - --filesystem=home
+  
+  # 🔥 TRINETRA MASTER UPGRADE 2 (Point 4: Universal Download)
+  # PDF, Video, Audio ko bina error Linux ke 'Downloads' folder me save karne ke liye
+  - --filesystem=xdg-download
+  
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.freedesktop.portal.Desktop
 
