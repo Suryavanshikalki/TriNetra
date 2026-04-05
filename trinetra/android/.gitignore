@@ -1,4 +1,7 @@
-gradle-wrapper.jar
+# ==============================================================
+# 🔥 TRINETRA ORIGINAL CODE (100% Safe)
+# ==============================================================
+Gradle-wrapper.jar
 /.gradle
 /captures/
 /gradlew
@@ -12,3 +15,24 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# ==============================================================
+# 🚨 TRINETRA MASTER SECURITY SHIELD (Joda Gaya)
+# Blueprint Point 6 & 11: 17 Asli Keys aur AWS ko leak hone se bachane ke liye
+# ==============================================================
+
+# AWS credentials aur config files kabhi public nahi honi chahiye
+aws_credentials.json
+aws_config.json
+amplifyconfiguration.json
+
+# Asli 17 Keys (Zego, OpenAI, PayU, Sentry) ki local files ko hide karne ke liye
+.env
+*.env
+local_secrets.properties
+api_keys.json
+
+# ==============================================================
+# 🔥 FIREBASE DELETED (Master Rule)
+# ==============================================================
+# (Pahle yahan google-services.json hota tha, par ab humne usko jad se khatm kar diya hai)
