@@ -6,7 +6,7 @@ Name[hi]=ट्राईनेत्रा
 GenericName=Social Super-App
 Comment=India's Ultimate Social Super-App — Connect, Share, Pay
 Comment[hi]=भारत का अल्टीमेट सोशल सुपर-ऐप — जुड़ें, शेयर करें, पेमेंट करें
-Exec=/app/trinetra/trinetra
+Exec=/app/trinetra/trinetra %U
 Icon=com.trinetra.app
 Terminal=false
 StartupNotify=true
@@ -17,7 +17,10 @@ Categories=Network;Chat;Social;Finance;
 Keywords=social;messenger;payments;upi;india;creator;ai;feed;wallet;trinetra;
 Keywords[hi]=सोशल;मैसेंजर;पेमेंट;यूपीआई;भारत;
 
-MimeType=
+# 🔥 TRINETRA MASTER UPGRADE (Point 4 & 5: Universal Media Reader)
+# Ab Linux OS ko pata chalega ki TriNetra asli PDF, Video, Audio aur Image player hai!
+MimeType=application/pdf;image/jpeg;image/png;video/mp4;audio/mpeg;text/plain;
+
 X-Flatpak-RatingAge=12+
 
 Actions=NewPost;OpenMessenger;
