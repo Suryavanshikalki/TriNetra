@@ -6,9 +6,10 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    // Firebase
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+    
+    // 🔥 TRINETRA MASTER RULE APPLIED: 
+    // Firebase aur Crashlytics yahan se 100% hamesha ke liye HATA diya gaya hai.
+    // Ab sab kuchh AWS CloudWatch aur Sentry (jo tumhari key me hai) se track hoga.
 }
 
 // Load signing properties
@@ -45,10 +46,14 @@ android {
 
     defaultConfig {
         applicationId = "com.trinetra.app"
-        minSdk = 21
+        
+        // 🔥 TRINETRA MASTER UPGRADE: AWS aur ZegoCloud (WhatsApp 2.0) ke liye minSdk 24 compulsory hai
+        minSdk = 24 
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Point 6: Itne saare Gateways aur AI integrations ke liye MultiDex zaroori hai
         multiDexEnabled = true
     }
 
@@ -59,12 +64,23 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
-            isMinifyEnabled = false
-            isShrinkResources = false
+            
+            // 🔥 ASLI PRODUCTION READY: Code chori na ho aur app fast rahe isliye Minify TRUE kiya gaya hai
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // 🔥 MULTIDEX ENGINE: Upar multiDexEnabled=true ko chalane ke liye asli engine (Joda gaya)
+    implementation("androidx.multidex:multidex:2.0.1")
 }
