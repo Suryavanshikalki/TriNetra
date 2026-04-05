@@ -14,6 +14,9 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // 🔥 TRINETRA ASLI POWER: ZegoCloud, PayU, Braintree aur Sentry ke plugins ko 
+        // bina error download karne ke liye JitPack yahan sabse zaroori hai.
+        maven { url = java.net.URI("https://jitpack.io") }
     }
 }
 
