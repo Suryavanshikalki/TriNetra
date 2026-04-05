@@ -13,6 +13,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+  # ─── THE MASTER KEY VAULT (17 Keys from GitHub Secrets) ─────
+  flutter_dotenv: ^5.1.0
+
   # ─── AWS AMPLIFY (The 100% Backend Engine - Firebase Khatm) ─────
   amplify_flutter: ^2.4.0
   amplify_auth_cognito: ^2.4.0      
@@ -63,13 +66,12 @@ dependencies:
   facebook_audience_network: ^1.0.1 
   flutter_paypal: ^0.1.5 
   in_app_purchase: ^3.2.0 
-  # 🔥 JODA GAYA: 4 Missing Asli Gateways (Blueprint ke hisaab se)
   payu_checkoutpro: ^1.2.2       # 🔥 PayU India
   flutter_braintree: ^2.4.2      # 🔥 Braintree
   adyen_checkout: ^1.1.0         # 🔥 Adyen
-  webview_flutter: ^4.8.0        # 🔥 Paddle Web Checkout ke liye (Kyunki Paddle ka direct native SDK nahi hai)
+  webview_flutter: ^4.8.0        # 🔥 Paddle Web Checkout & 6-Platform Fallback
 
-  # ─── Monitoring / Error Tracking (Point 12H) ────────────────
+  # ─── Monitoring / Error Tracking (Point 12H - 0% Firebase) ───
   sentry_flutter: ^8.6.0
 
   # ─── WebRTC & Calling (Point 5 - WhatsApp 2.0) ──────────────
@@ -109,12 +111,41 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1 # 🔥 Auto-Generate Icons for 6 Platforms
 
 flutter:
   uses-material-design: true
   generate: true
   assets:
+    - .env # 🔥 YAHAN TUMHARI 17 KEYS LOAD HONGI
     - assets/images/
     - assets/lottie/
     - assets/icons/
     - assets/locales/ 
+
+# ==============================================================
+# 🔥 BRANDING ENGINE (Auto-Generated via Terminal)
+# ==============================================================
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  web:
+    generate: true
+    image_path: "assets/images/trinetra_master_logo.png"
+    background_color: "#FFFFFF"
+    theme_color: "#FFFFFF"
+  windows:
+    generate: true
+    image_path: "assets/images/trinetra_master_logo.png"
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: "assets/images/trinetra_master_logo.png"
+  image_path: "assets/images/trinetra_master_logo.png"
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: "assets/images/trinetra_splash_logo.png"
+  android: true
+  ios: true
+  web: false # Web uses CSS for splash
