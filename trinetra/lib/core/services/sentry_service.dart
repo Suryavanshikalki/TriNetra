@@ -1,27 +1,31 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert'; // 🔥 ASLI JSON PARSING 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // 🔥 ASLI MASTER VAULT
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 
-/// 👁️🔥 TriNetra Sentry Error & Performance Monitoring
-/// 100% REAL: Secure DSN, 100% Tracking Rate, and AWS AppSync Sync for Critical Bugs.
-/// Supports all 6 platforms: Android, iOS, Web, Windows, macOS, Linux.
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER CRASH & PERFORMANCE ENGINE 
+// 100% REAL: Secure DSN, 100% Tracking Rate, AWS AppSync Sync
+// 0% Dummy | Fully Synced with TriNetra Master Vault (.env)
+// ==============================================================
+
 class SentryService {
   SentryService._();
   static final SentryService instance = SentryService._();
 
   bool _initialized = false;
 
-  // ─── ASLI KEY (GitHub Secrets / dart-define से सुरक्षित) ────────
-  static const String _sentryDsn = String.fromEnvironment('SENTRY_DSN');
+  // ─── 1. ASLI KEY (GitHub Secrets -> .env Vault से) ─────────────
+  static String get _sentryDsn => dotenv.env['SENTRY_DSN'] ?? '';
 
   /// Initialize Sentry. Called BEFORE runApp in main.dart.
-  static Future<void> initialize({required VoidCallback appRunner}) async {
+  static Future<void> initialize({required FutureOr<void> Function() appRunner}) async {
     if (_sentryDsn.isEmpty) {
-      if (kDebugMode) safePrint('❌ TriNetra: SENTRY_DSN not found in dart-define.');
-      appRunner();
+      safePrint('🚨 TriNetra Fatal Error: SENTRY_DSN not found in .env vault.');
+      await appRunner();
       return;
     }
 
@@ -49,11 +53,10 @@ class SentryService {
     );
 
     instance._initialized = true;
-    if (kDebugMode) safePrint('🚀 TriNetra: Sentry Crash Tracking 100% LIVE!');
+    safePrint('🚀 TriNetra: Sentry Crash Tracking 100% LIVE!');
   }
 
-  // ─── 1. REAL EXCEPTION CAPTURE (With AWS Sync) ─────────────────
-  /// यह फंक्शन असली एरर को पकड़कर Sentry और AWS दोनों जगह भेजता है।
+  // ─── 2. REAL EXCEPTION CAPTURE (With AWS Sync) ─────────────────
   Future<void> captureException(
     dynamic throwable, {
     dynamic stackTrace,
@@ -77,19 +80,18 @@ class SentryService {
     );
 
     // 2. AWS AppSync Sync (Point 4: Auto-Escalation Alert)
-    // अगर कोई बहुत बड़ा क्रैश है, तो AWS को तुरंत अलर्ट जाएगा
     if (isFatal) {
       _reportFatalErrorToAws(throwable.toString(), stackTrace.toString());
     }
   }
 
-  // ─── 2. MESSAGE CAPTURE ────────────────────────────────────────
+  // ─── 3. MESSAGE CAPTURE ────────────────────────────────────────
   Future<void> captureMessage(String message, {SentryLevel? level}) async {
     if (!_initialized) return;
     await Sentry.captureMessage(message, level: level ?? SentryLevel.info);
   }
 
-  // ─── 3. REAL USER CONTEXT (Tied to TriNetra ID - Point 2) ──────
+  // ─── 4. REAL USER CONTEXT (Tied to TriNetra ID - Point 2) ──────
   Future<void> setUser({
     required String trinetraId,
     String? username,
@@ -110,7 +112,7 @@ class SentryService {
     await Sentry.configureScope((scope) => scope.setUser(null));
   }
 
-  // ─── 4. ADD BREADCRUMB (User Path Tracking) ────────────────────
+  // ─── 5. ADD BREADCRUMB (User Path Tracking) ────────────────────
   void addBreadcrumb(String message, {String? category, String? type}) {
     if (!_initialized) return;
     Sentry.addBreadcrumb(Breadcrumb(
@@ -121,10 +123,13 @@ class SentryService {
     ));
   }
 
-  // ─── 5. AWS CRASH REPORTER (Point 4: System Alert) ──────────────
-  /// यह प्राइवेट फंक्शन सीधे आपके AWS DynamoDB में सिस्टम अलर्ट दर्ज करेगा।
+  // ─── 6. AWS CRASH REPORTER (Secure & Encoded) ──────────────────
   Future<void> _reportFatalErrorToAws(String error, String stackTrace) async {
     try {
+      // 🔥 ASLI JSON ENCODING (GraphQL String Crash Fix)
+      final safeError = jsonEncode(error);
+      final safeStackTrace = jsonEncode(stackTrace);
+
       final request = GraphQLRequest<String>(
         document: '''
           mutation LogFatalCrash(\$error: String!, \$stackTrace: String!) {
@@ -135,14 +140,16 @@ class SentryService {
           }
         ''',
         variables: {
-          'error': error,
-          'stackTrace': stackTrace,
+          'error': safeError,
+          'stackTrace': safeStackTrace,
         },
       );
       await Amplify.API.query(request: request).response;
-      if (kDebugMode) safePrint('🚨 TriNetra Alert: Fatal Crash Sync to AWS Successful.');
-    } catch (e) {
-      if (kDebugMode) safePrint('❌ Sentry-to-AWS Sync Failed: $e');
+      safePrint('🚨 TriNetra Alert: Fatal Crash Sync to AWS Successful.');
+    } catch (e, internalStack) {
+      // If AWS fails, make sure we at least send the AWS failure to Sentry
+      safePrint('❌ Sentry-to-AWS Sync Failed: $e');
+      Sentry.captureException(e, stackTrace: internalStack);
     }
   }
 
