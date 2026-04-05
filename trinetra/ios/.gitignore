@@ -1,3 +1,9 @@
+# ==============================================================
+# 👁️🔥 TRINETRA MASTER iOS .gitignore (SECURITY SHIELD)
+# 100% AWS Secure | 17 Keys Protected | 0% Firebase Trash
+# ==============================================================
+
+# 🍏 Apple Default System Files
 **/dgph
 *.mode1v3
 *.mode2v3
@@ -15,6 +21,8 @@ Icon?
 profile
 xcuserdata
 **/.generated/
+
+# 🦅 Flutter Master Bridge
 Flutter/App.framework
 Flutter/Flutter.framework
 Flutter/Flutter.podspec
@@ -26,6 +34,38 @@ Flutter/flutter_assets/
 Flutter/flutter_export_environment.sh
 ServiceDefinitions.json
 Runner/GeneratedPluginRegistrant.*
+
+# ==============================================================
+# 🚨 TRINETRA ASLI SECURITY LOCKS (The Real Work)
+# ==============================================================
+
+# 🔥 1. THE 17 KEYS VAULT PROTECTION
+# Github Actions ke waqt agar .env ios folder me aaye toh leak na ho
+*.env
+.env.*
+secrets.json
+
+# 🔥 2. THE BACKEND (100% AWS SECURITY)
+# AWS Amplify ka configuration Github par raw push nahi hona chahiye
+amplifyconfiguration.json
+awsconfiguration.json
+amplify/
+aws-exports.js
+
+# 🔥 3. SENTRY CRASH LOGS (0% Firebase/Crashlytics)
+# Heavy crash files aur dSYM symbols ignore karo taaki build fast ho
+*.dSYM/
+*.crash
+*.log
+*.swp
+
+# 🔥 4. PAYMENTS & CI/CD CACHE
+# PayU, PayPal aur 5 Gateways ke temporary webview cache
+*.tmp
+*.bak
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
 
 # Exceptions to above rules.
 !default.mode1v3
