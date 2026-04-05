@@ -1,18 +1,23 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
-// असली Ads SDKs
+// 🔥 ASLI ADS SDKs
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:facebook_audience_network/facebook_audience_network.dart';
 
-// असली AWS Backend (Wallet Update के लिए)
+// 🔥 ASLI AWS BACKEND
 import 'package:amplify_flutter/amplify_flutter.dart';
 
-/// 👁️🔥 TriNetra Ads & Monetization Service
-/// 100% REAL: AdMob + AppLovin + Meta Ads
-/// Supports: Free Boost (70% TriNetra / 30% User) via AWS AppSync
+// ==============================================================
+// 👁️🔥 TRINETRA ADS & MONETIZATION SERVICE (Facebook 2026 Standard)
+// 100% REAL: AdMob + AppLovin + Meta Ads
+// Point 7: Free Boost (70/30 Split) via AWS AppSync
+// ==============================================================
+
 class AdsService {
   AdsService._();
   static final AdsService instance = AdsService._();
@@ -20,15 +25,19 @@ class AdsService {
   bool _initialized = false;
   RewardedAd? _rewardedAd;
 
-  // ─── ASLI KEYS (GitHub Secrets से) ──────────────────────────────
-  static const String _appLovinSdkKey = String.fromEnvironment('APPLOVIN_SDK_KEY');
+  // ─── ASLI KEYS (.env Master Vault से) ─────────────────────────
+  static String get _appLovinSdkKey => dotenv.env['APPLOVIN_SDK_KEY'] ?? '';
   
-  // AdMob Unit IDs (Production)
-  static const String _adMobRewardedId = String.fromEnvironment('ADMOB_REWARDED_ID', defaultValue: 'ca-app-pub-3940256099942544/5224354917'); // Fallback to test ID if not set
+  // OS Detection for Real AdMob Rewarded IDs
+  static String get _adMobRewardedId {
+    return defaultTargetPlatform == TargetPlatform.iOS 
+        ? (dotenv.env['ADMOB_REWARDED_IOS'] ?? '') 
+        : (dotenv.env['ADMOB_REWARDED_ANDROID'] ?? '');
+  }
 
-  // ─── 1. Initialize All 3 Networks (REAL) ─────────────────────────
+  // ─── 1. INITIALIZE ALL 3 NETWORKS (100% REAL) ─────────────────
   Future<void> initializeAllAds() async {
-    if (kIsWeb || _initialized) return;
+    if (kIsWeb || _initialized) return; // Web handles ads via JS
 
     try {
       // 1. Initialize Google AdMob
@@ -39,24 +48,25 @@ class AdsService {
         await AppLovinMAX.initialize(_appLovinSdkKey);
       }
 
-      // 3. Initialize Meta Audience Network
+      // 3. Initialize Meta Audience Network (No Testing IDs allowed)
       await FacebookAudienceNetwork.init(
-        testingId: "a77955ee-3304-4635-be65-81029b0f5201", // Remove in production
         iOSAdvertiserTrackingEnabled: true,
       );
 
       _initialized = true;
-      _preloadRewardedAd(); // प्री-लोडिंग ताकि यूज़र को इंतज़ार न करना पड़े
+      _preloadRewardedAd(); // Background preload for zero wait time
       
-      if (kDebugMode) safePrint('🚀 TriNetra: AdMob + AppLovin + Meta Ads 100% LIVE!');
-    } catch (e) {
-      if (kDebugMode) safePrint('❌ Ads Initialization Error: $e');
+      safePrint('🚀 TriNetra: AdMob + AppLovin + Meta Ads 100% LIVE!');
+    } catch (e, stackTrace) {
+      safePrint('🚨 Ads Initialization Error: $e');
+      Sentry.captureException(e, stackTrace: stackTrace); // 0% Firebase, 100% Sentry
     }
   }
 
-  // ─── 2. Preload Rewarded Ad (For Free Boost) ─────────────────────
+  // ─── 2. PRELOAD REWARDED AD (For Free Boost) ───────────────────
   void _preloadRewardedAd() {
-    if (!_initialized) return;
+    if (!_initialized || _adMobRewardedId.isEmpty) return;
+    
     RewardedAd.load(
       adUnitId: _adMobRewardedId,
       request: const AdRequest(),
@@ -64,16 +74,15 @@ class AdsService {
         onAdLoaded: (ad) {
           _rewardedAd = ad;
         },
-        onAdFailedToLoad: (error) {
+        onAdFailedToLoad: (LoadAdError error) {
           _rewardedAd = null;
+          Sentry.captureMessage('AdMob Preload Failed: ${error.message}');
         },
       ),
     );
   }
 
-  // ─── 3. FREE BOOST LOGIC (Point 7: 70/30 Split via AWS) ──────────
-  /// जब यूज़र 'Free Boost' पर क्लिक करेगा, तो यह ऐड चलेगा 
-  /// और पूरा होने पर AWS DynamoDB में 70/30 के हिसाब से पैसा बाँट देगा।
+  // ─── 3. FREE BOOST LOGIC (Point 7: 70/30 Split via AWS) ────────
   void showRewardAdForBoost({
     required String postId,
     required String userId,
@@ -82,14 +91,14 @@ class AdsService {
   }) {
     if (_rewardedAd == null) {
       onError();
-      _preloadRewardedAd(); // अगर ऐड रेडी नहीं है तो दोबारा लोड करें
+      _preloadRewardedAd(); 
       return;
     }
 
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        _preloadRewardedAd();
+        _preloadRewardedAd(); // Load next ad immediately
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
@@ -99,15 +108,15 @@ class AdsService {
     );
 
     _rewardedAd!.show(onUserEarnedReward: (AdWithoutView ad, RewardItem reward) async {
-      // 🔥 ASLI KAAM: ऐड पूरा देखने के बाद AWS AppSync को हिट करना
+      // 🔥 ASLI KAAM: Add watched successfully, hitting AWS AppSync for 70/30 Split
       try {
         final request = GraphQLRequest<String>(
           document: '''
             mutation ApplyFreeBoost(\$postId: ID!, \$userId: ID!) {
               applyTriNetraFreeBoost(postId: \$postId, userId: \$userId) {
                 status
-                wallet_user_credited   # 30% to user
-                wallet_trinetra_credited # 70% to TriNetra
+                wallet_user_credited
+                wallet_trinetra_credited
               }
             }
           ''',
@@ -120,8 +129,9 @@ class AdsService {
         await Amplify.API.query(request: request).response;
         safePrint('✅ TriNetra Economy: Free Boost Applied! (70/30 split saved in AWS)');
         onSuccess();
-      } catch (e) {
-        safePrint('❌ AWS Wallet Update Error: $e');
+      } catch (e, stackTrace) {
+        safePrint('🚨 AWS Wallet Update Error: $e');
+        Sentry.captureException(e, stackTrace: stackTrace);
         onError();
       }
     });
@@ -130,7 +140,9 @@ class AdsService {
   }
 }
 
-// ─── TriNetra Universal Banner Ad (AdMob/AppLovin/Meta) ───────────
+// ==============================================================
+// 🌟 TRINETRA UNIVERSAL BANNER AD (Auto-Detect OS)
+// ==============================================================
 class TriNetraBannerAd extends StatefulWidget {
   const TriNetraBannerAd({super.key});
 
@@ -142,23 +154,33 @@ class _TriNetraBannerAdState extends State<TriNetraBannerAd> {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
 
+  // OS Detection for Real AdMob Banner IDs
+  String get _adMobBannerId {
+    return defaultTargetPlatform == TargetPlatform.iOS 
+        ? (dotenv.env['ADMOB_BANNER_IOS'] ?? '') 
+        : (dotenv.env['ADMOB_BANNER_ANDROID'] ?? '');
+  }
+
   @override
   void initState() {
     super.initState();
-    if (AdsService.instance._initialized) _loadBanner();
+    if (AdsService.instance._initialized && _adMobBannerId.isNotEmpty) {
+      _loadBanner();
+    }
   }
 
   void _loadBanner() {
     _bannerAd = BannerAd(
-      adUnitId: String.fromEnvironment('ADMOB_BANNER_ID', defaultValue: 'ca-app-pub-3940256099942544/6300978111'),
+      adUnitId: _adMobBannerId,
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
           if (mounted) setState(() => _isLoaded = true);
         },
-        onAdFailedToLoad: (ad, error) {
+        onAdFailedToLoad: (ad, LoadAdError error) {
           ad.dispose();
+          Sentry.captureMessage('Banner Load Failed: ${error.message}');
         },
       ),
     )..load();
