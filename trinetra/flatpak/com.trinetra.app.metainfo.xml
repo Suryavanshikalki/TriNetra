@@ -12,32 +12,31 @@
   <description>
     <p>
       TriNetra is India's premium social super-app that combines everything you need:
-      a real-time social feed with AI translation, end-to-end encrypted messenger,
-      TriNetra Pay (UPI-powered wallet), a marketplace, a refer-and-earn coin system,
-      and an AI assistant powered by Google Gemini.
+      a real-time social feed with Universal Media Download, WhatsApp 2.0 level end-to-end encrypted messenger with ZegoCloud,
+      a 5-in-1 Payment Network (PayU, Braintree, PayPal, Paddle, Adyen), Auto-Escalation Complaint System,
+      and a Master 6-in-1 AI Brain (Meta, ChatGPT, Gemini, DeepSeek, Manus, Emergent) — 100% powered by AWS.
     </p>
     <p>Built with Flutter for Android, iOS, Web, Windows, macOS, and Linux.</p>
     <ul>
-      <li>Social Feed with AI-powered translation (English ↔ Hindi)</li>
-      <li>Real-time Messenger with Firestore sync</li>
-      <li>TriNetra Pay — send/receive money via UPI</li>
-      <li>Marketplace — buy and sell locally</li>
-      <li>Refer &amp; Earn — earn TriNetra Coins for every referral</li>
-      <li>Creator Studio — track earnings and request payouts</li>
-      <li>AI Chatbot — powered by Google Gemini</li>
-      <li>Creator Pro — Blue Verification Badge + 100% ad revenue</li>
+      <li>Social Feed with Multilanguage AI-powered translation (English ↔ Hindi)</li>
+      <li>WhatsApp 2.0 Messenger — AWS Auto-Sync with Video, Audio, and PDF Calling</li>
+      <li>The Economy — PayU, PayPal, Braintree, Paddle, and Adyen Integrations</li>
+      <li>Marketplace &amp; 4-Tier Boost Economy (Free 70/30, Paid 25/75, 100% User, Auto-Boost)</li>
+      <li>Auto-Escalation System — Solves issues automatically from Local Authority up to Supreme Court</li>
+      <li>6-in-1 Master AI — Chatbot, Agentic, and Super Agentic (100% Human-Brain Level) Modes</li>
+      <li>OS Creation Tier — Build full operating systems with 5000 Premium AI Credits</li>
     </ul>
     <p xml:lang="hi">
-      TriNetra भारत का प्रीमियम सोशल सुपर-ऐप है जो सोशल फीड, मैसेंजर, पेमेंट और AI असिस्टेंट को एक जगह लाता है।
+      TriNetra भारत का प्रीमियम सोशल सुपर-ऐप है जो सोशल फीड, मैसेंजर, 5 असली पेमेंट गेटवे और 6-इन-1 मास्टर AI को एक जगह लाता है। बिना किसी Firebase के, 100% AWS पर आधारित।
     </p>
   </description>
 
   <launchable type="desktop-id">com.trinetra.app.desktop</launchable>
 
-  <url type="homepage">https://trinetra.web.app</url>
+  <url type="homepage">https://trinetra-superapp.com</url>
   <url type="bugtracker">https://github.com/trinetra-app/trinetra/issues</url>
-  <url type="help">https://trinetra.web.app/help</url>
-  <url type="translate">https://trinetra.web.app/translate</url>
+  <url type="help">https://trinetra-superapp.com/help</url>
+  <url type="translate">https://trinetra-superapp.com/translate</url>
 
   <developer id="com.trinetra">
     <name>TriNetra Technologies Pvt. Ltd.</name>
@@ -50,19 +49,17 @@
     <content_attribute id="social-location">mild</content_attribute>
     <content_attribute id="social-contacts">intense</content_attribute>
     <content_attribute id="money-purchasing">intense</content_attribute>
-    <content_attribute id="money-advertising">moderate</content_attribute>
+    <content_attribute id="money-advertising">intense</content_attribute>
   </content_rating>
 
   <releases>
-    <release version="1.0.0" date="2026-02-01">
-      <description>
+    <release version="1.0.0" date="2026-04-05"> <description>
         <p>Initial release of TriNetra Super-App for Linux.</p>
         <ul>
-          <li>Social Feed with AI Translation</li>
-          <li>Real-time Messenger</li>
-          <li>TriNetra Pay Wallet</li>
-          <li>Creator Studio with 70/30 Revenue Split</li>
-          <li>Creator Pro subscription with Blue Badge</li>
+          <li>Social Feed &amp; WhatsApp 2.0 Messenger (ZegoCloud)</li>
+          <li>AWS S3 Universal Download Hub Integration</li>
+          <li>5-in-1 Payment Gateways Activated</li>
+          <li>6-in-1 Master AI with Mode C (Human-Brain Level)</li>
         </ul>
       </description>
     </release>
@@ -70,16 +67,16 @@
 
   <screenshots>
     <screenshot type="default">
-      <caption>Social Feed with AI Translation</caption>
-      <image>https://trinetra.web.app/screenshots/linux/feed.png</image>
+      <caption>Social Feed with Auto-Escalation System</caption>
+      <image>https://trinetra-superapp.com/screenshots/linux/feed.png</image>
     </screenshot>
     <screenshot>
-      <caption>Messenger — Real-time Chat</caption>
-      <image>https://trinetra.web.app/screenshots/linux/messenger.png</image>
+      <caption>WhatsApp 2.0 Messenger — Real-time Chat</caption>
+      <image>https://trinetra-superapp.com/screenshots/linux/messenger.png</image>
     </screenshot>
     <screenshot>
-      <caption>Creator Studio — Earnings Dashboard</caption>
-      <image>https://trinetra.web.app/screenshots/linux/creator-studio.png</image>
+      <caption>The Economy — Earnings &amp; Boost Dashboard</caption>
+      <image>https://trinetra-superapp.com/screenshots/linux/economy-dashboard.png</image>
     </screenshot>
   </screenshots>
 
@@ -98,11 +95,14 @@
     <keyword>social</keyword>
     <keyword>messenger</keyword>
     <keyword>payments</keyword>
-    <keyword>upi</keyword>
-    <keyword>india</keyword>
-    <keyword>creator</keyword>
+    <keyword>payu</keyword>
+    <keyword>paypal</keyword>
+    <keyword>aws</keyword>
     <keyword>ai</keyword>
+    <keyword>deepseek</keyword>
+    <keyword>openai</keyword>
     <keyword>gemini</keyword>
+    <keyword>meta</keyword>
   </keywords>
 
   <requires>
