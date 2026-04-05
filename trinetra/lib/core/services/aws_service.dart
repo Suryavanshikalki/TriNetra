@@ -4,15 +4,21 @@ import 'package:flutter/foundation.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
+import 'package:sentry_flutter/sentry_flutter.dart'; // 100% Crash Tracking
 
-// असली AWS Amplify पैकेजेस
+// 🔥 ASLI AWS AMPLIFY PACKAGES
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 
-// यह फाइल आपके AWS Keys से जनरेट होगी
+// यह फाइल आपके AWS CLI से जनरेट होगी
 import '../../amplifyconfiguration.dart'; 
+
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER AWS SERVICE (Facebook 2026 Standard)
+// 100% Secure Storage | Real-time WebSockets | Sentry Tracked
+// ==============================================================
 
 class AwsService {
   AwsService._();
@@ -21,27 +27,29 @@ class AwsService {
   final _uuid = const Uuid();
   bool _isInitialized = false;
 
-  // ─── 1. Asli AWS Initialization (Auth, API, Storage) ──────────
+  // ─── 1. ASLI AWS INITIALIZATION (Auth, API, Storage) ──────────
   Future<void> initializeAws() async {
     if (_isInitialized) return;
     try {
       final authPlugin = AmplifyAuthCognito();
-      final apiPlugin = AmplifyAPI(); // AppSync GraphQL के लिए
-      final storagePlugin = AmplifyStorageS3(); // S3 Media के लिए
+      final apiPlugin = AmplifyAPI(); // AppSync GraphQL (Real-time Chat/Feed)
+      final storagePlugin = AmplifyStorageS3(); // S3 Media (Secure)
 
       await Amplify.addPlugins([authPlugin, apiPlugin, storagePlugin]);
       await Amplify.configure(amplifyconfig);
       
       _isInitialized = true;
-      safePrint('🚀 TriNetra: AWS Backend (Cognito, AppSync, S3) 100% Live!');
-    } catch (e) {
-      safePrint('❌ AWS Initialization Error: $e');
+      safePrint('🚀 TriNetra: AWS Master Backend (Cognito, AppSync, S3) 100% LIVE!');
+    } catch (e, stackTrace) {
+      safePrint('🚨 AWS Initialization Error: $e');
+      Sentry.captureException(e, stackTrace: stackTrace);
     }
   }
 
-  // ─── 2. Direct S3 Upload (For iOS, Android, Windows, Mac, Linux) ───
+  // ─── 2. SECURE S3 UPLOAD (Mobile/Desktop) ──────────────────────
   Future<UploadResult> uploadFile({
     required String filePath,
+    required bool isPrivateChat, // WhatsApp 2.0 ke liye secure flag
     String? folder,
   }) async {
     try {
@@ -50,63 +58,64 @@ class AwsService {
       final finalFolder = folder ?? _folderFromMime(mimeType);
       final filename = '$finalFolder/${_uuid.v4()}.$ext';
 
-      // असली AWS S3 डायरेक्ट अपलोड (बिना किसी बैकएंड के)
+      // 🔥 ASLI SECURITY: Feed = Protected, WhatsApp 2.0 = Private
+      final accessLevel = isPrivateChat ? StorageAccessLevel.private : StorageAccessLevel.protected;
+      final storagePathPrefix = isPrivateChat ? 'private' : 'protected';
+
       final result = await Amplify.Storage.uploadFile(
         localFile: AWSFile.fromPath(filePath),
-        path: const StoragePath.fromString('public/$filename'),
-        options: const StorageUploadFileOptions(
-          accessLevel: StorageAccessLevel.guest,
-        ),
+        path: StoragePath.fromString('$storagePathPrefix/$filename'),
+        options: StorageUploadFileOptions(accessLevel: accessLevel),
       ).result;
 
-      // अपलोडेड फाइल का CDN URL प्राप्त करना
       final urlResult = await Amplify.Storage.getUrl(
-        path: const StoragePath.fromString('public/$filename'),
+        path: StoragePath.fromString('$storagePathPrefix/$filename'),
       ).result;
 
       return UploadResult.success(url: urlResult.url.toString(), key: filename);
-    } catch (e) {
-      safePrint('[AWS S3] Upload error: $e');
+    } catch (e, stackTrace) {
+      safePrint('🚨 [AWS S3] Upload error: $e');
+      Sentry.captureException(e, stackTrace: stackTrace);
       return UploadResult.failure(e.toString());
     }
   }
 
-  // ─── 3. Direct S3 Upload for Web (PWA) ────────────────────────
+  // ─── 3. SECURE S3 UPLOAD FOR WEB (PWA) ────────────────────────
   Future<UploadResult> uploadBytes({
     required Uint8List bytes,
     required String mimeType,
     required String extension,
+    required bool isPrivateChat,
     String? folder,
   }) async {
     try {
-      if (bytes.isEmpty) {
-        return UploadResult.failure('File is empty.');
-      }
+      if (bytes.isEmpty) return UploadResult.failure('File is empty.');
 
       final finalFolder = folder ?? _folderFromMime(mimeType);
       final filename = '$finalFolder/${_uuid.v4()}.$extension';
+      
+      final accessLevel = isPrivateChat ? StorageAccessLevel.private : StorageAccessLevel.protected;
+      final storagePathPrefix = isPrivateChat ? 'private' : 'protected';
 
-      // असली AWS S3 Web/Memory डायरेक्ट अपलोड
       final result = await Amplify.Storage.uploadData(
         data: AWSFile.fromData(bytes, contentType: mimeType),
-        path: const StoragePath.fromString('public/$filename'),
-        options: const StorageUploadDataOptions(
-          accessLevel: StorageAccessLevel.guest,
-        ),
+        path: StoragePath.fromString('$storagePathPrefix/$filename'),
+        options: StorageUploadDataOptions(accessLevel: accessLevel),
       ).result;
 
       final urlResult = await Amplify.Storage.getUrl(
-        path: const StoragePath.fromString('public/$filename'),
+        path: StoragePath.fromString('$storagePathPrefix/$filename'),
       ).result;
 
       return UploadResult.success(url: urlResult.url.toString(), key: filename);
-    } catch (e) {
-      safePrint('[AWS S3 Web] Upload error: $e');
+    } catch (e, stackTrace) {
+      safePrint('🚨 [AWS S3 Web] Upload error: $e');
+      Sentry.captureException(e, stackTrace: stackTrace);
       return UploadResult.failure(e.toString());
     }
   }
 
-  // ─── 4. Asli AppSync Query/Mutation (For Real-time Feed) ───────
+  // ─── 4. ASLI APPSYNC MUTATION/QUERY ───────────────────────────
   Future<dynamic> queryAppSync(String graphQLDocument, {Map<String, dynamic>? variables}) async {
     try {
       final request = GraphQLRequest<String>(
@@ -115,10 +124,24 @@ class AwsService {
       );
       final response = await Amplify.API.query(request: request).response;
       return response.data;
-    } catch (e) {
-      safePrint('[AWS AppSync] Query Failed: $e');
+    } catch (e, stackTrace) {
+      safePrint('🚨 [AWS AppSync] Query Failed: $e');
+      Sentry.captureException(e, stackTrace: stackTrace);
       rethrow;
     }
+  }
+
+  // ─── 5. ASLI APPSYNC REAL-TIME SUBSCRIPTION (WhatsApp 2.0) ────
+  // Bina iske Live Chat aur Live Video Calling possible nahi thi!
+  Stream<GraphQLResponse<String>> subscribeAppSync(String graphQLDocument, {Map<String, dynamic>? variables}) {
+    final request = GraphQLRequest<String>(
+      document: graphQLDocument,
+      variables: variables ?? {},
+    );
+    return Amplify.API.subscribe(
+      request,
+      onEstablished: () => safePrint('✅ TriNetra Live WebSocket Connected!'),
+    );
   }
 
   // Folder routing logic
