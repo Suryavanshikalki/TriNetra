@@ -1,78 +1,93 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // 🔥 ASLI MASTER VAULT
+import 'package:sentry_flutter/sentry_flutter.dart'; // 🔥 100% CRASH TRACKING
 import 'package:amplify_flutter/amplify_flutter.dart';
 
-// असली LogRocket पैकेज (pubspec.yaml में logrocket_flutter डालना होगा)
+// असली LogRocket पैकेज
 import 'package:logrocket_flutter/logrocket_flutter.dart';
 
-/// 👁️🔥 TriNetra Analytics & Session Replay Service
-/// 100% REAL: LogRocket for Web/Session Replay + AWS AppSync for Native Event Tracking.
-/// No local dummy lists. Every event goes straight to the server.
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER ANALYTICS & REPLAY (Facebook 2026 Standard)
+// 100% REAL: LogRocket Session Replay + AWS AppSync Tracking
+// 0% Dummy | 0% Local Storage | 100% Cloud Synced
+// ==============================================================
+
 class LogRocketService {
   LogRocketService._();
   static final LogRocketService instance = LogRocketService._();
 
   bool _initialized = false;
 
-  // ─── ASLI KEY (GitHub Secrets से) ──────────────────────────────
-  static const String _logRocketId = String.fromEnvironment('LOGROCKET_ID');
+  // ─── 1. ASLI KEY (GitHub Secrets -> .env Vault से) ─────────────
+  static String get _logRocketId => dotenv.env['LOGROCKET_APP_ID'] ?? '';
 
-  // ─── 1. REAL INITIALIZATION ─────────────────────────────────────
+  // ─── 2. REAL INITIALIZATION ─────────────────────────────────────
   void initialize() {
     if (_initialized) return;
 
     if (_logRocketId.isEmpty) {
-      if (kDebugMode) safePrint('❌ LogRocket ID missing in dart-define.');
+      safePrint('🚨 TriNetra Fatal Error: LOGROCKET_APP_ID missing in .env vault.');
       return;
     }
 
     try {
-      // असली LogRocket SDK Initialization
+      // Asli LogRocket SDK Initialization
       LogRocket.init(_logRocketId);
       _initialized = true;
-      if (kDebugMode) safePrint('🚀 TriNetra: LogRocket Session Replay & AWS Analytics LIVE!');
-    } catch (e) {
-      if (kDebugMode) safePrint('❌ LogRocket Init Error: $e');
+      safePrint('🚀 TriNetra: LogRocket Session Replay & AWS Analytics 100% LIVE!');
+    } catch (e, stackTrace) {
+      safePrint('🚨 LogRocket Init Error: $e');
+      Sentry.captureException(e, stackTrace: stackTrace); // Track in Sentry
     }
   }
 
-  // ─── 2. REAL USER IDENTIFICATION (Tied to AWS Cognito ID) ───────
+  // ─── 3. REAL USER IDENTIFICATION (AWS Cognito Synced) ───────────
   void identifyUser({
     required String trinetraId,
     String? name,
     String? email,
-    String? subscriptionTier, // e.g., 'OS_CREATOR' or 'FREE'
+    String? subscriptionTier, // e.g., 'OS_CREATOR', 'SUPER_AGENTIC', 'FREE'
   }) {
     if (!_initialized) return;
 
-    // 1. LogRocket को डेटा भेजना
-    LogRocket.identify(trinetraId, {
-      'name': name ?? 'Unknown',
-      'email': email ?? 'No Email',
-      'subscription': subscriptionTier ?? 'Basic',
-    });
+    try {
+      // 1. Send to LogRocket Dashboard
+      LogRocket.identify(trinetraId, {
+        'name': name ?? 'TriNetra User',
+        'email': email ?? 'No Email',
+        'subscription': subscriptionTier ?? 'Basic',
+      });
 
-    // 2. AWS Backend में User Analytics अपडेट करना
-    _trackInAws('USER_IDENTIFIED', {
-      'userId': trinetraId,
-      'name': name,
-    });
+      // 2. Sync with AWS Backend (AppSync)
+      _trackInAws('USER_IDENTIFIED', {
+        'userId': trinetraId,
+        'name': name,
+        'subscription': subscriptionTier,
+      });
+    } catch (e, stackTrace) {
+      Sentry.captureException(e, stackTrace: stackTrace);
+    }
   }
 
-  // ─── 3. REAL EVENT TRACKING (No Local Memory) ───────────────────
+  // ─── 4. REAL EVENT TRACKING (No Local Memory) ───────────────────
   void track(String eventName, {Map<String, dynamic>? properties}) {
     if (!_initialized) return;
 
     final eventData = properties ?? {};
 
-    // 1. Send to LogRocket
-    LogRocket.track(eventName, eventData);
+    try {
+      // 1. Send to LogRocket
+      LogRocket.track(eventName, eventData);
 
-    // 2. Send to AWS AppSync (100% Data Safety & Dashboard)
-    _trackInAws(eventName, eventData);
+      // 2. Send to AWS AppSync (100% Data Safety & Official Logs)
+      _trackInAws(eventName, eventData);
+    } catch (e, stackTrace) {
+      Sentry.captureException(e, stackTrace: stackTrace);
+    }
   }
 
-  // ─── 4. REAL PAGE VIEW TRACKING ─────────────────────────────────
+  // ─── 5. REAL PAGE VIEW TRACKING ─────────────────────────────────
   void logPageView(String pageName, {Map<String, dynamic>? properties}) {
     if (!_initialized) return;
     
@@ -82,15 +97,20 @@ class LogRocketService {
       ...?properties,
     };
 
-    LogRocket.track('PAGE_VIEW', eventData);
-    _trackInAws('PAGE_VIEW', eventData);
+    try {
+      LogRocket.track('PAGE_VIEW', eventData);
+      _trackInAws('PAGE_VIEW', eventData);
+    } catch (e, stackTrace) {
+      Sentry.captureException(e, stackTrace: stackTrace);
+    }
   }
 
-  // ─── 5. SECURE AWS ANALYTICS SENDER (Private) ───────────────────
-  /// यह फंक्शन इवेंट्स को हवा में गायब नहीं होने देगा, 
-  /// बल्कि सीधा आपके AWS DynamoDB (Analytics Table) में सेव करेगा।
+  // ─── 6. SECURE AWS ANALYTICS SENDER (Private & Encoded) ─────────
   Future<void> _trackInAws(String eventName, Map<String, dynamic> data) async {
     try {
+      // 🔥 ASLI JSON ENCODING (Crash Fix: properly stringified for GraphQL)
+      final String safeJsonData = jsonEncode(data).replaceAll('"', '\\"');
+
       final request = GraphQLRequest<String>(
         document: '''
           mutation LogTriNetraEvent(\$eventName: String!, \$eventData: String!) {
@@ -102,14 +122,15 @@ class LogRocketService {
         ''',
         variables: {
           'eventName': eventName,
-          'eventData': jsonEncode(data),
+          'eventData': safeJsonData, // Pass safely to avoid AppSync rejection
         },
       );
       
       // AWS पर डेटा सेव
       await Amplify.API.query(request: request).response;
-    } catch (e) {
-      if (kDebugMode) safePrint('❌ AWS Analytics Sync Failed for $eventName: $e');
+    } catch (e, stackTrace) {
+      safePrint('🚨 AWS Analytics Sync Failed for $eventName: $e');
+      Sentry.captureException(e, stackTrace: stackTrace); // Sentry alert
     }
   }
 }
