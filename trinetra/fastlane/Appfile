@@ -1,4 +1,27 @@
-app_identifier 'com.trinetra.app'
-apple_id ENV['APPLE_ID']
-itc_team_id ENV['APP_STORE_CONNECT_TEAM_ID']
-team_id ENV['DEVELOPER_PORTAL_TEAM_ID']
+# ==============================================================
+# 🔥 TRINETRA MASTER APPFILE (Facebook 2026 Standard)
+# iOS (App Store) aur Android (Play Store) ke 100% Asli Deployment ke liye
+# ==============================================================
+
+# 🌐 UNIVERSAL APP IDENTIFIER (Point 1: 6-Platform Foundation)
+# Dono Android aur iOS ke liye ek hi asli pehchan lock kar di gayi hai
+app_identifier("com.trinetra.app")
+
+# ==============================================================
+# 🍏 APPLE APP STORE CONFIGURATION (iOS Deployment)
+# ==============================================================
+# Tumhari asli Apple ID (GitHub Secrets / .env se securely aayegi)
+apple_id(ENV['APPLE_ID'])
+
+# App Store Connect Team ID
+itc_team_id(ENV['APP_STORE_CONNECT_TEAM_ID'])
+
+# Apple Developer Portal Team ID
+team_id(ENV['DEVELOPER_PORTAL_TEAM_ID'])
+
+# ==============================================================
+# 🤖 GOOGLE PLAY STORE CONFIGURATION (Android Deployment)
+# ==============================================================
+# Play Store par auto-publish karne ke liye asli Service Account Key ka rasta
+# (Yeh file bhi .gitignore me lock rahegi taaki leak na ho)
+json_key_file("fastlane/google_play_api_key.json")
