@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
-// ─── Mock Story ───────────────────────────────────────────────────
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER COMBINED FILE (Mock + Asli Data)
+// ==============================================================
+
+// ─── 1. Mock Story Class ──────────────────────────────────────────
 class MockStory {
   final String id;
   final String name;
@@ -19,7 +23,7 @@ class MockStory {
   });
 }
 
-// ─── Mock Post ────────────────────────────────────────────────────
+// ─── 2. Mock Post Class (Asli Kam Karne Vala) ──────────────────────
 class MockPost {
   final String id;
   final String userName;
@@ -33,6 +37,13 @@ class MockPost {
   final int shareCount;
   bool isLiked;
 
+  // 🔥 ASLI FEATURES (Blueprint Point 4)
+  final bool isVerified;
+  final bool isComplaint;
+  final String escalationLevel; // 'Local' | 'MLA' | 'CM' | 'PM' | 'none'
+  final List<String> mediaUrls;
+  final String mediaType;       // 'image' | 'video' | 'pdf' | 'none'
+
   MockPost({
     required this.id,
     required this.userName,
@@ -45,10 +56,16 @@ class MockPost {
     this.commentCount = 0,
     this.shareCount = 0,
     this.isLiked = false,
+    this.isVerified = false,
+    this.isComplaint = false,
+    this.escalationLevel = 'none',
+    this.mediaUrls = const [],
+    this.mediaType = 'none',
   });
 }
 
-// ─── Mock Data ────────────────────────────────────────────────────
+// ─── 3. Mock Data (Sample Data Combined) ───────────────────────────
+
 final mockStories = <MockStory>[
   MockStory(id: 'own', name: 'Your Story', avatarColor: const Color(0xFF1877F2),
       initial: 'Y', isOwn: true),
@@ -74,6 +91,7 @@ final mockPosts = <MockPost>[
     commentCount: 34,
     shareCount: 12,
     isLiked: true,
+    isVerified: true,
   ),
   MockPost(
     id: 'p2',
@@ -93,7 +111,9 @@ final mockPosts = <MockPost>[
     userInitial: 'S',
     userColor: const Color(0xFFFF5722),
     timeAgo: '1 hr ago',
-    content: 'Excited to be part of this TriNetra community! The payment visibility feature for agents is going to be a game changer for small businesses.',
+    content: '🚨 Public Complaint: The road in our ward is broken. TriNetra AI, please escalate!',
+    isComplaint: true,
+    escalationLevel: 'Local',
     likeCount: 56,
     commentCount: 8,
     shareCount: 3,
@@ -104,7 +124,7 @@ final mockPosts = <MockPost>[
     userInitial: 'A',
     userColor: const Color(0xFF009688),
     timeAgo: '3 hr ago',
-    content: 'Just completed the Creator Studio onboarding. The tools here are amazing for independent content creators. Highly recommend!',
+    content: 'Just completed the Creator Studio onboarding. The tools here are amazing!',
     mediaBgColor: const Color(0xFFFF5722),
     likeCount: 133,
     commentCount: 22,
