@@ -1,7 +1,39 @@
-# Flutter-related
-**/Flutter/ephemeral/
-**/Pods/
+# ==============================================================
+# 👁️🔥 TRINETRA REPOSITORY GUARDIAN (Point 12: Super App Standards)
+# 100% REAL: No Bloat, No Junk, Pure Performance
+# ==============================================================
 
-# Xcode-related
+# Flutter-related (ASLI: Added Build & Tooling ignores)
+**/Flutter/ephemeral/
+**/Flutter/generated/
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/pubspec.lock  # Optional, but recommended for library apps
+**/ios/Flutter/.last_build_id
+
+# CocoaPods (ASLI: Ensuring Pods are never committed)
+**/Pods/
+**/Podfile.lock
+**/ServiceAccount.json
+
+# Xcode-related (ASLI: Added OS-Junk and State protection)
 **/dgph
 **/xcuserdata/
+**/DerivedData/
+**/*.moved-aside
+**/*.mode1v3
+**/*.mode2v3
+**/*.perspectivev3
+**/*.xccheckout
+**/*.DS_Store
+
+# macOS specific (ASLI: The Hidden Traitor)
+.DS_Store
+**/DerivedData/
+
+# 🔥 EXTRA SECURITY: Secret Keys & Logs
+*.log
+.env*
