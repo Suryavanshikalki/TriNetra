@@ -34,24 +34,24 @@ jobs:
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
           flutter build apk --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
-            --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}"
+            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
+            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
             
           flutter build appbundle --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
-            --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}"
+            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
+            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
             
       - name: Save Android Artifacts
         uses: actions/upload-artifact@v4
@@ -78,8 +78,8 @@ jobs:
           flutter clean
           flutter pub get
           flutter build windows --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}"
       - name: Upload Windows Artifact
@@ -109,8 +109,8 @@ jobs:
           flutter clean
           flutter pub get
           flutter build linux --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}"
       - name: Upload Linux Artifact
@@ -146,14 +146,14 @@ jobs:
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
           flutter build ios --release --no-codesign \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
-            --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}"
+            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
+            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
       
       - name: Upload iOS Artifact (Unsigned)
         uses: actions/upload-artifact@v4
@@ -188,8 +188,8 @@ jobs:
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
           flutter build macos --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}"
             
@@ -215,20 +215,20 @@ jobs:
           flutter clean
           flutter pub get
           flutter build web --release \
-            --dart-define=AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-            --dart-define=AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_API_KEY="${{ secrets.PADDLE_API_KEY }}" \
-            --dart-define=ADYEN_API_KEY="${{ secrets.ADYEN_API_KEY }}"
+            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
+            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
             
       - name: Deploy Frontend to AWS S3 Bucket
         shell: bash
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ap-south-1
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
