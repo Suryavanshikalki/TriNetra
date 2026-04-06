@@ -1,4 +1,26 @@
+# ==============================================================
+# 👁️🔥 TRINETRA LANGUAGE GUARD (Point 12)
+# 100% REAL: Facebook 2026 Standard | Multi-Language Engine
+# ==============================================================
+
+# जहाँ तुम्हारी .arb (Translation) फाइलें रखी हैं।
 arb-dir: l10n
+
+# मुख्य फाइल जिसे आधार मानकर दूसरी भाषाएँ तैयार होंगी।
 template-arb-file: app_en.arb
+
+# जनरेट होने वाली मुख्य Dart फाइल का नाम।
 output-localization-file: app_localizations.dart
+
+# जनरेट होने वाली क्लास का नाम (इसे हम पूरे ऐप में इस्तेमाल करेंगे)।
+output-class: AppLocalizations
+
+# वह जगह जहाँ जनरेटेड कोड सेव होगा।
 output-dir: lib/l10n
+
+# 🔥 ASLI ACTION: इसे false रखने से कोड .dart_tool के बजाय सीधा lib में बनेगा।
+# इससे GitHub Actions और 6-Platform बिल्ड्स में कोई एरर नहीं आएगा।
+synthetic-package: false
+
+# अगर तुम चाहते हो कि सिर्फ ज़रूरत पड़ने पर ही भाषा लोड हो (Performance के लिए)।
+nullable-getter: false
