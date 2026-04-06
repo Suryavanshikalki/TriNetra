@@ -8,18 +8,20 @@
 
 // ==============================================================
 // 👁️🔥 TRINETRA WINDOWS CORE SKELETON (Point 1 & 12)
-// 100% REAL: High DPI-Aware Architecture | No Dummies
+// 100% REAL: High DPI-Aware Architecture | Facebook 2026 Standard
 // ==============================================================
 
-// यह क्लास Windows पर 'TriNetra' के विज़ुअल ढांचे (UI Container) को परिभाषित करती है।
+// Win32Window क्लास Windows OS और Flutter Engine के बीच का असली 'ब्रिज' (Bridge) है।
 class Win32Window {
  public:
+  // स्क्रीन पर लोकेशन के लिए Point स्ट्रक्चर
   struct Point {
     unsigned int x;
     unsigned int y;
     Point(unsigned int x, unsigned int y) : x(x), y(y) {}
   };
 
+  // विंडो के साइज़ के लिए Size स्ट्रक्चर
   struct Size {
     unsigned int width;
     unsigned int height;
@@ -30,29 +32,30 @@ class Win32Window {
   Win32Window();
   virtual ~Win32Window();
 
-  // 🔥 ASLI ACTION: Windows पर 'TriNetra' की खिड़की बनाना।
+  // 🔥 ASLI ACTION: 'TriNetra' की मुख्य खिड़की (Window) को रजिस्टर और क्रिएट करना।
+  // यह High-DPI सेटिंग्स के साथ सिंक होकर खुलती है।
   bool Create(const std::wstring& title, const Point& origin, const Size& size);
 
-  // ऐप को स्क्रीन पर दिखाना।
+  // विंडो को विज़िबल बनाना।
   bool Show();
 
-  // रिसोर्सेज को रिलीज करना।
+  // मेमोरी और हैंडल को सुरक्षित तरीके से रिलीज करना।
   void Destroy();
 
-  // Flutter View को Windows विंडो के अंदर सेट करना।
+  // Flutter के विज़ुअल्स को इस Windows कंटेनर के अंदर सेट करना।
   void SetChildContent(HWND content);
 
-  // असली Windows हैंडल (Handle) प्राप्त करना।
+  // सिस्टम का असली HWND (Handle) प्राप्त करना।
   HWND GetHandle();
 
-  // विंडो बंद होने पर ऐप को पूरी तरह क्विट (Quit) करना।
+  // अगर यह True है, तो विंडो बंद होते ही पूरी ऐप का प्रोसेस खत्म हो जाएगा।
   void SetQuitOnClose(bool quit_on_close);
 
-  // क्लाइंट एरिया (UI Space) का माप लेना।
+  // स्क्रीन के उस हिस्से का माप लेना जहाँ UI रेंडर होगा।
   RECT GetClientArea();
 
  protected:
-  // Windows के मैसेजेस (Click, Resize, DPI) को हैंडल करना।
+  // Windows OS द्वारा भेजे गए हर सिग्नल (Resize, Close, Keyboard) को प्रोसेस करना।
   virtual LRESULT MessageHandler(HWND window,
                                  UINT const message,
                                  WPARAM const wparam,
@@ -64,17 +67,19 @@ class Win32Window {
  private:
   friend class WindowClassRegistrar;
 
-  // OS Callback: सिस्टम के साथ असली तालमेल।
+  // OS CALLBACK: सिस्टम के लो-लेवल मैसेजेस को रिसीव करने वाला 'Asli' गेटकीपर।
   static LRESULT CALLBACK WndProc(HWND const window,
                                   UINT const message,
                                   WPARAM const wparam,
                                   LPARAM const lparam) noexcept;
 
+  // हैंडल से क्लास ऑब्जेक्ट को मैप करना।
   static Win32Window* GetThisFromHandle(HWND const window) noexcept;
 
-  // 🔥 ASLI ACTION: Windows सिस्टम थीम (Dark/Light) के साथ सिंक करना।
+  // 🔥 ASLI ACTION: Windows 11/10 के Dark Mode और Light Mode के साथ Real-time सिंक।
   static void UpdateTheme(HWND const window);
 
+  // विंडो का इंटरनल डेटा
   bool quit_on_close_ = false;
   HWND window_handle_ = nullptr;
   HWND child_content_ = nullptr;
