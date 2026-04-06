@@ -40,14 +40,20 @@ export const UserProvider = ({ children }) => {
       // 🔥 Step 2: AWS DynamoDB से यूजर का 'Asli' प्रोफाइल लाना (Point 3 & 6)
       await fetchFullProfile(username);
 
-      // 🔥 Step 3: Real-time Identity Tracking (Point 12H)
-      LogRocket.identify(username, {
-        name: attributes.name || 'TriNetra User',
-        email: attributes.email,
-      });
+      // 🔥 Step 3: Real-time Identity Tracking (Safety Lock Added)
+      try {
+        if (typeof LogRocket !== 'undefined') {
+          LogRocket.identify(username, {
+            name: attributes.name || 'TriNetra User',
+            email: attributes.email,
+          });
+        }
+      } catch (trackerErr) {
+        console.warn("🛡️ TriNetra: Tracker blocked by browser, but app is safe.");
+      }
 
     } catch (err) {
-      console.log("🛰️ TriNetra: No active AWS session.");
+      console.log("🛰️ TriNetra Gatekeeper: No active AWS session. User needs to login.");
       setUser(null);
       setProfile(null);
     } finally {
@@ -70,12 +76,16 @@ export const UserProvider = ({ children }) => {
         variables: { id: trinetraId }
       });
       
-      if (res.data.getTriNetraProfile) {
+      if (res.data && res.data.getTriNetraProfile) {
         setProfile(res.data.getTriNetraProfile);
       }
     } catch (err) {
-      Sentry.captureException(err);
-      console.error("❌ AWS Profile Sync Failed");
+      try {
+        Sentry.captureException(err);
+      } catch (sentryErr) {
+        // Safe catch if Sentry is blocked
+      }
+      console.error("❌ AWS Profile Sync Failed", err);
     }
   };
 
