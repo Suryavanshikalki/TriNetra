@@ -32,8 +32,8 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         # 🔥 आपकी तिजोरी वाले असली नाम
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1 
 
     - name: Deploy to S3 Bucket
@@ -46,17 +46,17 @@ jobs:
           exit 1
         fi
 
-  # 🧠 Phase 2: Backend (App Runner) - इसे AWS वेरिफिकेशन के बाद एक्टिव करेंगे
-  # deploy-backend:
-  #   runs-on: ubuntu-latest
-  #   needs: build-and-deploy-frontend
-  #   steps:
-  #   - name: Connect to AWS
-  #     uses: aws-actions/configure-aws-credentials@v4
-  #     with:
-  #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-  #       aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-  #       aws-region: ap-south-1
-  #   - name: Trigger App Runner
-  #     run: |
-  #       aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
+  # 🧠 Phase 2: Backend (App Runner) - Frontend और Backend दोनों 100% AWS से!
+  deploy-backend:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy-frontend
+    steps:
+    - name: Connect to AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+    - name: Trigger App Runner
+      run: |
+        aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
