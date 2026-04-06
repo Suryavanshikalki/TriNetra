@@ -4,11 +4,19 @@
 // future. If not, the values below would default to using the project name when this becomes a
 // 'flutter create' template.
 
+// ==============================================================
+// 👁️🔥 TRINETRA MACOS APP CONFIG (Blueprint Point 12)
+// 100% REAL: No Dummy Identifiers, Production Ready
+// ==============================================================
+
 // The application's name. By default this is also the title of the Flutter window.
+// 🔥 ASLI: TriNetra Super App
 PRODUCT_NAME = trinetra
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.trinetra
+// 🔥 ASLI ACTION: 'com.example' को हटाकर 'com.trinetra.app' किया गया (Dummy Removed)
+PRODUCT_BUNDLE_IDENTIFIER = com.trinetra.app
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+// 🔥 ASLI ACTION: कॉपीराइट को 'TriNetra' के नाम पर रजिस्टर किया गया
+PRODUCT_COPYRIGHT = Copyright © 2026 TriNetra. All rights reserved.
