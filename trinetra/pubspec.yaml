@@ -20,107 +20,107 @@ dependencies:
 
   # ─── THE MASTER KEY VAULT (17 Keys from GitHub Secrets) ─────
   # Yahin se saari 'Asli' keys (AWS, Gemini, Payments) load hongi.
-  flutter_dotenv: ^5.1.0
+  flutter_dotenv: any
 
   # ─── AWS SUPREME ENGINE (The 100% Backend - Zero Firebase Logic) ─────
   # TriNetra ka pura dimaag aur data yahan se chalega.
-  amplify_flutter: ^2.4.0
-  amplify_auth_cognito: ^2.4.0      # 5+1 Strict Logins (AWS Cognito)
-  amplify_api: ^2.4.0               # AppSync GraphQL / REST Backend
-  amplify_storage_s3: ^2.4.0        # High-Speed Media Storage (Point 4)
-  amplify_analytics_pinpoint: ^2.4.0 # User Tracking & Campaigns
+  amplify_flutter: any
+  amplify_auth_cognito: any      # 5+1 Strict Logins (AWS Cognito)
+  amplify_api: any               # AppSync GraphQL / REST Backend
+  amplify_storage_s3: any        # High-Speed Media Storage (Point 4)
+  amplify_analytics_pinpoint: any # User Tracking & Campaigns
 
   # ─── STATE MANAGEMENT & NAVIGATION ──────────────────────────
-  flutter_riverpod: ^2.6.1
-  go_router: ^14.6.1
+  flutter_riverpod: any
+  go_router: any
 
   # ─── UI & ANIMATIONS (Point 1 - Splash & Premium Feel) ───────
-  google_fonts: ^6.2.1
-  lottie: ^3.1.2
-  cached_network_image: ^3.4.1
-  shimmer: ^3.0.0
-  flutter_animate: ^4.5.0
-  pinput: ^5.0.0                   # Asli Phone OTP UI
-  country_code_picker: ^3.0.0
-  flutter_staggered_animations: ^1.1.1
-  flutter_native_splash: ^2.4.1 
+  google_fonts: any
+  lottie: any
+  cached_network_image: any
+  shimmer: any
+  flutter_animate: any
+  pinput: any                   # Asli Phone OTP UI
+  country_code_picker: any
+  flutter_staggered_animations: any
+  flutter_native_splash: any 
 
   # ─── GATEKEEPER (5+1 Strict Logins - Point 2) ───────────────
-  google_sign_in: ^6.2.1 
-  sign_in_with_apple: ^3.3.0 
-  flutter_facebook_auth: ^7.0.0 
-  github_sign_in_plus: ^0.2.2       # For Mode B & C AI Developers
+  google_sign_in: any 
+  sign_in_with_apple: any 
+  flutter_facebook_auth: any 
+  github_sign_in_plus: any       # For Mode B & C AI Developers
   # Microsoft Login is handled via Amplify Cognito Web UI
 
   # ─── MULTI-AI UNIVERSE (6-in-1 Brain - Point 11) ─────────────
-  google_generative_ai: ^0.4.6      # Gemini Power
-  http: ^1.2.0 
-  flutter_markdown: ^0.7.3          # For AI Code Rendering
+  google_generative_ai: any      # Gemini Power
+  http: any 
+  flutter_markdown: any          # For AI Code Rendering
 
   # ─── MEDIA & DOWNLOADS (Point 4 & 5 - Universal Player) ─────
   # Photo, Video, Audio aur PDF asli quality mein download honge.
-  video_player: ^2.9.2
-  chewie: ^1.8.5
-  just_audio: ^0.9.40
-  image_picker: ^1.1.2
-  file_picker: ^8.1.4
-  photo_view: ^0.15.0
-  record: ^5.0.5                    # Voice Messages
-  syncfusion_flutter_pdfviewer: ^33.1.44
+  video_player: any
+  chewie: any
+  just_audio: any
+  image_picker: any
+  file_picker: any
+  photo_view: any
+  record: any                    # Voice Messages
+  syncfusion_flutter_pdfviewer: any
 
   # ─── ECONOMY & PAYMENTS (Point 6 - NO RAZORPAY/STRIPE) ──────
   # TriNetra's Verified Payment Army
-  payu_checkoutpro: ^1.2.2          # 🔥 Asli India Gateway
-  flutter_paypal: ^0.1.5            # 🔥 Global Gateway
-  flutter_braintree: ^2.4.2         # 🔥 Advanced Adyen/Braintree Logic
-  adyen_checkout: ^1.1.0            # 🔥 Global Enterprise Payments
-  webview_flutter: ^4.8.0           # 🔥 Paddle & Web-fallback Payment Engine
-  in_app_purchase: ^3.2.0           # For iOS & Android Pro Subscriptions
+  payu_checkoutpro: any          # 🔥 Asli India Gateway
+  flutter_paypal: any            # 🔥 Global Gateway
+  flutter_braintree: any         # 🔥 Advanced Adyen/Braintree Logic
+  adyen_checkout: any            # 🔥 Global Enterprise Payments
+  webview_flutter: any           # 🔥 Paddle & Web-fallback Payment Engine
+  in_app_purchase: any           # For iOS & Android Pro Subscriptions
 
   # ─── MONETIZATION (Point 6 - Ads Ecosystem) ──────────────────
-  google_mobile_ads: ^5.2.0         # AdMob
-  applovin_max: ^3.10.0             # AppLovin
-  facebook_audience_network: ^1.0.1 # Meta Ads
+  google_mobile_ads: any         # AdMob
+  applovin_max: any             # AppLovin
+  facebook_audience_network: any # Meta Ads
 
   # ─── MONITORING & CRASH TRACKING (Point 12 - AWS Synced) ────
   # Zero Firebase Crashlytics. Pure Sentry & AWS CloudWatch.
-  sentry_flutter: ^8.6.0
+  sentry_flutter: any
 
   # ─── MESSENGER 2.0 & CALLING (Point 5 - WhatsApp Standard) ──
   # Mutual-Only calling logic via WebRTC.
-  flutter_webrtc: ^0.14.1
-  zego_uikit_prebuilt_call: ^4.1.6 
-  flutter_chat_ui: ^1.6.9 
+  flutter_webrtc: any
+  zego_uikit_prebuilt_call: any 
+  flutter_chat_ui: any 
   emoji_picker_flutter: any         # 🔥 FIX: Yahan 'any' lagaya hai error rokne ke liye
 
   # ─── MULTILANGUAGE & JUSTICE (Point 13) ──────────────────────
-  easy_localization: ^3.0.7         # Hindi + English Standard
-  translator: ^0.1.7                # AI Translation for Posts
+  easy_localization: any         # Hindi + English Standard
+  translator: any                # AI Translation for Posts
 
   # ─── NETWORKING & SECURE STORAGE ─────────────────────────────
-  dio: ^5.7.0
-  connectivity_plus: ^6.1.0
-  flutter_secure_storage: ^9.2.2    # Encryption for Wallet & Keys
-  shared_preferences: ^2.3.3
+  dio: any
+  connectivity_plus: any
+  flutter_secure_storage: any    # Encryption for Wallet & Keys
+  shared_preferences: any
 
   # ─── UTILS & AUTO-VERSIONING ─────────────────────────────────
-  uuid: ^4.5.1
-  timeago: ^3.7.0
-  share_plus: ^10.1.3
-  url_launcher: ^6.3.1
-  intl: ^0.20.0
-  path_provider: ^2.1.4
-  permission_handler: ^11.3.1
-  package_info_plus: ^9.0.0
-  device_info_plus: ^12.4.0
+  uuid: any
+  timeago: any
+  share_plus: any
+  url_launcher: any
+  intl: any
+  path_provider: any
+  permission_handler: any
+  package_info_plus: any
+  device_info_plus: any
   web_socket_channel: any
   mime: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
-  flutter_launcher_icons: ^0.13.1   # Auto-Generate 6-Platform Icons
+  flutter_lints: any
+  flutter_launcher_icons: any   # Auto-Generate 6-Platform Icons
 
 flutter:
   uses-material-design: true
