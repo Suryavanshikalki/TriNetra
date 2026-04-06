@@ -7,115 +7,132 @@
 
   <meta name="google-site-verification" content="JDBi6oZB6pn_PzalPVGP-MI7IGWJmWJFhjpWmfv6Gqk" />
   <meta name="google-site-verification" content="okTS37EKOgrxRhI9x7Vs62WbZ0Q3o25qKtuYqg3YDiA" />
-  <meta name="google-site-verification" content="YOUR_GOOGLE_SEARCH_CONSOLE_CODE">
 
-  <title>TriNetra - The Ultimate 6-in-1 Super App | Connect, Share & Grow</title>
-  <meta name="description" content="TriNetra is India's ultimate 6-in-1 social super-app for Android, iOS, Windows, macOS, Linux, and Web. Social media, AI chatbot, secure messenger, OS creation, and seamless payments all in one place.">
-  <meta name="keywords" content="TriNetra, super app, social media India, AI chatbot, refer and earn, TriNetra Pay, social super app, Messenger, Operating System, Kalki">
-  <meta name="author" content="Suryavanshi Kalki - TriNetra Technologies">
+  <title>TriNetra - The Ultimate 6-in-1 Super App | Social, AI & Finance</title>
+  
+  <meta name="description" content="TriNetra: India's first 6-in-1 social super-app. Powered by AWS Cloud & Gemini AI. Connect, chat, create OS, and pay securely on Android, iOS, Windows, macOS, Linux, and Web.">
+  <meta name="keywords" content="TriNetra, Abhi, super app, social media India, Gemini AI, AWS Cloud, TriNetra Pay, Secure Messenger, Justice Auto-Escalation, OS Creation">
+  <meta name="author" content="TriNetra Technologies - Abhi Hanny Kumar">
   <meta name="robots" content="index, follow">
+  
   <link rel="canonical" href="https://trinetra-8b846.web.app">
 
-  <meta property="og:title" content="TriNetra - The Ultimate Super App">
-  <meta property="og:description" content="Join the revolution! Social, AI, and Payments in one powerful app.">
+  <meta property="og:title" content="TriNetra - The Ultimate Super App Universe">
+  <meta property="og:description" content="Join the revolution! Social, Agentic AI, and Secure Payments in one powerful app.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://trinetra-8b846.web.app">
+  <meta property="og:image" content="https://raw.githubusercontent.com/Suryavanshikalki/TriNetra/main/assets/logo.png">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="TriNetra">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #000; color: #fff; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
-    .container { padding: 40px 15px; max-width: 1200px; margin: auto; }
-    .logo { width: 120px; filter: drop-shadow(0 0 15px #ff0000); margin-bottom: 10px; }
-    h1 { font-size: 2.8rem; color: #ff0000; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
-    p { font-size: 1.1rem; color: #ccc; margin-bottom: 30px; }
+    :root {
+      --primary-red: #ff0000;
+      --tri-blue: #00e6ff;
+      --bg-dark: #000;
+    }
+    body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg-dark); color: #fff; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
+    .container { padding: 50px 15px; max-width: 1200px; margin: auto; }
+    .logo { width: 140px; filter: drop-shadow(0 0 20px var(--primary-red)); margin-bottom: 20px; transition: 0.5s; }
+    .logo:hover { transform: rotate(360deg); }
+    h1 { font-size: 3.2rem; color: var(--primary-red); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 4px; font-weight: 900; }
+    .tagline { font-size: 1.2rem; color: var(--tri-blue); margin-bottom: 40px; font-weight: 500; }
     
     /* 6-Platform Grid */
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 20px; }
-    .card { background: #111; padding: 30px; border-radius: 20px; border: 1px solid #333; text-decoration: none; color: #fff; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .card:hover { border-color: #ff0000; transform: translateY(-10px); box-shadow: 0 10px 30px rgba(255,0,0,0.4); background: #1a1a1a; }
-    .card i { font-size: 3rem; margin-bottom: 15px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; padding: 20px; }
+    .card { background: #0a0a0a; padding: 35px; border-radius: 25px; border: 1px solid #222; text-decoration: none; color: #fff; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .card:hover { border-color: var(--tri-blue); transform: translateY(-12px); box-shadow: 0 15px 35px rgba(0, 230, 255, 0.3); background: #111; }
+    .card span[role="img"] { font-size: 3.5rem; margin-bottom: 20px; }
     
-    .highlight { border: 3px solid #fff; animation: glow 1.5s infinite alternate; }
-    @keyframes glow { from { box-shadow: 0 0 5px #fff; } to { box-shadow: 0 0 25px #fff; } }
+    .highlight { border: 2px solid var(--tri-blue) !important; animation: glow 2s infinite alternate; }
+    @keyframes glow { from { box-shadow: 0 0 5px var(--tri-blue); } to { box-shadow: 0 0 25px var(--tri-blue); } }
     
-    .btn-text { font-weight: bold; font-size: 1.3rem; margin-top: 10px; }
-    .sub-text { font-size: 0.8rem; color: #888; margin-top: 5px; }
+    .btn-text { font-weight: 800; font-size: 1.4rem; margin-top: 10px; }
+    .sub-text { font-size: 0.85rem; color: #666; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
     /* Footer SEO */
-    .footer-seo { margin-top: 50px; font-size: 0.9rem; color: #444; padding: 20px; border-top: 1px solid #222; }
+    .footer-seo { margin-top: 60px; font-size: 0.95rem; color: #333; padding: 30px; border-top: 1px solid #111; line-height: 1.6; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <img src="https://raw.githubusercontent.com/Suryavanshikalki/TriNetra/main/assets/logo.png" alt="TriNetra Logo" class="logo">
+    <img src="https://raw.githubusercontent.com/Suryavanshikalki/TriNetra/main/assets/logo.png" alt="TriNetra Master Logo" class="logo">
     <h1>TriNetra</h1>
-    <p>एक ऐप। 6 प्लेटफॉर्म। पूरी दुनिया। | One Super App for Everything</p>
+    <div class="tagline">एक ऐप। 6 प्लेटफॉर्म। पूरी दुनिया। | One Super App for Everything</div>
 
     <div class="grid" id="download-grid">
       <a href="https://github.com/Suryavanshikalki/TriNetra/releases/download/latest/TriNetra-Android.apk" class="card" id="android-card">
-        <span style="font-size: 3rem;">🤖</span>
-        <span class="btn-text">Download for Android</span>
+        <span role="img">🤖</span>
+        <span class="btn-text">Android</span>
         <span class="sub-text">Direct APK Install</span>
       </a>
 
       <a href="https://github.com/Suryavanshikalki/TriNetra/releases/download/latest/TriNetra-Windows.exe" class="card" id="windows-card">
-        <span style="font-size: 3rem;">💻</span>
-        <span class="btn-text">Download for Windows</span>
+        <span role="img">💻</span>
+        <span class="btn-text">Windows</span>
         <span class="sub-text">.EXE Installer</span>
       </a>
 
       <a href="https://github.com/Suryavanshikalki/TriNetra/releases/download/latest/TriNetra-macOS.dmg" class="card" id="macos-card">
-        <span style="font-size: 3rem;">🍎</span>
-        <span class="btn-text">Download for macOS</span>
-        <span class="sub-text">.DMG for Mac</span>
+        <span role="img">🍎</span>
+        <span class="btn-text">macOS</span>
+        <span class="sub-text">Universal .DMG</span>
       </a>
 
       <a href="https://github.com/Suryavanshikalki/TriNetra/releases/download/latest/TriNetra-Linux.deb" class="card" id="linux-card">
-        <span style="font-size: 3rem;">🐧</span>
-        <span class="btn-text">Download for Linux</span>
-        <span class="sub-text">.DEB Package</span>
+        <span role="img">🐧</span>
+        <span class="btn-text">Linux</span>
+        <span class="sub-text">.DEB / Snap Package</span>
       </a>
 
       <a href="https://trinetra-umys.onrender.com" class="card" id="ios-card">
-        <span style="font-size: 3rem;">📱</span>
-        <span class="btn-text">Install iOS PWA</span>
+        <span role="img">📱</span>
+        <span class="btn-text">iOS (PWA)</span>
         <span class="sub-text">Add to Home Screen</span>
       </a>
 
       <a href="https://trinetra-umys.onrender.com" class="card">
-        <span style="font-size: 3rem;">🌐</span>
-        <span class="btn-text">Use Web Version</span>
-        <span class="sub-text">Run in Browser</span>
+        <span role="img">🌐</span>
+        <span class="btn-text">Web App</span>
+        <span class="sub-text">Launch in Browser</span>
       </a>
     </div>
   </div>
 
   <div class="footer-seo">
-    TriNetra Technologies Pvt. Ltd. | India's #1 Social Super-App | Powered by AI & Flutter
+    <strong>TriNetra Technologies Pvt. Ltd.</strong><br>
+    India's Premier Social Super-App Architecture. Built with Agentic AI, AWS Cloud Infrastructure, and Flutter 3.26. <br>
+    &copy; 2026 TriNetra. All Rights Reserved.
   </div>
 
   <script src="flutter.js" defer></script>
   <script>
-    // 1. OLD: Auto-Detect OS & Highlight Box
+    // 🔥 ASLI ACTION: Improved OS Detection for Highlighting
     const ua = navigator.userAgent;
-    if (/android/i.test(ua)) document.getElementById('android-card').classList.add('highlight');
-    else if (/iPhone|iPad|iPod/i.test(ua)) document.getElementById('ios-card').classList.add('highlight');
-    else if (/Win/i.test(ua)) document.getElementById('windows-card').classList.add('highlight');
-    else if (/Mac/i.test(ua)) document.getElementById('macos-card').classList.add('highlight');
+    const cards = {
+      android: document.getElementById('android-card'),
+      ios: document.getElementById('ios-card'),
+      win: document.getElementById('windows-card'),
+      mac: document.getElementById('macos-card')
+    };
 
-    // 2. NEW + OLD COMBINED: Service Worker & Flutter Loading
+    if (/android/i.test(ua)) cards.android?.classList.add('highlight');
+    else if (/iPhone|iPad|iPod/i.test(ua)) cards.ios?.classList.add('highlight');
+    else if (/Win/i.test(ua)) cards.win?.classList.add('highlight');
+    else if (/Mac/i.test(ua)) cards.mac?.classList.add('highlight');
+
+    // Flutter Bootstrap
     window.addEventListener('load', function(ev) {
-      if (typeof _flutter !== 'undefined') {
-        // New Flutter 3.x Engine Logic
+      if (window._flutter && window._flutter.loader) {
         _flutter.loader.loadEntrypoint({
           serviceWorker: {
-            serviceWorkerVersion: typeof serviceWorkerVersion !== 'undefined' ? serviceWorkerVersion : null,
+            serviceWorkerVersion: window.serviceWorkerVersion,
           },
           onEntrypointLoaded: function(engineInitializer) {
             engineInitializer.initializeEngine().then(function(appRunner) {
@@ -123,9 +140,6 @@
             });
           }
         });
-      } else if ('serviceWorker' in navigator) {
-        // Old Fallback (Safe Mode)
-        navigator.serviceWorker.register('flutter_service_worker.js?v=1');
       }
     });
   </script>
