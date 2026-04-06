@@ -91,7 +91,7 @@ dependencies:
   flutter_webrtc: ^0.14.1
   zego_uikit_prebuilt_call: ^4.1.6 
   flutter_chat_ui: ^1.6.9 
-  emoji_picker_flutter: ^3.1.2 
+  emoji_picker_flutter: any         # 🔥 FIX: Yahan 'any' lagaya hai error rokne ke liye
 
   # ─── MULTILANGUAGE & JUSTICE (Point 13) ──────────────────────
   easy_localization: ^3.0.7         # Hindi + English Standard
