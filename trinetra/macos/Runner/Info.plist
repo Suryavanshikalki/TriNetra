@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIconFile</key>
-	<string></string>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -28,5 +28,20 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>TriNetra needs microphone access for AI Voice Assistant and sending voice messages in Messenger.</string>
+	
+	<key>NSCameraUsageDescription</key>
+	<string>TriNetra needs camera access for Video Calling and taking profile pictures.</string>
+	
+	<key>NSLocationUsageDescription</key>
+	<string>TriNetra needs location access to provide localized services and security features.</string>
+
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+
+	<key>NSHighResolutionCapable</key>
+	<true/>
 </dict>
 </plist>
