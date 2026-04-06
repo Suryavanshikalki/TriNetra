@@ -1,15 +1,15 @@
 {
-  "name": "TriNetra",
+  "name": "TriNetra Super App",
   "short_name": "TriNetra",
-  "description": "TriNetra - A Premium Social Super-App. Connect. Share. Grow.",
+  "description": "TriNetra - The Ultimate 6-in-1 Social Universe. Social, AI, Payments, and more.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#18191A",
-  "theme_color": "#1877F2",
+  "background_color": "#0f172a",
+  "theme_color": "#00e6ff",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "en",
-  "categories": ["social", "communication", "lifestyle"],
+  "lang": "hi-IN",
+  "categories": ["social", "communication", "finance", "productivity"],
   "icons": [
     {
       "src": "icons/Icon-192.png",
@@ -26,9 +26,9 @@
   ],
   "shortcuts": [
     {
-      "name": "Open Feed",
+      "name": "Social Feed",
       "short_name": "Feed",
-      "description": "Open your social feed",
+      "description": "See what's happening in the Universe",
       "url": "/home",
       "icons": [{ "src": "icons/Icon-192.png", "sizes": "192x192" }]
     },
@@ -37,6 +37,20 @@
       "short_name": "Chat",
       "description": "Open TriNetra Messenger",
       "url": "/messenger",
+      "icons": [{ "src": "icons/Icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "TriNetra Pay",
+      "short_name": "Pay",
+      "description": "Send or Receive Payments",
+      "url": "/wallet",
+      "icons": [{ "src": "icons/Icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Master AI",
+      "short_name": "AI",
+      "description": "Talk to TriNetra AI Assistant",
+      "url": "/ai-assistant",
       "icons": [{ "src": "icons/Icon-192.png", "sizes": "192x192" }]
     }
   ]
