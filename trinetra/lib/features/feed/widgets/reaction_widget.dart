@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI HAPTICS
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/logrocket_service.dart'; // 🔥 ANALYTICS
 
-/// Facebook-style 6 Animated Reactions Picker
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER REACTION PICKER (Blueprint Style)
+// 100% REAL: Multi-Platform Hover/Touch Support, Haptics, Analytics
+// ==============================================================
+
 class ReactionPicker extends StatefulWidget {
   final void Function(String reaction) onReaction;
   final VoidCallback onDismiss;
@@ -33,10 +39,13 @@ class _ReactionPickerState extends State<ReactionPicker>
   @override
   void initState() {
     super.initState();
+    // ⚡ Logic: High energy elastic pop-in
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
     )..forward();
+    
+    HapticFeedback.mediumImpact(); // Pop vibration
   }
 
   @override
@@ -45,77 +54,115 @@ class _ReactionPickerState extends State<ReactionPicker>
     super.dispose();
   }
 
+  // 🔥 MOBILE TOUCH TRACKER: Track finger movement to scale emojis
+  void _handleTouchUpdate(Offset localPosition) {
+    const double emojiWidth = 44.0; // Padding included
+    final int index = (localPosition.dx / emojiWidth).floor();
+    if (index >= 0 && index < reactions.length) {
+      if (_hoveredIndex != index) {
+        setState(() => _hoveredIndex = index);
+        HapticFeedback.selectionClick(); // Tick on every emoji change
+      }
+    } else {
+      if (_hoveredIndex != null) setState(() => _hoveredIndex = null);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return ScaleTransition(
-      scale: CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.cardDark : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(reactions.length, (i) {
-            final r = reactions[i];
-            final isHovered = _hoveredIndex == i;
-            return MouseRegion(
-              onEnter: (_) => setState(() => _hoveredIndex = i),
-              onExit: (_) => setState(() => _hoveredIndex = null),
-              child: GestureDetector(
-                onTap: () => widget.onReaction(r.label),
-                child: AnimatedScale(
-                  scale: isHovered ? 1.4 : 1.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedOpacity(
-                          opacity: isHovered ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 100),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black87,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              r.label,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
+    return TapRegion( // 🔥 AUTO DISMISS LOGIC
+      onTapOutside: (_) => widget.onDismiss(),
+      child: ScaleTransition(
+        scale: CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: GestureDetector(
+            // 🔥 REAL MOBILE SWIPE/TOUCH SUPPORT
+            onPanUpdate: (details) => _handleTouchUpdate(details.localPosition),
+            onPanEnd: (_) {
+              if (_hoveredIndex != null) {
+                _selectReaction(reactions[_hoveredIndex!].label);
+              }
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(reactions.length, (i) {
+                final r = reactions[i];
+                final isSelected = _hoveredIndex == i;
+                
+                return MouseRegion( // Desktop Support
+                  onEnter: (_) {
+                    setState(() => _hoveredIndex = i);
+                    HapticFeedback.selectionClick();
+                  },
+                  onExit: (_) => setState(() => _hoveredIndex = null),
+                  child: GestureDetector(
+                    onTap: () => _selectReaction(r.label),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Floating Label
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeOutBack,
+                            transform: Matrix4.translationValues(0, isSelected ? -5 : 10, 0),
+                            child: AnimatedOpacity(
+                              opacity: isSelected ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 150),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  r.label,
+                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(r.emoji, style: const TextStyle(fontSize: 26)),
-                      ],
+                          const SizedBox(height: 2),
+                          // Animated Emoji
+                          AnimatedScale(
+                            scale: isSelected ? 1.5 : 1.0,
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeOutBack,
+                            child: Text(r.emoji, style: const TextStyle(fontSize: 28)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }),
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  void _selectReaction(String label) {
+    HapticFeedback.heavyImpact(); // Confirmed vibration
+    LogRocketService.instance.track('REACTION_PICKED', properties: {'reaction': label});
+    widget.onReaction(label);
   }
 }
 
