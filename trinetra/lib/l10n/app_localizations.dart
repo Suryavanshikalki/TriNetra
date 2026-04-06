@@ -511,6 +511,73 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transaction History'**
   String get transactionHistory;
+
+  // ==========================================================
+  // 👁️🔥 TRINETRA MASTER TEXT KEYS (ADDED FROM BLUEPRINT)
+  // 100% Matching with your provided text (Point 2, 4, 6, 11)
+  // ==========================================================
+
+  // ─── LOGIN GATEWAYS (Point 2) ───
+  /// Translates to: **'Continue with Google'**
+  String get continueWithGoogle;
+
+  /// Translates to: **'Continue with Apple'**
+  String get continueWithApple;
+
+  /// Translates to: **'Continue with Microsoft'**
+  String get continueWithMicrosoft;
+
+  /// Translates to: **'Login with GitHub (AI Only)'**
+  String get loginWithGithub;
+
+  // ─── PAYMENT GATEWAYS & ECONOMY (Point 6) ───
+  /// Translates to: **'Pay via PayU India'**
+  String get payViaPayU;
+
+  /// Translates to: **'Pay via PayPal'**
+  String get payViaPayPal;
+
+  /// Translates to: **'Pay via Paddle'**
+  String get payViaPaddle;
+
+  /// Translates to: **'Pay via Adyen'**
+  String get payViaAdyen;
+
+  /// Translates to: **'Boost Wallet'**
+  String get boostWallet;
+
+  // ─── MASTER AI (Point 11) ───
+  /// Translates to: **'Master AI Hub'**
+  String get masterAiHub;
+
+  /// Translates to: **'Chatbot Mode (Meta/GPT Level)'**
+  String get chatbotMode;
+
+  /// Translates to: **'Agentic AI Mode'**
+  String get agenticAiMode;
+
+  /// Translates to: **'Super Agentic AI (Human-Brain Level)'**
+  String get superAgenticAi;
+
+  /// Translates to: **'OS Creation Tier'**
+  String get osCreationTier;
+
+  // ─── AUTO-ESCALATION (Point 4) ───
+  /// Translates to: **'Auto-Escalate System'**
+  String get autoEscalateSystem;
+
+  /// Translates to: **'Escalate to MLA / CM / PM / Court'**
+  String get escalateToAuthorities;
+
+  // ─── SETTINGS & PRIVACY (Point 12) ───
+  /// Translates to: **'Accounts Centre'**
+  String get accountsCentre;
+
+  /// Translates to: **'Privacy Checkup'**
+  String get privacyCheckup;
+
+  /// Translates to: **'Help & Customer Support'**
+  String get customerSupport;
 }
 
 class _AppLocalizationsDelegate
