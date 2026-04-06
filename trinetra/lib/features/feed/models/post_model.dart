@@ -1,7 +1,7 @@
-// 🔥 Firebase का import हटा दिया गया है 🔥
+// 🔥 Firebase 100% Removed. AWS AppSync GraphQL Ready 🔥
 
 /// Post Model (AWS Ready - No Firebase)
-/// Collection: posts/{postId}
+/// Database: AWS DynamoDB via AppSync
 class PostModel {
   final String id;
   final String userId;
@@ -10,14 +10,21 @@ class PostModel {
   final bool isVerified;
   final String content;
   final List<String> mediaUrls;
-  final String mediaType; // 'none' | 'image' | 'video' | 'pdf'
+  
+  // 🔥 ASLI UNIVERSAL MEDIA SUPPORT (Point 4)
+  final String mediaType; // 'none' | 'image' | 'video' | 'audio' | 'voice' | 'pdf'
+  
   final Map<String, int> reactions; // {like:5, love:3, haha:1, wow:0, sad:0, angry:0}
   final Map<String, String> userReactions; // {uid: 'love', uid2: 'like'}
   final int commentsCount;
   final int sharesCount;
   final DateTime createdAt;
-  final bool isBooted;
+  final bool isBoosted; // 🔥 FIXED: Typo 'isBooted' to 'isBoosted'
   final String? location;
+
+  // 🔥 ASLI AUTO-ESCALATION ENGINE FIELDS (Point 4 - ₹30k/month Tier)
+  final bool isComplaint;
+  final String escalationLevel; // 'none' | 'Local_Authority' | 'MLA' | 'CM' | 'PM' | 'Supreme_Court' | 'International'
 
   const PostModel({
     required this.id,
@@ -35,16 +42,18 @@ class PostModel {
     this.commentsCount = 0,
     this.sharesCount = 0,
     required this.createdAt,
-    this.isBooted = false,
+    this.isBoosted = false,
     this.location,
+    this.isComplaint = false,
+    this.escalationLevel = 'none',
   });
 
-  // 🔥 FIXED: DocumentSnapshot को हटाकर नॉर्मल Map कर दिया गया है 🔥
-  factory PostModel.fromMap(String docId, Map<String, dynamic> d) {
+  // 🔥 FIXED: Firebase style docId removed. AWS GraphQL returns 'id' inside the Map 🔥
+  factory PostModel.fromMap(Map<String, dynamic> d) {
     return PostModel(
-      id: docId,
-      userId: d['userId'] ?? '',
-      userName: d['userName'] ?? '',
+      id: d['id'] ?? '',
+      userId: d['authorId'] ?? d['userId'] ?? '', // Match GraphQL query schema
+      userName: d['userName'] ?? 'TriNetra User',
       userAvatar: d['userAvatar'] ?? '',
       isVerified: d['isVerified'] ?? false,
       content: d['content'] ?? '',
@@ -56,18 +65,20 @@ class PostModel {
       userReactions: Map<String, String>.from(d['userReactions'] ?? {}),
       commentsCount: d['commentsCount'] ?? 0,
       sharesCount: d['sharesCount'] ?? 0,
-      // 🔥 FIXED: Timestamp को हटाकर DateTime कर दिया गया है 🔥
       createdAt: d['createdAt'] != null 
           ? DateTime.tryParse(d['createdAt'].toString()) ?? DateTime.now() 
           : DateTime.now(),
-      isBooted: d['isBoosted'] ?? false,
+      isBoosted: d['isBoosted'] ?? false,
       location: d['location'],
+      isComplaint: d['isComplaint'] ?? false,
+      escalationLevel: d['escalationLevel'] ?? 'none',
     );
   }
 
-  // 🔥 FIXED: toFirestore का नाम बदलकर toMap कर दिया गया है 🔥
+  // 🔥 FIXED: AWS API Mutation format 🔥
   Map<String, dynamic> toMap() => {
-    'userId': userId,
+    'id': id,
+    'authorId': userId,
     'userName': userName,
     'userAvatar': userAvatar,
     'isVerified': isVerified,
@@ -78,10 +89,11 @@ class PostModel {
     'userReactions': userReactions,
     'commentsCount': commentsCount,
     'sharesCount': sharesCount,
-    // 🔥 FIXED: FieldValue को हटाकर स्टैंडर्ड टाइम कर दिया गया है 🔥
-    'createdAt': createdAt.toIso8601String(),
-    'isBoosted': isBooted,
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'isBoosted': isBoosted,
     'location': location,
+    'isComplaint': isComplaint,
+    'escalationLevel': escalationLevel,
   };
 
   int get totalReactions =>
@@ -91,6 +103,8 @@ class PostModel {
     Map<String, int>? reactions,
     Map<String, String>? userReactions,
     int? commentsCount,
+    bool? isBoosted,
+    String? escalationLevel,
   }) =>
       PostModel(
         id: id,
@@ -106,7 +120,9 @@ class PostModel {
         commentsCount: commentsCount ?? this.commentsCount,
         sharesCount: sharesCount,
         createdAt: createdAt,
-        isBooted: isBooted,
+        isBoosted: isBoosted ?? this.isBoosted,
         location: location,
+        isComplaint: isComplaint,
+        escalationLevel: escalationLevel ?? this.escalationLevel,
       );
 }
