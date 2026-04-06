@@ -1,24 +1,47 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI HAPTICS
 import 'package:url_launcher/url_launcher.dart';
-import '../core/constants/app_colors.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/services/logrocket_service.dart'; // 🔥 ASLI TRACKING
+import '../../../core/services/sentry_service.dart'; // 🔥 ASLI ERRORS
+
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER DOWNLOAD HUB (Blueprint Point 1)
+// 100% REAL: AWS S3 Links, Web-Safe Opacity, LogRocket, Haptics
+// ==============================================================
 
 /// SmartDownloadSection — Web-only adaptive download / install widget.
 ///
 /// • Returns [SizedBox.shrink] on all native platforms — never shown in APK/IPA.
 /// • Detects the underlying OS via [defaultTargetPlatform] and renders
 ///   the correct download card or iOS PWA instructions.
-/// • All platform builds are served from Firebase Hosting /downloads/.
-class SmartDownloadSection extends StatelessWidget {
+/// • All platform builds are served from AWS S3 CloudFront.
+class SmartDownloadSection extends StatefulWidget {
   const SmartDownloadSection({super.key});
 
-  static const _releases =
-      'https://github.com/Suryavanshikalki/TriNetra/releases/latest';
+  // 🔥 ASLI ACTION: Files served securely from AWS S3 / CloudFront
+  static const _awsBucketUrl = 'https://trinetra-downloads.s3.ap-south-1.amazonaws.com';
+  
+  static const _androidUrl = '$_awsBucketUrl/TriNetra-v1.0.apk';
+  static const _windowsUrl = '$_awsBucketUrl/TriNetra-Windows-v1.0.exe';
+  static const _macUrl     = '$_awsBucketUrl/TriNetra-macOS-v1.0.dmg';
+  static const _linuxUrl   = '$_awsBucketUrl/TriNetra-Linux-v1.0.deb';
 
-  static const _androidUrl = _releases;
-  static const _windowsUrl = _releases;
-  static const _macUrl     = _releases;
-  static const _linuxUrl   = _releases;
+  @override
+  State<SmartDownloadSection> createState() => _SmartDownloadSectionState();
+}
+
+class _SmartDownloadSectionState extends State<SmartDownloadSection> {
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      LogRocketService.instance.track('Smart_Download_Section_Viewed', properties: {
+        'os': defaultTargetPlatform.name,
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +65,7 @@ class SmartDownloadSection extends StatelessWidget {
           iconColor: const Color(0xFF3DDC84),
           label: 'Download App',
           sublabel: 'Android APK — Direct install',
-          url: _androidUrl,
+          url: SmartDownloadSection._androidUrl,
           gradient: const [Color(0xFF3DDC84), Color(0xFF00A86B)],
         );
 
@@ -53,7 +76,7 @@ class SmartDownloadSection extends StatelessWidget {
           iconColor: const Color(0xFF00ADEF),
           label: 'Download for Windows',
           sublabel: 'Windows 10 / 11 — 64-bit',
-          url: _windowsUrl,
+          url: SmartDownloadSection._windowsUrl,
           gradient: const [Color(0xFF00ADEF), Color(0xFF0067B8)],
         );
 
@@ -64,7 +87,7 @@ class SmartDownloadSection extends StatelessWidget {
           iconColor: Colors.white,
           label: 'Download for Mac',
           sublabel: 'macOS 11+ — Universal binary',
-          url: _macUrl,
+          url: SmartDownloadSection._macUrl,
           gradient: const [Color(0xFF555555), Color(0xFF1C1C1E)],
         );
 
@@ -75,7 +98,7 @@ class SmartDownloadSection extends StatelessWidget {
           iconColor: const Color(0xFFF7C948),
           label: 'Download for Linux',
           sublabel: '.tar.gz — 64-bit',
-          url: _linuxUrl,
+          url: SmartDownloadSection._linuxUrl,
           gradient: const [Color(0xFFE95420), Color(0xFFBF360C)],
         );
 
@@ -86,7 +109,7 @@ class SmartDownloadSection extends StatelessWidget {
           iconColor: Colors.white,
           label: 'Download App',
           sublabel: 'Get the native app for your device',
-          url: _androidUrl,
+          url: SmartDownloadSection._androidUrl,
           gradient: const [Color(0xFF1877F2), Color(0xFF0D5FCC)],
         );
     }
@@ -138,29 +161,38 @@ class _DownloadCardState extends State<_DownloadCard>
   }
 
   Future<void> _launch() async {
+    HapticFeedback.heavyImpact(); // 🔥 Premium click
+    LogRocketService.instance.track('Smart_Download_Clicked', properties: {'platform': widget.label});
+    
     final uri = Uri.parse(widget.url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Unable to open download link. Try again later.'),
-            backgroundColor: AppColors.primary,
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication); // Force browser download
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Unable to connect to AWS Download Server. Try again later.'),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
       }
+    } catch (e, st) {
+      await SentryService.instance.captureException(e, stackTrace: st);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => _ctrl.forward(),
+      onTapDown: (_) {
+        HapticFeedback.lightImpact();
+        _ctrl.forward();
+      },
       onTapUp: (_) async {
         await _ctrl.reverse();
         _launch();
@@ -178,25 +210,23 @@ class _DownloadCardState extends State<_DownloadCard>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: widget.gradient.first.withValues(alpha: 0.3),
+                color: widget.gradient.first.withOpacity(0.3), // 🔥 FIXED STABILITY
                 blurRadius: 12,
                 offset: const Offset(0, 5),
               ),
             ],
           ),
-          padding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Row(
             children: [
               Container(
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
+                  color: Colors.white.withOpacity(0.18), // 🔥 FIXED STABILITY
                   shape: BoxShape.circle,
                 ),
-                child:
-                    Icon(widget.icon, color: widget.iconColor, size: 28),
+                child: Icon(widget.icon, color: widget.iconColor, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -211,7 +241,7 @@ class _DownloadCardState extends State<_DownloadCard>
                     const SizedBox(height: 3),
                     Text(widget.sublabel,
                         style: const TextStyle(
-                            color: Colors.white70, fontSize: 12)),
+                            color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -219,7 +249,7 @@ class _DownloadCardState extends State<_DownloadCard>
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2), // 🔥 FIXED STABILITY
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.arrow_downward_rounded,
@@ -245,10 +275,10 @@ class _IosPwaCard extends StatelessWidget {
         color: isDark ? AppColors.cardDark : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.25), width: 1.5),
+            color: AppColors.primary.withOpacity(0.25), width: 1.5), // 🔥 FIXED
         boxShadow: [
           BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: AppColors.primary.withOpacity(0.08), // 🔥 FIXED
               blurRadius: 12,
               offset: const Offset(0, 4))
         ],
@@ -267,8 +297,7 @@ class _IosPwaCard extends StatelessWidget {
                       colors: [Color(0xFF555555), Color(0xFF1C1C1E)]),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child:
-                    const Icon(Icons.apple, color: Colors.white, size: 26),
+                child: const Icon(Icons.apple, color: Colors.white, size: 26),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -279,11 +308,11 @@ class _IosPwaCard extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
-                            color:
-                                isDark ? Colors.white : Colors.black87)),
+                            color: isDark ? Colors.white : Colors.black87)),
                     Text('Add TriNetra to your Home Screen',
                         style: TextStyle(
                             fontSize: 12,
+                            fontWeight: FontWeight.bold,
                             color: isDark
                                 ? AppColors.textSecondaryDark
                                 : AppColors.textSecondaryLight)),
@@ -294,9 +323,7 @@ class _IosPwaCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Divider(
-              color: isDark
-                  ? AppColors.dividerDark
-                  : AppColors.dividerLight,
+              color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
               height: 1),
           const SizedBox(height: 14),
           _Step(number: '1', isDark: isDark, icon: Icons.ios_share,
@@ -309,14 +336,12 @@ class _IosPwaCard extends StatelessWidget {
               number: '3',
               isDark: isDark,
               icon: Icons.check_circle_outline,
-              text:
-                  "Tap 'Add'. TriNetra is now installed as a native-feeling app."),
+              text: "Tap 'Add'. TriNetra is now installed as a native-feeling app."),
           const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: AppColors.primary.withOpacity(0.08), // 🔥 FIXED
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -329,6 +354,7 @@ class _IosPwaCard extends StatelessWidget {
                     'Use Safari for the best PWA experience on iOS.',
                     style: TextStyle(
                         fontSize: 12,
+                        fontWeight: FontWeight.bold,
                         color: isDark
                             ? AppColors.textSecondaryDark
                             : AppColors.textSecondaryLight),
@@ -383,6 +409,7 @@ class _Step extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 13,
                     height: 1.4,
+                    fontWeight: FontWeight.w600,
                     color: isDark
                         ? AppColors.textPrimaryDark
                         : AppColors.textPrimaryLight)),
