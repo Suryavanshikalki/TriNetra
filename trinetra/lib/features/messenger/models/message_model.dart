@@ -1,7 +1,38 @@
-// 🔥 Firebase का import हटा दिया गया है 🔥
+import 'package:flutter/material.dart';
 
-/// Message Model (AWS Ready)
-/// Collection: conversations/{convId}/messages/{msgId}
+// ==============================================================
+// 👁️🔥 TRINETRA MESSENGER MODELS (Blueprint Point 4 & 5)
+// 100% REAL: No Firebase, AWS Map Ready, Universal Media Support
+// ==============================================================
+
+/// ─── Message Type (Point 4 & 5 Integration) ──────────────────
+enum MessageType {
+  text,
+  image,
+  video,
+  audio,
+  voice,    // 🔥 ASLI: For Mic/Voice Notes (Point 5)
+  pdf,      // 🔥 ASLI: For Documents (Point 4)
+  location,
+  contact;  // 🔥 ASLI: For Contact Sharing (Point 5)
+
+  static MessageType fromString(String s) {
+    switch (s) {
+      case 'image': return MessageType.image;
+      case 'video': return MessageType.video;
+      case 'audio': return MessageType.audio;
+      case 'voice': return MessageType.voice;
+      case 'pdf': return MessageType.pdf;
+      case 'location': return MessageType.location;
+      case 'contact': return MessageType.contact;
+      default: return MessageType.text;
+    }
+  }
+
+  String get value => name;
+}
+
+/// ─── Message Model (100% Functional) ─────────────────────────
 class MessageModel {
   final String id;
   final String conversationId;
@@ -29,7 +60,7 @@ class MessageModel {
     this.replyToContent,
   });
 
-  // 🔥 FIXED: DocumentSnapshot को हटाकर नॉर्मल Map कर दिया गया है 🔥
+  // 🔥 ASLI AWS MAPPING: No Firebase dependencies
   factory MessageModel.fromMap(String docId, Map<String, dynamic> d) {
     return MessageModel(
       id: docId,
@@ -39,7 +70,7 @@ class MessageModel {
       content: d['content'] ?? '',
       type: MessageType.fromString(d['type'] ?? 'text'),
       mediaUrl: d['mediaUrl'],
-      // 🔥 FIXED: Timestamp को हटाकर DateTime कर दिया गया है 🔥
+      // 🔥 FIXED: Standard ISO & AWS DateTime Compatibility
       timestamp: d['timestamp'] != null 
           ? DateTime.tryParse(d['timestamp'].toString()) ?? DateTime.now() 
           : DateTime.now(),
@@ -49,7 +80,6 @@ class MessageModel {
     );
   }
 
-  // 🔥 FIXED: toFirestore को बदलकर toMap कर दिया गया है 🔥
   Map<String, dynamic> toMap() => {
     'conversationId': conversationId,
     'senderId': senderId,
@@ -57,7 +87,6 @@ class MessageModel {
     'content': content,
     'type': type.value,
     'mediaUrl': mediaUrl,
-    // 🔥 FIXED: FieldValue को हटाकर स्टैंडर्ड ISO टाइम कर दिया गया है 🔥
     'timestamp': timestamp.toIso8601String(),
     'isRead': isRead,
     'replyToId': replyToId,
@@ -65,30 +94,7 @@ class MessageModel {
   };
 }
 
-enum MessageType {
-  text,
-  image,
-  video,
-  audio,
-  pdf,
-  location;
-
-  static MessageType fromString(String s) {
-    switch (s) {
-      case 'image': return MessageType.image;
-      case 'video': return MessageType.video;
-      case 'audio': return MessageType.audio;
-      case 'pdf': return MessageType.pdf;
-      case 'location': return MessageType.location;
-      default: return MessageType.text;
-    }
-  }
-
-  String get value => name;
-}
-
-/// Conversation Model (AWS Ready)
-/// Collection: conversations/{convId}
+/// ─── Conversation Model (AWS Ready) ──────────────────────────
 class ConversationModel {
   final String id;
   final List<String> participantIds;
@@ -116,7 +122,6 @@ class ConversationModel {
     this.groupAvatar,
   });
 
-  // 🔥 FIXED: DocumentSnapshot को हटाकर नॉर्मल Map कर दिया गया है 🔥
   factory ConversationModel.fromMap(String docId, Map<String, dynamic> d) {
     return ConversationModel(
       id: docId,
@@ -125,7 +130,6 @@ class ConversationModel {
       participantAvatars: Map<String, String>.from(d['participantAvatars'] ?? {}),
       lastMessage: d['lastMessage'] ?? '',
       lastMessageSenderId: d['lastMessageSenderId'] ?? '',
-      // 🔥 FIXED: Timestamp को हटाकर DateTime कर दिया गया है 🔥
       lastMessageTime: d['lastMessageTime'] != null 
           ? DateTime.tryParse(d['lastMessageTime'].toString()) ?? DateTime.now() 
           : DateTime.now(),
@@ -136,10 +140,10 @@ class ConversationModel {
     );
   }
 
-  /// Get the other participant's name (for 1-on-1 chats)
+  // 🔥 UTILS (Blueprint Point 5 logic)
   String getOtherName(String myUid) {
     final otherId = participantIds.firstWhere((id) => id != myUid, orElse: () => '');
-    return participantNames[otherId] ?? 'Unknown';
+    return participantNames[otherId] ?? 'TriNetra User';
   }
 
   String getOtherAvatar(String myUid) {
