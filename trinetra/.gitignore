@@ -1,6 +1,6 @@
 # ==============================================================
 # 👁️🔥 TRINETRA REPOSITORY GUARD (Point 12)
-# 100% REAL: No Dummy Junk, No Secrets Leaks
+# 100% REAL: Facebook 2026 Standard | AWS Supreme Security
 # ==============================================================
 
 # 🎯 Flutter / Dart Standard Guards
@@ -39,7 +39,7 @@ macos/Flutter/GeneratedPluginRegistrant.swift
 macos/Flutter/ephemeral/
 macos/Pods/
 
-# 🪟 Windows Build Junk (🔥 ASLI: Added .vs Guard)
+# 🪟 Windows Build Junk (🔥 ASLI: Comprehensive Win-Guard)
 .vs/
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugin_registrant.h
@@ -58,7 +58,8 @@ linux/flutter/generated_plugin_registrant.cc
 linux/flutter/generated_plugin_registrant.h
 linux/flutter/generated_plugins.cmake
 
-# ☁️ Firebase & AWS Cloud Security (🔥 ASLI: Added AWS Guard)
+# ☁️ AWS Cloud & Firebase Security (🔥 ASLI: Deep AWS Sync)
+# AWS Amplify generates local config files that MUST NOT be public
 firebase-admin.json
 .firebase/
 firebase_app_id_file.json
@@ -66,15 +67,20 @@ firebase_app_id_file.json
 .aws/
 amplify/
 aws-exports.js
+amplifyconfiguration.dart
+amplify-build-config.json
+lib/amplifyconfiguration.dart
 
-# 🔐 Secrets & Environment (NEVER COMMIT)
+# 🔐 Secrets & Environment (NEVER COMMIT - Zero Leak Policy)
 *.env
 .env*
 secrets/
 *secret*
 credentials.json
+aws_credentials
+*.pem
 
-# 💻 IDE & OS Junk (🔥 ASLI: Added Thumbs.db & desktop.ini)
+# 💻 IDE & OS Junk (🔥 ASLI: Zero Junk Policy)
 .idea/
 .vscode/
 *.swp
@@ -93,5 +99,6 @@ release-artifacts/
 trinetra-deb/
 Payload/
 
-# 🌐 Localization
+# 🌐 Localization & Tooling
 lib/l10n/app_localizations.g.dart
+.dart_tool/
