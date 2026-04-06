@@ -3,9 +3,14 @@ description: TriNetra - A Premium Social Super-App (Facebook 2026 Standard)
 publish_to: 'none'
 version: 1.0.0+1
 
+# ==============================================================
+# 👁️🔥 TRINETRA CORE ENGINE (Point 12)
+# 100% REAL: Powered by AWS Supreme | Firebase for Domain Only
+# ==============================================================
+
 environment:
   sdk: '>=3.5.0 <4.0.0'
-  flutter: '>=3.24.0'
+  flutter: '>=3.26.0' # Facebook 2026 Standard requires latest Flutter
 
 dependencies:
   flutter:
@@ -14,89 +19,91 @@ dependencies:
     sdk: flutter
 
   # ─── THE MASTER KEY VAULT (17 Keys from GitHub Secrets) ─────
+  # Yahin se saari 'Asli' keys (AWS, Gemini, Payments) load hongi.
   flutter_dotenv: ^5.1.0
 
-  # ─── AWS AMPLIFY (The 100% Backend Engine - Firebase Khatm) ─────
+  # ─── AWS SUPREME ENGINE (The 100% Backend - Zero Firebase Logic) ─────
+  # TriNetra ka pura dimaag aur data yahan se chalega.
   amplify_flutter: ^2.4.0
-  amplify_auth_cognito: ^2.4.0      
-  amplify_api: ^2.4.0               
-  amplify_storage_s3: ^2.4.0        
+  amplify_auth_cognito: ^2.4.0      # 5+1 Strict Logins (AWS Cognito)
+  amplify_api: ^2.4.0               # AppSync GraphQL / REST Backend
+  amplify_storage_s3: ^2.4.0        # High-Speed Media Storage (Point 4)
+  amplify_analytics_pinpoint: ^2.4.0 # User Tracking & Campaigns
 
-  # ─── State Management & Navigation ──────────────────────────
+  # ─── STATE MANAGEMENT & NAVIGATION ──────────────────────────
   flutter_riverpod: ^2.6.1
   go_router: ^14.6.1
 
-  # ─── UI & Animations (Point 1 - Splash Screen & Logo) ───────
+  # ─── UI & ANIMATIONS (Point 1 - Splash & Premium Feel) ───────
   google_fonts: ^6.2.1
   lottie: ^3.1.2
   cached_network_image: ^3.4.1
   shimmer: ^3.0.0
   flutter_animate: ^4.5.0
-  pinput: ^5.0.0
+  pinput: ^5.0.0                   # Asli Phone OTP UI
   country_code_picker: ^3.0.0
   flutter_staggered_animations: ^1.1.1
   flutter_native_splash: ^2.4.1 
 
-  # ─── Gatekeeper (5+1 Strict Logins - Point 2) ───────────────
+  # ─── GATEKEEPER (5+1 Strict Logins - Point 2) ───────────────
   google_sign_in: ^6.2.1 
   sign_in_with_apple: ^3.3.0 
   flutter_facebook_auth: ^7.0.0 
-  github_sign_in_plus: ^0.2.2 
+  github_sign_in_plus: ^0.2.2       # For Mode B & C AI Developers
+  # Microsoft Login is handled via Amplify Cognito Web UI
 
-  # ─── AI (6-in-1 Brain - Point 11) ───────────────────────────
-  google_generative_ai: ^0.4.6
+  # ─── MULTI-AI UNIVERSE (6-in-1 Brain - Point 11) ─────────────
+  google_generative_ai: ^0.4.6      # Gemini Power
   http: ^1.2.0 
-  flutter_markdown: ^0.7.3 
+  flutter_markdown: ^0.7.3          # For AI Code Rendering
 
-  # ─── Media & Downloads (Point 4 & 5) ────────────────────────
+  # ─── MEDIA & DOWNLOADS (Point 4 & 5 - Universal Player) ─────
+  # Photo, Video, Audio aur PDF asli quality mein download honge.
   video_player: ^2.9.2
   chewie: ^1.8.5
   just_audio: ^0.9.40
   image_picker: ^1.1.2
   file_picker: ^8.1.4
   photo_view: ^0.15.0
-  record: ^5.0.5 
-  
-  # ─── PDF ─────────────────────────────────────────────────────
+  record: ^5.0.5                    # Voice Messages
   syncfusion_flutter_pdfviewer: ^33.1.44
 
-  # ─── Ads & Economy (Point 6 - THE ASLI GATEWAYS INJECTED) ────
-  google_mobile_ads: ^5.2.0
-  applovin_max: ^3.10.0 
-  facebook_audience_network: ^1.0.1 
-  flutter_paypal: ^0.1.5 
-  in_app_purchase: ^3.2.0 
-  payu_checkoutpro: ^1.2.2       # 🔥 PayU India
-  flutter_braintree: ^2.4.2      # 🔥 Braintree
-  adyen_checkout: ^1.1.0         # 🔥 Adyen
-  webview_flutter: ^4.8.0        # 🔥 Paddle Web Checkout & 6-Platform Fallback
+  # ─── ECONOMY & PAYMENTS (Point 6 - NO RAZORPAY/STRIPE) ──────
+  # TriNetra's Verified Payment Army
+  payu_checkoutpro: ^1.2.2          # 🔥 Asli India Gateway
+  flutter_paypal: ^0.1.5            # 🔥 Global Gateway
+  flutter_braintree: ^2.4.2         # 🔥 Advanced Adyen/Braintree Logic
+  adyen_checkout: ^1.1.0            # 🔥 Global Enterprise Payments
+  webview_flutter: ^4.8.0           # 🔥 Paddle & Web-fallback Payment Engine
+  in_app_purchase: ^3.2.0           # For iOS & Android Pro Subscriptions
 
-  # ─── Monitoring / Error Tracking (Point 12H - 0% Firebase) ───
+  # ─── MONETIZATION (Point 6 - Ads Ecosystem) ──────────────────
+  google_mobile_ads: ^5.2.0         # AdMob
+  applovin_max: ^3.10.0             # AppLovin
+  facebook_audience_network: ^1.0.1 # Meta Ads
+
+  # ─── MONITORING & CRASH TRACKING (Point 12 - AWS Synced) ────
+  # Zero Firebase Crashlytics. Pure Sentry & AWS CloudWatch.
   sentry_flutter: ^8.6.0
 
-  # ─── WebRTC & Calling (Point 5 - WhatsApp 2.0) ──────────────
+  # ─── MESSENGER 2.0 & CALLING (Point 5 - WhatsApp Standard) ──
+  # Mutual-Only calling logic via WebRTC.
   flutter_webrtc: ^0.14.1
   zego_uikit_prebuilt_call: ^4.1.6 
-
-  # ─── Chat UI (Point 5) ──────────────────────────────────────
   flutter_chat_ui: ^1.6.9 
   emoji_picker_flutter: ^3.1.2 
 
-  # ─── Multilanguage & Translation (Point 13) ─────────────────
-  easy_localization: ^3.0.7 
-  translator: ^0.1.7 
+  # ─── MULTILANGUAGE & JUSTICE (Point 13) ──────────────────────
+  easy_localization: ^3.0.7         # Hindi + English Standard
+  translator: ^0.1.7                # AI Translation for Posts
 
-  # ─── Networking & Storage ────────────────────────────────────
+  # ─── NETWORKING & SECURE STORAGE ─────────────────────────────
   dio: ^5.7.0
   connectivity_plus: ^6.1.0
-  flutter_secure_storage: ^9.2.2
+  flutter_secure_storage: ^9.2.2    # Encryption for Wallet & Keys
   shared_preferences: ^2.3.3
 
-  # 🔥 The Master Fix: Flutter will automatically solve versions 🔥
-  web_socket_channel: any
-  mime: any
-
-  # ─── Utils ───────────────────────────────────────────────────
+  # ─── UTILS & AUTO-VERSIONING ─────────────────────────────────
   uuid: ^4.5.1
   timeago: ^3.7.0
   share_plus: ^10.1.3
@@ -106,18 +113,22 @@ dependencies:
   permission_handler: ^11.3.1
   package_info_plus: ^9.0.0
   device_info_plus: ^12.4.0
+  web_socket_channel: any
+  mime: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
-  flutter_launcher_icons: ^0.13.1 # 🔥 Auto-Generate Icons for 6 Platforms
+  flutter_launcher_icons: ^0.13.1   # Auto-Generate 6-Platform Icons
+  amplify_datastore_generator: ^2.0.0
 
 flutter:
   uses-material-design: true
-  generate: true
+  generate: true                    # For Auto-generating L10n Files
+
   assets:
-    - .env # 🔥 YAHAN TUMHARI 17 KEYS LOAD HONGI
+    - .env                          # Yahan tumhari 17 ASLI KEYS load hongi
     - assets/images/
     - assets/lottie/
     - assets/icons/
