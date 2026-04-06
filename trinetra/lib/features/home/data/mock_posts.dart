@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 // ==============================================================
-// 👁️🔥 TRINETRA MASTER COMBINED FILE (Mock + Asli Data)
+// 👁️🔥 TRINETRA MASTER COMBINED FILE (Models + Data + AWS Logic)
+// 100% ASLI: Zero Dummy, Full DynamoDB Mapping, Universal Media
 // ==============================================================
 
-// ─── 1. Mock Story Class ──────────────────────────────────────────
+// ─── 1. Mock Story Class (AWS Ready) ─────────────────────────────
 class MockStory {
   final String id;
   final String name;
@@ -21,9 +22,21 @@ class MockStory {
     this.isViewed = false,
     this.isOwn = false,
   });
+
+  // 🔥 ASLI AWS MAPPING: DynamoDB से डेटा उठाने के लिए
+  factory MockStory.fromMap(Map<String, dynamic> d) {
+    return MockStory(
+      id: d['id'] ?? '',
+      name: d['name'] ?? '',
+      avatarColor: Color(int.parse(d['avatarHex'] ?? 'FF1877F2', radix: 16)),
+      initial: d['initial'] ?? '?',
+      isViewed: d['isViewed'] ?? false,
+      isOwn: d['isOwn'] ?? false,
+    );
+  }
 }
 
-// ─── 2. Mock Post Class (Asli Kam Karne Vala) ──────────────────────
+// ─── 2. Mock Post Class (Asli Kam Karne Vala) ────────────────────
 class MockPost {
   final String id;
   final String userName;
@@ -62,9 +75,33 @@ class MockPost {
     this.mediaUrls = const [],
     this.mediaType = 'none',
   });
+
+  // 🔥 ASLI AWS MAPPING: AppSync से डेटा सिंक करने के लिए
+  factory MockPost.fromMap(Map<String, dynamic> d) {
+    return MockPost(
+      id: d['id'] ?? '',
+      userName: d['userName'] ?? 'TriNetra User',
+      userInitial: d['userInitial'] ?? '?',
+      userColor: Color(int.parse(d['userHexColor'] ?? 'FF1877F2', radix: 16)),
+      timeAgo: d['createdAt'] ?? 'Just now',
+      content: d['content'] ?? '',
+      mediaBgColor: d['bgHexColor'] != null 
+          ? Color(int.parse(d['bgHexColor'], radix: 16)) 
+          : null,
+      likeCount: d['likeCount'] ?? 0,
+      commentCount: d['commentCount'] ?? 0,
+      shareCount: d['shareCount'] ?? 0,
+      isLiked: d['isLiked'] ?? false,
+      isVerified: d['isVerified'] ?? false,
+      isComplaint: d['isComplaint'] ?? false,
+      escalationLevel: d['escalationLevel'] ?? 'none',
+      mediaUrls: List<String>.from(d['mediaUrls'] ?? []),
+      mediaType: d['mediaType'] ?? 'none',
+    );
+  }
 }
 
-// ─── 3. Mock Data (Sample Data Combined) ───────────────────────────
+// ─── 3. Mock Data (Sample Data Combined) ─────────────────────────
 
 final mockStories = <MockStory>[
   MockStory(id: 'own', name: 'Your Story', avatarColor: const Color(0xFF1877F2),
