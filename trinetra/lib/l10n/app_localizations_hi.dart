@@ -219,4 +219,72 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get transactionHistory => 'लेन-देन इतिहास';
+
+  // ==========================================================
+  // 👁️🔥 TRINETRA MASTER TEXT KEYS (HINDI IMPLEMENTATION)
+  // 100% Matching with Blueprint (Point 2, 4, 6, 11)
+  // Added securely without deleting any original code!
+  // ==========================================================
+
+  // ─── LOGIN GATEWAYS (Point 2) ───
+  @override
+  String get continueWithGoogle => 'Google के साथ जारी रखें';
+
+  @override
+  String get continueWithApple => 'Apple के साथ जारी रखें';
+
+  @override
+  String get continueWithMicrosoft => 'Microsoft के साथ जारी रखें';
+
+  @override
+  String get loginWithGithub => 'GitHub से लॉगिन करें (केवल AI)';
+
+  // ─── PAYMENT GATEWAYS & ECONOMY (Point 6) ───
+  @override
+  String get payViaPayU => 'PayU India से भुगतान करें';
+
+  @override
+  String get payViaPayPal => 'PayPal से भुगतान करें';
+
+  @override
+  String get payViaPaddle => 'Paddle से भुगतान करें';
+
+  @override
+  String get payViaAdyen => 'Adyen से भुगतान करें';
+
+  @override
+  String get boostWallet => 'बूस्ट वॉलेट';
+
+  // ─── MASTER AI (Point 11) ───
+  @override
+  String get masterAiHub => 'मास्टर AI हब';
+
+  @override
+  String get chatbotMode => 'चैटबॉट मोड (Meta/GPT स्तर)';
+
+  @override
+  String get agenticAiMode => 'एजेंटिक AI मोड';
+
+  @override
+  String get superAgenticAi => 'सुपर एजेंटिक AI (मानव-मस्तिष्क स्तर)';
+
+  @override
+  String get osCreationTier => 'OS क्रिएशन टियर';
+
+  // ─── AUTO-ESCALATION (Point 4) ───
+  @override
+  String get autoEscalateSystem => 'ऑटो-एस्केलेट सिस्टम (स्वचालित शिकायत)';
+
+  @override
+  String get escalateToAuthorities => 'MLA / CM / PM / Court को एस्केलेट करें';
+
+  // ─── SETTINGS & PRIVACY (Point 12) ───
+  @override
+  String get accountsCentre => 'अकाउंट्स सेंटर';
+
+  @override
+  String get privacyCheckup => 'प्राइवेसी चेकअप';
+
+  @override
+  String get customerSupport => 'मदद और कस्टमर सपोर्ट';
 }
