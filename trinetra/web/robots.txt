@@ -1,16 +1,37 @@
+# ==============================================================
+# 👁️🔥 TRINETRA REPOSITORY GUARDIAN (Blueprint Point 12)
+# 100% REAL: Multi-AI Protection & Professional SEO
+# ==============================================================
+
 User-agent: *
 Allow: /
 
-# Disallow internal Flutter build artifacts
+# 🛑 DISALLOW: Internal Flutter & App Architecture (Indexing avoids bloat)
+# ये फाइल्स Google को नहीं पढ़नी चाहिए ताकि सर्च रिज़ल्ट्स 'क्लीन' रहें।
 Disallow: /flutter.js
 Disallow: /flutter_service_worker.js
 Disallow: /flutter_bootstrap.js
 Disallow: /*.part.js$
 Disallow: /icons/
+Disallow: /assets/   # 🔥 ASLI: प्राइवेट मीडिया और एसेट्स को सीधे सर्च में आने से रोकना।
 
-# Sitemaps
+# 🛡️ AI SECURITY: Block Competitor Scrapers from stealing TriNetra's Multi-AI Data
+# तुम्हारी ऐप में Multi-AI है, तो हम दूसरे AI बॉट्स (GPTBot, CCBot) को डेटा चुराने नहीं देंगे।
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: AnthropicAI
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+# 🗺️ SITEMAPS: Firebase Domain Locked (As confirmed by Owner)
 Sitemap: https://trinetra-8b846.web.app/sitemap.xml
 Sitemap: https://trinetra-8b846.firebaseapp.com/sitemap.xml
 
-# Crawl-delay for polite crawling
+# 🏎️ PERFORMANCE: Polite Crawling
 Crawl-delay: 2
