@@ -1,49 +1,75 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI HAPTICS
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/logrocket_service.dart'; // 🔥 ASLI TRACKING
 import '../widgets/pwa_install_banner.dart';
 
-/// PWA Install Screen — shown when the user wants to install the web app
-/// as a native-feeling Progressive Web App on their device.
-///
-/// Only rendered on web builds (kIsWeb). Returns SizedBox on native.
-class PwaInstallScreen extends StatelessWidget {
+// ==============================================================
+// 👁️🔥 TRINETRA iOS PWA INSTALLER (Blueprint Point 1)
+// 100% REAL: Strict iOS Web Only, Safari Focus, LogRocket
+// ==============================================================
+
+class PwaInstallScreen extends StatefulWidget {
   const PwaInstallScreen({super.key});
 
   @override
+  State<PwaInstallScreen> createState() => _PwaInstallScreenState();
+}
+
+class _PwaInstallScreenState extends State<PwaInstallScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // 🔥 ASLI ACTION: Track only iOS Web Users interested in installing
+    if (kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      LogRocketService.instance.track('iOS_PWA_Install_Screen_Opened', properties: {
+        'platform': 'iOS_Web',
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (!kIsWeb) return const SizedBox.shrink();
+    // 🛡️ ASLI RULE: Render ONLY on Web AND ONLY on iOS.
+    // बाकी किसी भी डिवाइस (Android Web, Windows Web, Native) पर यह नहीं दिखेगा।
+    if (!kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
+      return const SizedBox.shrink();
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       appBar: AppBar(
         backgroundColor: isDark ? AppColors.cardDark : Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => Navigator.maybePop(context),
+          onPressed: () {
+            HapticFeedback.selectionClick(); // 🔥 Premium Feel
+            Navigator.maybePop(context);
+          },
         ),
         title: Text(
-          'Install TriNetra',
+          'Install on iPhone',
           style: TextStyle(
             color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
             fontSize: 17,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w900,
           ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
 
-            // ─── Hero Card ─────────────────────────────────
+            // ─── Hero Card (TriNetra Apple Branding) ──────────────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(28),
@@ -56,7 +82,7 @@ class PwaInstallScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: AppColors.primary.withOpacity(0.3), // 🔥 FIXED FOR STABILITY
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -73,83 +99,75 @@ class PwaInstallScreen extends StatelessWidget {
                     ),
                     child: const Center(
                       child: Text(
-                        'T',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                          fontWeight: FontWeight.w900,
-                        ),
+                        '👁️', // 🔥 TriNetra Logo
+                        style: TextStyle(fontSize: 40),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'TriNetra',
+                    'TriNetra for iOS',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 26,
+                      fontSize: 24,
                       fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Install for the full native experience',
+                    'Bypass the App Store. Install directly on your iPhone.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 14,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
 
             // ─── Benefits ──────────────────────────────────
             Text(
-              'Why Install?',
+              'Why Install on iPhone?',
               style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 17,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
                 color: isDark ? Colors.white : Colors.black87,
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
 
             _BenefitTile(
               icon: Icons.speed_outlined,
-              title: 'Faster Performance',
-              subtitle: 'Loads instantly from your home screen',
-              isDark: isDark,
-            ),
-            _BenefitTile(
-              icon: Icons.offline_bolt_outlined,
-              title: 'Works Offline',
-              subtitle: 'Browse cached content without internet',
+              title: 'Native iOS Feel',
+              subtitle: 'Runs smoothly like a downloaded App Store app',
               isDark: isDark,
             ),
             _BenefitTile(
               icon: Icons.fullscreen_outlined,
-              title: 'Full-Screen Experience',
-              subtitle: 'No browser bars — just the app',
+              title: 'No Safari Bars',
+              subtitle: 'Enjoy TriNetra in pure Full-Screen mode',
               isDark: isDark,
             ),
             _BenefitTile(
-              icon: Icons.notifications_outlined,
-              title: 'Push Notifications',
-              subtitle: 'Stay updated with real-time alerts',
+              icon: Icons.notifications_active_outlined,
+              title: 'iOS Push Notifications',
+              subtitle: 'Get message and feed alerts directly on your lock screen',
               isDark: isDark,
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
 
             // ─── Install Banner ────────────────────────────
             const PwaInstallBanner(),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            // ─── Manual Instructions ───────────────────────
+            // ─── iOS Specific Manual Instructions ──────────
             _ManualInstructions(isDark: isDark),
 
             const SizedBox(height: 32),
@@ -177,24 +195,25 @@ class _BenefitTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? AppColors.dividerDark : Colors.grey.withOpacity(0.1)),
       ),
       child: Row(
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 22),
+            child: Icon(icon, color: AppColors.primary, size: 24),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,18 +221,17 @@ class _BenefitTile extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
                     color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight,
+                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                   ),
                 ),
               ],
@@ -225,7 +243,7 @@ class _BenefitTile extends StatelessWidget {
   }
 }
 
-// ─── Manual Instructions ──────────────────────────────────────────
+// ─── Strict iOS Manual Instructions ───────────────────────────────
 class _ManualInstructions extends StatelessWidget {
   final bool isDark;
   const _ManualInstructions({required this.isDark});
@@ -233,10 +251,10 @@ class _ManualInstructions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : const Color(0xFFF8F9FA),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
         ),
@@ -246,29 +264,23 @@ class _ManualInstructions extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.info_outline,
-                  size: 16, color: AppColors.primary),
-              const SizedBox(width: 8),
+              const Icon(Icons.apple, size: 20, color: Colors.grey),
+              const SizedBox(width: 10),
               Text(
-                'Manual Install Instructions',
+                'How to install on iPhone/iPad',
                 style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
                   color: isDark ? Colors.white : Colors.black87,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _Step('Chrome / Edge',
-              'Tap the ⋮ menu → "Add to Home Screen" or "Install App"',
-              isDark: isDark),
-          _Step('Safari (iOS)',
-              'Tap the Share button → "Add to Home Screen"',
-              isDark: isDark),
-          _Step('Firefox',
-              'Tap the ⋮ menu → "Install" option',
-              isDark: isDark),
+          const SizedBox(height: 16),
+          _Step('Step 1', 'Open TriNetra in the Safari browser', isDark: isDark),
+          _Step('Step 2', 'Tap the Share button ⍐ at the bottom of the screen', isDark: isDark),
+          _Step('Step 3', 'Scroll down and tap "Add to Home Screen" ➕', isDark: isDark),
+          _Step('Step 4', 'Tap "Add" in the top right corner', isDark: isDark),
         ],
       ),
     );
@@ -276,34 +288,32 @@ class _ManualInstructions extends StatelessWidget {
 }
 
 class _Step extends StatelessWidget {
-  final String browser;
+  final String stepNumber;
   final String instruction;
   final bool isDark;
-  const _Step(this.browser, this.instruction, {required this.isDark});
+  const _Step(this.stepNumber, this.instruction, {required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: RichText(
         text: TextSpan(
           children: [
             TextSpan(
-              text: '$browser: ',
+              text: '$stepNumber: ',
               style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-                color:
-                    isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.primary,
               ),
             ),
             TextSpan(
               text: instruction,
               style: TextStyle(
-                fontSize: 12,
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
               ),
             ),
           ],
