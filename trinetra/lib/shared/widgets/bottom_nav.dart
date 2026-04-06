@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI HAPTICS
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/logrocket_service.dart'; // 🔥 ASLI TRACKING
 
-/// Facebook-style Bottom Navigation Bar
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER BOTTOM NAV (Blueprint Point 12-A)
+// 100% REAL: Facebook Style 6 Tabs, Haptics, LogRocket Tracking
+// ==============================================================
+
 class TriNetraBottomNav extends StatelessWidget {
   final int currentIndex;
   final void Function(int) onTap;
@@ -29,10 +35,11 @@ class TriNetraBottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 52,
+          height: 52, // Standard Super-App Nav Height
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+              // 🔥 1. Home
               _NavItem(
                 icon: Icons.home_outlined,
                 activeIcon: Icons.home,
@@ -41,35 +48,48 @@ class TriNetraBottomNav extends StatelessWidget {
                 currentIndex: currentIndex,
                 onTap: onTap,
               ),
+              // 🔥 2. Reels
               _NavItem(
-                icon: Icons.chat_bubble_outline,
-                activeIcon: Icons.chat_bubble,
-                label: 'Messenger',
+                icon: Icons.ondemand_video_outlined,
+                activeIcon: Icons.ondemand_video,
+                label: 'Reels',
                 index: 1,
                 currentIndex: currentIndex,
                 onTap: onTap,
               ),
+              // 🔥 3. Friends
               _NavItem(
-                icon: Icons.storefront_outlined,
-                activeIcon: Icons.storefront,
-                label: 'Market',
+                icon: Icons.people_outline,
+                activeIcon: Icons.people,
+                label: 'Friends',
                 index: 2,
                 currentIndex: currentIndex,
                 onTap: onTap,
               ),
+              // 🔥 4. Dashboard
               _NavItem(
-                icon: Icons.account_balance_wallet_outlined,
-                activeIcon: Icons.account_balance_wallet,
-                label: 'Wallet',
+                icon: Icons.dashboard_outlined,
+                activeIcon: Icons.dashboard,
+                label: 'Dashboard',
                 index: 3,
                 currentIndex: currentIndex,
                 onTap: onTap,
               ),
+              // 🔥 5. Notifications
               _NavItem(
-                icon: Icons.menu,
-                activeIcon: Icons.menu,
-                label: 'Menu',
+                icon: Icons.notifications_outlined,
+                activeIcon: Icons.notifications,
+                label: 'Alerts', // Text shortened to fit UI cleanly
                 index: 4,
+                currentIndex: currentIndex,
+                onTap: onTap,
+              ),
+              // 🔥 6. Profile
+              _NavItem(
+                icon: Icons.person_outline,
+                activeIcon: Icons.person,
+                label: 'Profile',
+                index: 5,
                 currentIndex: currentIndex,
                 onTap: onTap,
               ),
@@ -107,7 +127,17 @@ class _NavItem extends StatelessWidget {
 
     return Expanded(
       child: InkWell(
-        onTap: () => onTap(index),
+        onTap: () {
+          // 🔥 ASLI ACTION: Premium Feedback & Tracking
+          HapticFeedback.selectionClick(); 
+          LogRocketService.instance.track(
+            'BottomNav_Tab_Tapped', 
+            properties: {'tabName': label, 'index': index}
+          );
+          
+          // Trigger the actual navigation
+          onTap(index);
+        },
         borderRadius: BorderRadius.circular(8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
