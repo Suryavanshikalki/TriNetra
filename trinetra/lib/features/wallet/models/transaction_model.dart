@@ -1,4 +1,11 @@
-// 🔥 Firebase Removed 🔥
+import 'package:flutter/foundation.dart';
+
+// ==============================================================
+// 👁️🔥 TRINETRA TRANSACTION MODEL (Blueprint Point 6-10)
+// 100% REAL: AWS Safe, Enum Bug Fixed, Riverpod Immutable
+// ==============================================================
+
+@immutable
 class TransactionModel {
   final String id;
   final String userId;
@@ -26,14 +33,15 @@ class TransactionModel {
     this.metadata = const {},
   });
 
+  // ─── 🔥 ASLI AWS MAPPING ────────────────────────────────────────
   factory TransactionModel.fromMap(String docId, Map<String, dynamic> d) {
     return TransactionModel(
       id: docId,
       userId: d['userId'] ?? '',
-      type: TransactionType.fromString(d['type'] ?? 'payment'),
+      type: TransactionTypeExtension.fromString(d['type'] ?? 'payment'), // 🔥 Fixed Enum Call
       amount: (d['amount'] ?? 0).toDouble(),
       currency: d['currency'] ?? 'INR',
-      status: TransactionStatus.fromString(d['status'] ?? 'pending'),
+      status: TransactionStatusExtension.fromString(d['status'] ?? 'pending'), // 🔥 Fixed Enum Call
       description: d['description'] ?? '',
       referenceId: d['referenceId'],
       paymentMethod: d['paymentMethod'],
@@ -46,7 +54,7 @@ class TransactionModel {
 
   Map<String, dynamic> toMap() => {
     'userId': userId,
-    'type': type.value,
+    'type': type.value, // 🔥 Now perfectly syncs with fromString
     'amount': amount,
     'currency': currency,
     'status': status.value,
@@ -57,6 +65,36 @@ class TransactionModel {
     'metadata': metadata,
   };
 
+  // ─── 🔄 RIVERPOD STATE UPDATER (Added for Backend Sync) ─────────
+  TransactionModel copyWith({
+    String? id,
+    String? userId,
+    TransactionType? type,
+    double? amount,
+    String? currency,
+    TransactionStatus? status,
+    String? description,
+    String? referenceId,
+    String? paymentMethod,
+    DateTime? createdAt,
+    Map<String, dynamic>? metadata,
+  }) {
+    return TransactionModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
+      status: status ?? this.status,
+      description: description ?? this.description,
+      referenceId: referenceId ?? this.referenceId,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      createdAt: createdAt ?? this.createdAt,
+      metadata: metadata ?? this.metadata,
+    );
+  }
+
+  // ─── 📊 UTILITY GETTERS ──────────────────────────────────────────
   bool get isCredit => type == TransactionType.coinEarned ||
       type == TransactionType.refund ||
       type == TransactionType.payoutReceived;
@@ -64,10 +102,14 @@ class TransactionModel {
   bool get isDebit => !isCredit;
 }
 
+// ─── 🔥 ASLI ENUMS WITH SAFE STRING MATCHING ─────────────────────
+
 enum TransactionType {
   payment, upiPayment, adBoost, subscription, marketplaceSale,
-  coinEarned, coinRedeemed, refund, payoutReceived, payoutRequested;
+  coinEarned, coinRedeemed, refund, payoutReceived, payoutRequested
+}
 
+extension TransactionTypeExtension on TransactionType {
   static TransactionType fromString(String s) {
     switch (s) {
       case 'upi_payment': return TransactionType.upiPayment;
@@ -83,12 +125,27 @@ enum TransactionType {
     }
   }
 
-  String get value => name;
+  String get value {
+    switch (this) {
+      case TransactionType.upiPayment: return 'upi_payment';
+      case TransactionType.adBoost: return 'ad_boost';
+      case TransactionType.subscription: return 'subscription';
+      case TransactionType.marketplaceSale: return 'marketplace_sale';
+      case TransactionType.coinEarned: return 'coin_earned';
+      case TransactionType.coinRedeemed: return 'coin_redeemed';
+      case TransactionType.refund: return 'refund';
+      case TransactionType.payoutReceived: return 'payout_received';
+      case TransactionType.payoutRequested: return 'payout_requested';
+      case TransactionType.payment: return 'payment';
+    }
+  }
 }
 
 enum TransactionStatus {
-  pending, completed, failed, cancelled;
+  pending, completed, failed, cancelled
+}
 
+extension TransactionStatusExtension on TransactionStatus {
   static TransactionStatus fromString(String s) {
     switch (s) {
       case 'completed': return TransactionStatus.completed;
@@ -98,5 +155,12 @@ enum TransactionStatus {
     }
   }
 
-  String get value => name;
+  String get value {
+    switch (this) {
+      case TransactionStatus.completed: return 'completed';
+      case TransactionStatus.failed: return 'failed';
+      case TransactionStatus.cancelled: return 'cancelled';
+      case TransactionStatus.pending: return 'pending';
+    }
+  }
 }
