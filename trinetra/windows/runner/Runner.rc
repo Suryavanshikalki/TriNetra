@@ -72,6 +72,11 @@ IDI_APP_ICON            ICON                    "resources\\app_icon.ico"
 #define VERSION_AS_STRING "1.0.0"
 #endif
 
+// ==============================================================
+// 👁️🔥 TRINETRA WINDOWS BRANDING (Blueprint Point 1 & 12)
+// 100% REAL: No Dummy Identifiers, Production Ready
+// ==============================================================
+
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION VERSION_AS_NUMBER
  PRODUCTVERSION VERSION_AS_NUMBER
@@ -89,13 +94,20 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "trinetra" "\0"
+            // 🔥 ASLI ACTION: 'com.example' को हटाकर असली कंपनी का नाम डाला गया
+            VALUE "CompanyName", "TriNetra Technologies" "\0"
+            
+            // 🔥 ASLI ACTION: प्रोफेशनल डिस्क्रिप्शन
+            VALUE "FileDescription", "TriNetra Premium Social Super-App" "\0"
+            
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "trinetra" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "InternalName", "TriNetra" "\0"
+            
+            // 🔥 ASLI ACTION: असली कॉपीराइट ओनर (अभि)
+            VALUE "LegalCopyright", "Copyright (C) 2026 TriNetra. All rights reserved." "\0"
+            
             VALUE "OriginalFilename", "trinetra.exe" "\0"
-            VALUE "ProductName", "trinetra" "\0"
+            VALUE "ProductName", "TriNetra" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
