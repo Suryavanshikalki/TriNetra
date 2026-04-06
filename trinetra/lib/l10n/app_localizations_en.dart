@@ -220,4 +220,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionHistory => 'Transaction History';
+
+  // ==========================================================
+  // 👁️🔥 TRINETRA MASTER TEXT KEYS (ENGLISH IMPLEMENTATION)
+  // 100% Matching with Blueprint (Point 2, 4, 6, 11)
+  // Added securely without deleting any original code!
+  // ==========================================================
+
+  // ─── LOGIN GATEWAYS (Point 2) ───
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get continueWithApple => 'Continue with Apple';
+
+  @override
+  String get continueWithMicrosoft => 'Continue with Microsoft';
+
+  @override
+  String get loginWithGithub => 'Login with GitHub (AI Only)';
+
+  // ─── PAYMENT GATEWAYS & ECONOMY (Point 6) ───
+  @override
+  String get payViaPayU => 'Pay via PayU India';
+
+  @override
+  String get payViaPayPal => 'Pay via PayPal';
+
+  @override
+  String get payViaPaddle => 'Pay via Paddle';
+
+  @override
+  String get payViaAdyen => 'Pay via Adyen';
+
+  @override
+  String get boostWallet => 'Boost Wallet';
+
+  // ─── MASTER AI (Point 11) ───
+  @override
+  String get masterAiHub => 'Master AI Hub';
+
+  @override
+  String get chatbotMode => 'Chatbot Mode (Meta/GPT Level)';
+
+  @override
+  String get agenticAiMode => 'Agentic AI Mode';
+
+  @override
+  String get superAgenticAi => 'Super Agentic AI (Human-Brain Level)';
+
+  @override
+  String get osCreationTier => 'OS Creation Tier';
+
+  // ─── AUTO-ESCALATION (Point 4) ───
+  @override
+  String get autoEscalateSystem => 'Auto-Escalate System';
+
+  @override
+  String get escalateToAuthorities => 'Escalate to MLA / CM / PM / Court';
+
+  // ─── SETTINGS & PRIVACY (Point 12) ───
+  @override
+  String get accountsCentre => 'Accounts Centre';
+
+  @override
+  String get privacyCheckup => 'Privacy Checkup';
+
+  @override
+  String get customerSupport => 'Help & Customer Support';
 }
