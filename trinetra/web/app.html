@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TriNetra Super App | The Ultimate 6-in-1 Universe</title>
+    <title>TriNetra Super App | The 6-in-1 Digital Universe</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -16,166 +16,200 @@
             --border: #334155;
             --boost: #fbbf24;
             --danger: #ef4444;
+            --tantra: #ff4500; /* Asli Saffron/Red for Tantra Section */
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: var(--bg); color: var(--text); overflow-x: hidden; }
         
         /* Header */
-        header { background: var(--card); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;}
-        .logo { font-size: 24px; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .web-download-btn { background: var(--primary); color: #000; padding: 5px 15px; border-radius: 20px; font-weight: 600; text-decoration: none; font-size: 14px; }
+        header { background: var(--card); padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
+        .logo { font-size: 26px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 12px; letter-spacing: 1px; }
+        .web-download-btn { background: var(--primary); color: #000; padding: 8px 20px; border-radius: 25px; font-weight: 700; text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .web-download-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--primary); }
         
-        .container { display: flex; max-width: 1400px; margin: 0 auto; padding-top: 15px; }
+        .container { display: flex; max-width: 1500px; margin: 0 auto; padding-top: 15px; gap: 10px; }
         
-        /* Left Sidebar */
-        .sidebar { width: 25%; padding: 0 15px; height: calc(100vh - 60px); overflow-y: auto; }
-        .menu-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 15px; transition: 0.3s; }
-        .menu-item:hover { background: rgba(0, 230, 255, 0.1); color: var(--primary); }
-        .menu-item i { width: 25px; text-align: center; font-size: 18px; }
+        /* Left Sidebar - Refined */
+        .sidebar { width: 22%; padding: 0 15px; height: calc(100vh - 80px); overflow-y: auto; position: sticky; top: 75px; }
+        .menu-item { display: flex; align-items: center; gap: 15px; padding: 12px 15px; border-radius: 12px; cursor: pointer; font-size: 14px; transition: 0.2s; color: var(--muted); }
+        .menu-item:hover { background: rgba(0, 230, 255, 0.08); color: var(--primary); }
+        .menu-item.active { background: rgba(0, 230, 255, 0.1); color: var(--primary); font-weight: 600; }
+        .menu-item i { width: 22px; text-align: center; font-size: 18px; }
         
         /* Center Feed */
         .feed { width: 50%; padding: 0 10px; }
-        .create-post { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .post-inputs { display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px; color: var(--muted); font-size: 14px; }
-        .post-inputs span { cursor: pointer; }
-        .post-inputs span:hover { color: var(--primary); }
+        .create-post { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .post-inputs { display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; color: var(--muted); font-size: 13px; }
+        .post-inputs span { cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; transition: 0.2s; }
+        .post-inputs span:hover { background: rgba(255,255,255,0.05); color: var(--primary); }
         
-        .post { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .post-user { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .post-user img { width: 40px; height: 40px; border-radius: 50%; }
+        .post { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border); position: relative; }
+        .post-user { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .post-user img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary); }
         
-        /* Boost Buttons */
-        .boost-options { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-top: 15px; font-size: 13px; display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border); }
-        .boost-btn { background: var(--card); border: 1px solid var(--boost); color: var(--boost); padding: 8px 10px; border-radius: 5px; cursor: pointer; text-align: left; font-weight: 500; transition: 0.3s; }
-        .boost-btn:hover { background: var(--boost); color: #000; }
-        .discount-badge { background: var(--danger); color: #fff; padding: 2px 5px; border-radius: 3px; font-size: 10px; font-weight: bold; margin-left: 5px; }
+        /* Boost UI - Professionalized */
+        .boost-options { background: rgba(15, 23, 42, 0.8); padding: 18px; border-radius: 15px; margin-top: 20px; border: 1px dashed var(--boost); }
+        .boost-btn { background: var(--card); border: 1px solid var(--boost); color: var(--boost); padding: 10px 15px; border-radius: 8px; cursor: pointer; text-align: left; font-weight: 500; transition: 0.3s; width: 100%; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .boost-btn:hover { background: var(--boost); color: #000; font-weight: 700; }
+        .boost-btn small { font-size: 11px; opacity: 0.8; }
         
         /* Right Sidebar */
-        .right-sidebar { width: 25%; padding: 0 15px; }
-        .widget { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .right-sidebar { width: 28%; padding: 0 15px; height: calc(100vh - 80px); overflow-y: auto; position: sticky; top: 75px; }
+        .widget { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border); transition: 0.3s; }
+        .widget:hover { border-color: var(--primary); }
         
-        /* Master AI Modal */
-        .master-ai { position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px; background: linear-gradient(45deg, var(--primary), #0055ff); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; color: #fff; box-shadow: 0 0 20px rgba(0,230,255,0.5); cursor: pointer; z-index: 1000; border: 2px solid #fff; }
+        /* AI Floating Button */
+        .master-ai { position: fixed; bottom: 40px; right: 40px; width: 75px; height: 75px; background: linear-gradient(135deg, var(--primary), #0066ff); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 35px; color: #fff; box-shadow: 0 8px 25px rgba(0,230,255,0.4); cursor: pointer; z-index: 1000; border: 3px solid rgba(255,255,255,0.2); transition: 0.4s; }
+        .master-ai:hover { transform: rotate(15deg) scale(1.1); box-shadow: 0 0 40px var(--primary); }
         
-        .ai-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
-        .ai-content { background: var(--bg); width: 90%; max-width: 700px; border-radius: 20px; border: 1px solid var(--primary); padding: 20px; box-shadow: 0 0 30px rgba(0,230,255,0.2); max-height: 90vh; overflow-y: auto; }
-        .ai-plan { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        /* Modal - Advanced */
+        .ai-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .ai-content { background: var(--bg); width: 95%; max-width: 800px; border-radius: 25px; border: 2px solid var(--primary); padding: 30px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .ai-plan { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 15px; margin-bottom: 20px; position: relative; transition: 0.3s; }
+        .ai-plan:hover { transform: translateY(-5px); border-color: var(--primary); }
         
-        /* Bottom Nav */
-        .bottom-nav { display: none; position: fixed; bottom: 0; width: 100%; background: var(--card); border-top: 1px solid var(--border); padding: 12px 0; z-index: 100; }
-        .bottom-nav ul { display: flex; justify-content: space-around; list-style: none; font-size: 22px; color: var(--muted); }
+        /* Mobile Nav */
+        .bottom-nav { display: none; position: fixed; bottom: 0; width: 100%; background: var(--card); border-top: 1px solid var(--border); padding: 15px 0; z-index: 1000; }
+        .bottom-nav ul { display: flex; justify-content: space-around; list-style: none; color: var(--muted); }
         .bottom-nav ul li.active { color: var(--primary); }
-        
-        @media (max-width: 992px) {
-            .sidebar, .right-sidebar { display: none; }
-            .feed { width: 100%; margin-bottom: 60px; }
+
+        @media (max-width: 1100px) {
+            .sidebar { width: 30%; }
+            .feed { width: 70%; }
+            .right-sidebar { display: none; }
+        }
+
+        @media (max-width: 850px) {
+            .sidebar { display: none; }
+            .feed { width: 100%; margin-bottom: 70px; }
             .bottom-nav { display: block; }
-            .master-ai { bottom: 80px; right: 20px; width: 60px; height: 60px; font-size: 25px; }
-            .web-download-btn { display: none; }
+            .master-ai { bottom: 100px; right: 25px; width: 65px; height: 65px; font-size: 28px; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo"><i class="fa-solid fa-eye"></i> TriNetra</div>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <a href="#" class="web-download-btn"><i class="fa-brands fa-android"></i> Download App</a>
-            <i class="fa-solid fa-language" style="font-size: 22px; cursor: pointer;" title="Auto-Translate & Multilanguage Settings"></i>
-            <i class="fa-solid fa-comment-dots" style="font-size: 22px;"></i>
+        <div class="logo"><i class="fa-solid fa-eye"></i> TRINETRA</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="#" class="web-download-btn"><i class="fa-brands fa-google-play"></i> Get Super-App</a>
+            <i class="fa-solid fa-language" style="font-size: 22px; cursor: pointer; color: var(--primary);" title="Real-time Auto-Translate"></i>
+            <div style="position: relative;">
+                <i class="fa-solid fa-wallet" style="font-size: 22px; cursor: pointer;"></i>
+                <span style="position: absolute; top:-8px; right:-8px; background: var(--danger); font-size: 10px; padding: 2px 5px; border-radius: 10px;">Pay</span>
+            </div>
         </div>
     </header>
 
     <div class="container">
         <div class="sidebar">
-            <div class="menu-item"><img src="https://via.placeholder.com/30" style="border-radius:50%"> Nishant (Shortcuts)</div>
-            <div class="menu-item"><i class="fa-solid fa-user-group"></i> Friends (Mutual Only)</div>
-            <div class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</div>
-            <div class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Memories</div>
-            <div class="menu-item"><i class="fa-solid fa-bookmark"></i> Saved</div>
-            <div class="menu-item"><i class="fa-solid fa-users"></i> Groups</div>
-            <div class="menu-item"><i class="fa-solid fa-video"></i> Reels</div>
+            <div class="menu-item active"><i class="fa-solid fa-circle-user"></i> My Profile (Abhi)</div>
+            <div class="menu-item"><i class="fa-solid fa-house-chimney"></i> Social Universe</div>
+            <div class="menu-item"><i class="fa-solid fa-video"></i> Reels & Media</div>
             <div class="menu-item"><i class="fa-solid fa-store"></i> Marketplace</div>
-            <div class="menu-item"><i class="fa-solid fa-rss"></i> Feeds</div>
-            <hr style="border-color: var(--border); margin: 10px 0;">
-            <div class="menu-item"><i class="fa-solid fa-headset"></i> Help and support</div>
-            <div class="menu-item"><i class="fa-solid fa-gear"></i> Settings and privacy</div>
-            <div class="menu-item"><i class="fa-solid fa-star"></i> Professional access</div>
-            <hr style="border-color: var(--border); margin: 10px 0;">
-            <div class="menu-item" style="color: var(--primary);"><i class="fa-solid fa-book-medical"></i> Homeopathy Hub</div>
-            <div class="menu-item" style="color: var(--danger);"><i class="fa-solid fa-om"></i> Tantra & Mantras</div>
+            <div class="menu-item"><i class="fa-solid fa-wallet"></i> TriNetra Pay</div>
+            <div class="menu-item"><i class="fa-solid fa-chart-pie"></i> Business Suite</div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+            
+            <p style="font-size: 11px; font-weight: bold; color: var(--muted); margin-bottom: 10px; padding-left: 15px; text-transform: uppercase;">Premium Services</p>
+            <div class="menu-item" style="color: #2ecc71;"><i class="fa-solid fa-leaf"></i> Homeopathy Hub (Real Dr.)</div>
+            <div class="menu-item" style="color: var(--tantra);"><i class="fa-solid fa-om"></i> Tantra & Mantras</div>
+            <div class="menu-item" style="color: var(--danger); font-weight: 600;"><i class="fa-solid fa-scale-balanced"></i> Justice Auto-Escalation</div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+            
+            <div class="menu-item"><i class="fa-solid fa-gear"></i> Settings & Privacy</div>
+            <div class="menu-item"><i class="fa-solid fa-headset"></i> 24/7 Priority Support</div>
         </div>
 
         <div class="feed">
             <div class="create-post">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <img src="https://via.placeholder.com/40" style="border-radius:50%;">
-                    <input type="text" placeholder="Write something..." style="width:100%; background:transparent; border:none; color:#fff; outline:none; font-size:16px;">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <i class="fa-solid fa-circle-user" style="font-size: 40px; color: var(--primary);"></i>
+                    <input type="text" placeholder="What's happening in your universe?" style="width:100%; background:transparent; border:none; color:#fff; outline:none; font-size:16px;">
                 </div>
                 <div class="post-inputs">
-                    <span><i class="fa-solid fa-image"></i> Photo/Video</span>
-                    <span><i class="fa-solid fa-microphone"></i> Mic</span>
-                    <span><i class="fa-solid fa-camera"></i> Camera</span>
-                    <span><i class="fa-solid fa-file-pdf"></i> PDF</span>
+                    <span><i class="fa-solid fa-image" style="color: #4cd137;"></i> High-Res Media</span>
+                    <span><i class="fa-solid fa-microphone" style="color: #e84118;"></i> Voice Note</span>
+                    <span><i class="fa-solid fa-file-invoice-dollar" style="color: var(--boost);"></i> Monetize This</span>
+                    <button style="background: var(--primary); border:none; padding: 6px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;">Post</button>
                 </div>
             </div>
 
             <div class="post">
                 <div class="post-user">
-                    <img src="https://via.placeholder.com/40">
-                    <div style="width: 100%;">
+                    <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: var(--primary);"></i>
+                    <div style="flex-grow: 1;">
                         <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600;">TriNetra Network</span>
-                            <span style="font-size: 12px; color: var(--primary); cursor: pointer;"><i class="fa-solid fa-language"></i> Translate</span>
+                            <span style="font-weight: 700; font-size: 15px;">TriNetra Official Network</span>
+                            <span style="font-size: 12px; color: var(--primary); cursor: pointer; font-weight: 600;"><i class="fa-solid fa-language"></i> AUTO-TRANSLATE</span>
                         </div>
-                        <div style="font-size: 12px; color: var(--muted);">Mutual Connection • Original Download Available</div>
+                        <div style="font-size: 11px; color: var(--muted);">Verified Protocol • Downloadable Original Content</div>
                     </div>
                 </div>
-                <p>Welcome to the 6-in-1 Universe. All media here can be downloaded directly.</p>
+                <p style="line-height: 1.6; font-size: 15px;">🚀 Welcome to TriNetra 1.0. Experience the true 6-in-1 Social Super-App. One ID, one Wallet, one Universe. Download any media directly to your device with our "Original Rights" protocol.</p>
                 
                 <div class="boost-options">
-                    <strong style="color: #fff; margin-bottom: 5px; font-size: 14px;"><i class="fa-solid fa-rocket"></i> Post Boost Options</strong>
-                    <div style="font-size: 11px; color: var(--muted); margin-bottom: 5px;">Available for 1, 3, 6, 9, 12 Months. <span style="color: var(--danger);">*20% Discount on 6 & 12 Months</span></div>
+                    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 12px;">
+                        <strong style="color: var(--boost); font-size: 15px;"><i class="fa-solid fa-bolt-lightning"></i> MONETIZE THIS POST</strong>
+                        <span style="font-size: 10px; background: var(--danger); padding: 2px 6px; border-radius: 4px; font-weight: bold;">20% OFF (6M+)</span>
+                    </div>
                     
-                    <button class="boost-btn">1. Free Boost (70% TriNetra / 30% You)</button>
-                    <button class="boost-btn">2. Paid Boost (₹5,000/mo) <br><span style="font-size: 11px; color: var(--muted);">No Monetization - 25% TriNetra / 75% You</span></button>
-                    <button class="boost-btn">3. Paid Boost + Monetization (₹7,500/mo) <br><span style="font-size: 11px; color: var(--muted);">100% Your Earnings</span></button>
+                    <button class="boost-btn">
+                        <span>1. <strong>Free TriNetra Boost</strong> <br><small>Revenue: 70% TriNetra / 30% You</small></span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <button class="boost-btn">
+                        <span>2. <strong>Paid Pro (₹5,000/mo)</strong> <br><small>Revenue: 25% TriNetra / 75% You</small></span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <button class="boost-btn">
+                        <span>3. <strong>Master Monetize (₹7,500/mo)</strong> <br><small>Revenue: 100% Your Earnings Forever</small></span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
             
-            <div class="post" style="border-color: var(--danger);">
+            <div class="post" style="border-left: 5px solid var(--danger); background: rgba(239, 68, 68, 0.03);">
                 <div class="post-user">
-                    <img src="https://via.placeholder.com/40">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--danger);"></i>
                     <div>
-                        <div style="font-weight: 600;">Public Issue (Auto-Escalation Active 🚨)</div>
-                        <div style="font-size: 12px; color: var(--danger);">Status: Escalated to MLA Level</div>
+                        <div style="font-weight: 700; color: #fff;">Justice Protocol (ID: TN-9921)</div>
+                        <div style="font-size: 11px; color: var(--danger); font-weight: bold;">STATUS: AUTO-ESCALATED TO MLA/DM LEVEL 🚨</div>
                     </div>
                 </div>
-                <p>Road repair issue not resolved. The system has automatically forwarded this complaint to the respective chain of command.</p>
+                <p style="font-size: 14px; opacity: 0.9;">Public Issue: Nalanda-Harnaut Road Maintenance. The 48-hour local window expired. TriNetra has automatically forwarded this dossier to the High-Command chain.</p>
             </div>
         </div>
 
         <div class="right-sidebar">
             <div class="widget">
-                <h3 style="font-size: 16px; margin-bottom: 10px;"><i class="fa-solid fa-wallet"></i> My Wallet</h3>
-                <p style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">All recharges go directly to TriNetra Bank Account. Withdraw your Payouts here.</p>
-                <button style="width:100%; padding:8px; background:var(--primary); border:none; border-radius:5px; font-weight:bold; cursor:pointer;">View Payouts</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="font-size: 15px;"><i class="fa-solid fa-wallet" style="color:var(--primary)"></i> TriNetra Pay</h3>
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <p style="font-size: 12px; color: var(--muted); margin-bottom: 15px;">All settlements are handled directly by TriNetra Banking Gateway.</p>
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 15px;">
+                    <div style="font-size: 11px; color: var(--muted);">Available Payout</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #fff;">₹0.00</div>
+                </div>
+                <button style="width:100%; padding:10px; background:var(--primary); border:none; border-radius:10px; font-weight:bold; cursor:pointer; color:#000;">Withdraw to Bank</button>
             </div>
 
-            <div class="widget" style="border-color: var(--danger);">
-                <h3 style="font-size: 16px; color: var(--danger); margin-bottom: 5px;"><i class="fa-solid fa-gavel"></i> Auto-Escalation</h3>
-                <p style="font-size: 12px; color: var(--muted); margin-bottom: 5px;">Automated Justice System</p>
-                <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">₹20,000 <span style="font-size: 12px; font-weight: normal;">/ month</span></div>
-                <div style="font-size: 11px; color: var(--danger); margin-bottom: 10px;">*20% Off on 6 & 12 Months</div>
-                <button style="width:100%; padding:8px; background:var(--danger); color:#fff; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Activate</button>
+            <div class="widget" style="border-top: 4px solid var(--danger);">
+                <h3 style="font-size: 15px; color: var(--danger); margin-bottom: 8px;"><i class="fa-solid fa-gavel"></i> Justice Escalation</h3>
+                <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Get automated responses from government officials.</p>
+                <div style="font-size: 24px; font-weight: 800; margin-bottom: 5px;">₹20,000 <span style="font-size: 12px; opacity: 0.6;">/ Month</span></div>
+                <div style="font-size: 11px; color: var(--danger); margin-bottom: 15px; font-weight: 600;">*20% Savings on 6M & 12M Plans</div>
+                <button style="width:100%; padding:10px; background:var(--danger); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">Activate Security</button>
             </div>
 
-            <div class="widget" style="border-color: var(--boost);">
-                <h3 style="font-size: 16px; color: var(--boost); margin-bottom: 5px;"><i class="fa-solid fa-crown"></i> Pro Auto-Boost</h3>
-                <p style="font-size: 12px; color: var(--muted); margin-bottom: 5px;">Politics/Marketing Automation. 70% Yours / 30% TriNetra</p>
-                <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">₹15,000 <span style="font-size: 12px; font-weight: normal;">/ month</span></div>
-                <div style="font-size: 11px; color: var(--danger); margin-bottom: 10px;">*20% Off on 6 & 12 Months</div>
-                <button style="width:100%; padding:8px; background:var(--boost); color:#000; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Subscribe</button>
+            <div class="widget" style="border-top: 4px solid var(--boost);">
+                <h3 style="font-size: 15px; color: var(--boost); margin-bottom: 8px;"><i class="fa-solid fa-crown"></i> Politics/Marketing Pro</h3>
+                <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">AI-Driven Viral Loops. 70% Reach / 30% Conversion Guaranteed.</p>
+                <div style="font-size: 24px; font-weight: 800; margin-bottom: 5px;">₹15,000 <span style="font-size: 12px; opacity: 0.6;">/ Month</span></div>
+                <button style="width:100%; padding:10px; background:var(--boost); color:#000; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">Go Professional</button>
             </div>
         </div>
     </div>
@@ -186,38 +220,44 @@
 
     <div class="ai-modal" id="aiPlanModal">
         <div class="ai-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--primary);"><i class="fa-solid fa-robot"></i> TriNetra Master AI Plans</h2>
-                <i class="fa-solid fa-xmark" style="font-size: 24px; cursor: pointer;" onclick="document.getElementById('aiPlanModal').style.display='none'"></i>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="color: var(--primary); letter-spacing: 1px;"><i class="fa-solid fa-robot"></i> TriNetra Master AI Tiers</h2>
+                <i class="fa-solid fa-circle-xmark" style="font-size: 28px; cursor: pointer; color: var(--muted);" onclick="document.getElementById('aiPlanModal').style.display='none'"></i>
             </div>
             
-            <p style="font-size: 13px; color: var(--muted); margin-bottom: 15px; text-align: center;">Available for 1, 3, 6, 9, 12 Months. <br><strong style="color: var(--danger);">NO DISCOUNT applied to any AI Tier.</strong></p>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 8px; color: var(--danger); font-weight: bold;">🚨 NOTE: AI Tiers carry NO DISCOUNTS for any duration.</p>
 
             <div class="ai-plan">
-                <h3 style="color: #fff; margin-bottom: 10px;">Mode A: Chatbot (Meta/Gemini/GPT Level)</h3>
-                <ul style="font-size: 14px; color: var(--muted); list-style: none;">
-                    <li style="margin-bottom: 5px;"><i class="fa-solid fa-check" style="color: var(--primary);"></i> <strong>Free Lifetime:</strong> Basic tasks (Meta AI style)</li>
-                    <li style="margin-bottom: 5px;"><i class="fa-solid fa-check" style="color: var(--primary);"></i> <strong>Free Premium:</strong> 8 messages daily</li>
-                    <li style="margin-top: 10px; font-size: 16px; color: #fff;"><strong>Paid: ₹2,000 / month</strong> (Unlimited Power)</li>
+                <h3 style="color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-comments" style="color: var(--primary);"></i> Mode A: Chatbot (Gemini-Engine)
+                </h3>
+                <ul style="font-size: 13px; color: var(--muted); list-style: none; padding-left: 32px;">
+                    <li style="margin-bottom: 5px;">✅ <strong>Free Lifetime:</strong> Basic Assistance</li>
+                    <li style="margin-bottom: 5px;">✅ <strong>Free Premium:</strong> 8 High-Priority Messages Daily</li>
+                    <li style="margin-top: 10px; font-size: 16px; color: var(--primary);"><strong>Paid: ₹2,000 / month</strong> (Zero Limits)</li>
                 </ul>
             </div>
 
             <div class="ai-plan">
-                <h3 style="color: #fff; margin-bottom: 10px;">Mode B: Agentic AI (Manus/Emergent Level)</h3>
-                <ul style="font-size: 14px; color: var(--muted); list-style: none;">
-                    <li style="margin-bottom: 5px;"><i class="fa-solid fa-check" style="color: var(--primary);"></i> <strong>Free:</strong> 20 Credits (One-time on login, then Paid)</li>
-                    <li style="margin-top: 10px; font-size: 16px; color: #fff;"><strong>Paid: ₹3,999 / month</strong> <br><span style="font-size: 12px; color: var(--muted);">(Includes 500 Credits. One-time limit, not daily)</span></li>
+                <h3 style="color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-microchip" style="color: #a29bfe;"></i> Mode B: Agentic AI (Manus/Emergent)
+                </h3>
+                <ul style="font-size: 13px; color: var(--muted); list-style: none; padding-left: 32px;">
+                    <li style="margin-bottom: 5px;">✅ <strong>Signup Bonus:</strong> 20 Credits (One-time)</li>
+                    <li style="margin-top: 10px; font-size: 16px; color: var(--primary);"><strong>Paid: ₹3,999 / month</strong></li>
+                    <li style="font-size: 11px; opacity: 0.8;">Includes 500 Credits per month (Non-Daily)</li>
                 </ul>
             </div>
 
-            <div class="ai-plan" style="border-color: var(--primary); background: rgba(0, 230, 255, 0.05);">
-                <h3 style="color: var(--primary); margin-bottom: 10px;">🚨 OS Creation Tier (Ultimate)</h3>
-                <p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">Create full Operating Systems with AI.</p>
-                <div style="font-size: 22px; font-weight: bold; color: #fff; margin-bottom: 5px;">₹69,999 / month</div>
-                <div style="font-size: 13px; color: var(--primary);">Includes 2500 Premium Credits</div>
+            <div class="ai-plan" style="border: 2px solid var(--primary); background: rgba(0, 230, 255, 0.05);">
+                <div style="position: absolute; top: -12px; right: 20px; background: var(--primary); color: #000; padding: 2px 10px; border-radius: 5px; font-size: 10px; font-weight: bold;">ULTIMATE</div>
+                <h3 style="color: var(--primary); margin-bottom: 10px;"><i class="fa-solid fa-terminal"></i> OS Creation & Architecture</h3>
+                <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">Build full Desktop/Mobile Operating Systems with AI-Agentic code generation.</p>
+                <div style="font-size: 26px; font-weight: 800; color: #fff;">₹69,999 <span style="font-size: 14px; opacity: 0.6;">/ month</span></div>
+                <div style="font-size: 12px; color: var(--primary); margin-top: 5px;">Includes 2500 Premium Agentic Credits</div>
             </div>
             
-            <button style="width: 100%; padding: 12px; border-radius: 8px; background: var(--primary); color: #000; border: none; font-weight: bold; font-size: 16px; cursor: pointer;">Recharge via Payment Gateway</button>
+            <button style="width: 100%; padding: 15px; border-radius: 12px; background: var(--primary); color: #000; border: none; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,230,255,0.3);">Proceed to Payment Gateway</button>
         </div>
     </div>
 
@@ -225,12 +265,16 @@
         <ul>
             <li class="active"><i class="fa-solid fa-house"></i></li>
             <li title="Auto-Translate"><i class="fa-solid fa-language"></i></li>
-            <li><i class="fa-solid fa-video"></i></li>
-            <li><i class="fa-solid fa-chart-line"></i></li>
+            <li><i class="fa-solid fa-circle-play"></i></li>
+            <li><i class="fa-solid fa-wallet"></i></li>
             <li><i class="fa-solid fa-bell"></i></li>
-            <li><img src="https://via.placeholder.com/24" style="border-radius:50%;"></li>
+            <li><i class="fa-solid fa-circle-user"></i></li>
         </ul>
     </div>
 
+    <script>
+        // Placeholder for future logic
+        console.log("TriNetra Web Engine 1.0 Active 👁️");
+    </script>
 </body>
 </html>
