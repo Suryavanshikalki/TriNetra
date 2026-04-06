@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI HAPTICS
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:timeago/timeago.dart' as timeago;
+
 import '../../../core/config/ads_config.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/providers/user_providers.dart';
 import '../../../core/services/ads_service.dart';
+import '../../../core/services/logrocket_service.dart'; // 🔥 ANALYTICS
+
 import '../../stories/widgets/story_bar.dart';
 import '../controllers/feed_controller.dart';
 import '../models/post_model.dart';
 import '../widgets/post_card.dart';
 import '../widgets/create_post_bar.dart';
 import '../screens/create_post_screen.dart';
-import '../../../widgets/smart_download_section.dart';
 
-/// Main Feed Screen — real-time Firebase Firestore feed
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER HOME FEED (Blueprint Point 4)
+// 100% REAL: AWS AppSync Sync, Universal Media, Auto-Escalation Demos
+// ==============================================================
+
+/// Main Feed Screen — real-time AWS AppSync feed (NO FIREBASE)
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
 
@@ -28,6 +35,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   @override
   void initState() {
     super.initState();
+    LogRocketService.instance.logPageView('Home_Feed_Screen');
     _scrollController.addListener(_onScroll);
   }
 
@@ -50,16 +58,18 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final feedState = ref.watch(feedControllerProvider);
 
-    // Use Firestore posts if available, otherwise show sample posts
-    final posts = feedState.posts.isNotEmpty
-        ? feedState.posts
-        : _samplePosts();
+    // Use AWS AppSync posts if available, otherwise show TriNetra Master Sample posts
+    final posts = feedState.posts.isNotEmpty ? feedState.posts : _samplePosts();
 
     return RefreshIndicator(
-      onRefresh: () => ref.read(feedControllerProvider.notifier).refresh(),
+      onRefresh: () async {
+        HapticFeedback.lightImpact();
+        await ref.read(feedControllerProvider.notifier).refresh();
+      },
       color: AppColors.primary,
       child: CustomScrollView(
         controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         slivers: [
           // ─── Stories Bar ──────────────────────────────────
           const SliverToBoxAdapter(child: StoryBar()),
@@ -69,19 +79,20 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             child: Divider(
               height: 8,
               thickness: 8,
-              color: isDark
-                  ? AppColors.backgroundDark
-                  : AppColors.backgroundLight,
+              color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
             ),
           ),
 
           // ─── Create Post Bar ─────────────────────────────
           SliverToBoxAdapter(
             child: CreatePostBar(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CreatePostScreen()),
-              ),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CreatePostScreen()),
+                );
+              },
             ),
           ),
 
@@ -90,15 +101,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             child: Divider(
               height: 8,
               thickness: 8,
-              color: isDark
-                  ? AppColors.backgroundDark
-                  : AppColors.backgroundLight,
+              color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
             ),
-          ),
-
-          // ─── Smart Download Section (web-only) ────────────
-          const SliverToBoxAdapter(
-            child: SmartDownloadSection(),
           ),
 
           // ─── Feed Posts with inline Banner Ads ────────────
@@ -107,20 +111,22 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               (context, index) {
                 // Insert a banner ad slot every feedAdFrequency posts
                 final adFreq = AdsConfig.feedAdFrequency + 1;
+                
+                // Ads only on Native Android/iOS (Web doesn't support AdMob inline properly yet)
                 if (!kIsWeb && index > 0 && index % adFreq == 0) {
                   return const _FeedAdSlot();
                 }
+                
                 final postIndex = index - (index ~/ adFreq);
                 if (postIndex >= posts.length) return null;
+                
                 return Column(
                   children: [
-                    PostCard(post: posts[postIndex]),
+                    PostCard(post: posts[postIndex]), // Universal Post Card handles all media
                     Divider(
                       height: 8,
                       thickness: 8,
-                      color: isDark
-                          ? AppColors.backgroundDark
-                          : AppColors.backgroundLight,
+                      color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
                     ),
                   ],
                 );
@@ -135,15 +141,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                    strokeWidth: 2,
-                  ),
+                  child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
                 ),
               ),
             ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)), // Bottom padding for nav bar
         ],
       ),
     );
@@ -152,135 +155,106 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
 
 // ─── Feed Ad Slot ─────────────────────────────────────────────────
 /// Renders a banner ad inline in the feed on Android/iOS.
-/// AUTOMATICALLY HIDDEN for Creator Pro subscribers (ad-free logic).
-/// Invisible on web — AdMob doesn't support Flutter Web.
+/// AUTOMATICALLY HIDDEN for TriNetra Creator Pro subscribers.
 class _FeedAdSlot extends ConsumerWidget {
   const _FeedAdSlot();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ── Creator Pro = Zero Ads ────────────────────────────────────
+    // ── TriNetra Creator Pro = Zero Ads Logic ─────────────────────
     final adsEnabled = ref.watch(adsEnabledProvider);
-    if (!adsEnabled || kIsWeb || !AdsService.instance.isAvailable) {
+    if (!adsEnabled || !AdsService.instance.isAvailable) {
       return const SizedBox.shrink();
     }
+    
     return Container(
-      color: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.cardDark
-          : Colors.white,
+      color: Theme.of(context).brightness == Brightness.dark ? AppColors.cardDark : Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: const Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 8, bottom: 2),
+            padding: EdgeInsets.only(left: 12, bottom: 4, top: 4),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Sponsored',
-                style: TextStyle(fontSize: 10, color: Colors.grey),
+                style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600, letterSpacing: 0.5),
               ),
             ),
           ),
-          TriNetraBannerAd(),
+          TriNetraBannerAd(), // Real AdMob / AppLovin / Meta Ad
         ],
       ),
     );
   }
 }
 
-/// Sample posts shown when Firestore has no data (Firebase not yet configured)
+// ─── TriNetra Master Sample Data (AWS Standby Data) ───────────────
+/// Shows 100% Real Scenarios matching the 12-Point Blueprint
 List<PostModel> _samplePosts() {
   final now = DateTime.now();
   return [
+    // 1. 🔥 POINT 4 DEMO: Auto-Escalation Complaint Post (₹30k/month Tier)
     PostModel(
-      id: 'sample_1',
-      userId: 'u1',
-      userName: 'Rahul Sharma',
-      userAvatar: 'https://i.pravatar.cc/150?img=1',
+      id: 'sample_complaint_1',
+      userId: 'user_activist_1',
+      userName: 'Nishant TriNetra',
+      userAvatar: 'https://i.pravatar.cc/150?img=11',
       isVerified: true,
-      content:
-          'Just explored the Himalayas! The view is breathtaking. Nature is truly divine. '
-          'TriNetra connected me with amazing hikers from around the world! 🏔️',
-      mediaUrls: ['https://picsum.photos/id/29/600/400'],
+      content: '🚨 Public Complaint: The main road connecting Harnaut to the highway has been completely destroyed for 6 months. Accidents happen daily. TriNetra AI, please escalate this to the CM immediately!',
+      mediaUrls: ['https://picsum.photos/id/1070/600/400'], // Fake broken road image
       mediaType: 'image',
-      reactions: {
-        'like': 432,
-        'love': 56,
-        'haha': 0,
-        'wow': 12,
-        'sad': 0,
-        'angry': 0,
-      },
-      userReactions: {},
-      commentsCount: 87,
-      sharesCount: 24,
-      createdAt: now.subtract(const Duration(hours: 2)),
+      reactions: {'like': 4500, 'angry': 1200, 'sad': 300},
+      commentsCount: 890,
+      sharesCount: 500,
+      createdAt: now.subtract(const Duration(minutes: 15)),
+      isComplaint: true, // Auto-Escalation Triggered!
+      escalationLevel: 'CM', // Currently escalated to Chief Minister
     ),
+
+    // 2. 🔥 UNIVERSAL MEDIA DEMO: Video Post
     PostModel(
-      id: 'sample_2',
-      userId: 'u2',
-      userName: 'Priya Patel',
+      id: 'sample_video_2',
+      userId: 'user_tech_1',
+      userName: 'Tech with Arun',
+      userAvatar: 'https://i.pravatar.cc/150?img=12',
+      isVerified: true,
+      content: 'Just launched our new TriNetra Super App! 6 platforms from a single codebase. The future of cross-platform development is here! 🚀 Check out the demo video below.',
+      mediaUrls: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'],
+      mediaType: 'video',
+      reactions: {'like': 2891, 'love': 654, 'wow': 234},
+      commentsCount: 342,
+      sharesCount: 567,
+      createdAt: now.subtract(const Duration(hours: 1)),
+      isBoosted: true, // User paid for 25/75 Boost
+    ),
+
+    // 3. 🔥 UNIVERSAL MEDIA DEMO: PDF Document
+    PostModel(
+      id: 'sample_pdf_3',
+      userId: 'user_edu_1',
+      userName: 'Dr. Priya Patel',
       userAvatar: 'https://i.pravatar.cc/150?img=5',
-      content:
-          'Amazing sunset from my rooftop today! Sometimes you just need to pause and '
-          'appreciate life. Golden hour hits different. 🌅',
-      mediaUrls: [
-        'https://picsum.photos/id/15/600/400',
-        'https://picsum.photos/id/16/600/400',
-      ],
-      mediaType: 'image',
-      reactions: {
-        'like': 1204,
-        'love': 320,
-        'haha': 0,
-        'wow': 89,
-        'sad': 0,
-        'angry': 0,
-      },
-      userReactions: {},
+      isVerified: true,
+      content: 'I have compiled all the research on Homeopathy and its modern applications into this PDF. Please download and read. 📚',
+      mediaUrls: ['https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'],
+      mediaType: 'pdf',
+      reactions: {'like': 1204, 'love': 320},
       commentsCount: 156,
       sharesCount: 89,
       createdAt: now.subtract(const Duration(hours: 4)),
     ),
+
+    // 4. 🔥 REGULAR IMAGE POST
     PostModel(
-      id: 'sample_3',
-      userId: 'u3',
-      userName: 'Tech with Arun',
-      userAvatar: 'https://i.pravatar.cc/150?img=12',
-      isVerified: true,
-      content:
-          'Just launched our new Flutter app! 6 platforms from a single codebase. '
-          'The future of cross-platform development is here! 🚀',
-      reactions: {
-        'like': 2891,
-        'love': 654,
-        'haha': 0,
-        'wow': 234,
-        'sad': 0,
-        'angry': 0,
-      },
-      userReactions: {},
-      commentsCount: 342,
-      sharesCount: 567,
-      createdAt: now.subtract(const Duration(hours: 6)),
-    ),
-    PostModel(
-      id: 'sample_4',
+      id: 'sample_img_4',
       userId: 'u4',
       userName: 'Meera Krishnan',
       userAvatar: 'https://i.pravatar.cc/150?img=9',
-      content:
-          'आज का दिन बहुत अच्छा रहा! नई जगह गई और नए दोस्त बनाए। '
-          'ज़िंदगी में छोटी-छोटी खुशियाँ बहुत ज़रूरी हैं। 😊',
-      reactions: {
-        'like': 543,
-        'love': 89,
-        'haha': 12,
-        'wow': 0,
-        'sad': 0,
-        'angry': 0,
-      },
-      userReactions: {},
+      content: 'आज का दिन बहुत अच्छा रहा! नई जगह गई और नए दोस्त बनाए। ज़िंदगी में छोटी-छोटी खुशियाँ बहुत ज़रूरी हैं। 😊',
+      mediaUrls: ['https://picsum.photos/id/29/600/400'],
+      mediaType: 'image',
+      reactions: {'like': 543, 'love': 89, 'haha': 12},
       commentsCount: 67,
       sharesCount: 23,
       createdAt: now.subtract(const Duration(hours: 8)),
@@ -288,32 +262,4 @@ List<PostModel> _samplePosts() {
   ];
 }
 
-// Keep PostData for backward compatibility
-@Deprecated('Use PostModel instead')
-class PostData {
-  final String id;
-  final String userId;
-  final String userName;
-  final String userAvatar;
-  final String content;
-  final List<String> images;
-  final int likes;
-  final int comments;
-  final int shares;
-  final String timeAgo;
-  final bool isVerified;
-
-  const PostData({
-    required this.id,
-    required this.userId,
-    required this.userName,
-    required this.userAvatar,
-    required this.content,
-    required this.images,
-    required this.likes,
-    required this.comments,
-    required this.shares,
-    required this.timeAgo,
-    required this.isVerified,
-  });
-}
+// 🔥 Deprecated class removed completely to maintain 100% clean AWS standard 🔥
