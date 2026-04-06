@@ -1,17 +1,47 @@
-flutter/ephemeral/
+# ==============================================================
+# 👁️🔥 TRINETRA WINDOWS REPOSITORY GUARD (Point 12)
+# 100% REAL: No IDE Junk, No Build Bloat, Only Pure Code
+# ==============================================================
 
-# Visual Studio user-specific files.
+# Flutter-specific Windows Ephemeral
+**/Flutter/ephemeral/
+
+# 🔥 ASLI ACTION: Visual Studio IDE-specific Hidden Junk
+.vs/
+.vscode/
+out/
+build/
+**/Visual Studio 2019/
+**/Visual Studio 2022/
+
+# Visual Studio user-specific files (Standard Guards)
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
 
-# Visual Studio build-related files.
-x64/
-x86/
+# 🔥 ASLI ACTION: MSVC Build Artifacts & Symbols (The Real Bloat)
+**/x64/
+**/x86/
+**/ARM64/
+**/Debug/
+**/Release/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.exe
+*.dll
+*.iobj
+*.ipdb
 
 # Visual Studio cache files
-# files ending in .cache can be ignored
 *.[Cc]ache
-# but keep track of directories ending in .cache
 !*.[Cc]ache/
