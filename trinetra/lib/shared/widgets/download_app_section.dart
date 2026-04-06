@@ -1,19 +1,44 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 🔥 ASLI HAPTICS
 import 'package:url_launcher/url_launcher.dart';
-import '../../core/constants/app_colors.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/services/logrocket_service.dart'; // 🔥 ASLI TRACKING
+import '../../../core/services/sentry_service.dart'; // 🔥 ASLI ERRORS
+
+// ==============================================================
+// 👁️🔥 TRINETRA MASTER DOWNLOAD HUB (Blueprint Point 1)
+// 100% REAL: Auto-Detect OS, Highlight Top Link, AWS S3 Buckets
+// ==============================================================
 
 /// Shown ONLY on the web build (kIsWeb == true).
 /// Returns SizedBox.shrink() instantly on all native apps.
 /// Detects iOS browsers and shows PWA instructions instead of APK/EXE links.
-class DownloadAppSection extends StatelessWidget {
+class DownloadAppSection extends StatefulWidget {
   const DownloadAppSection({super.key});
 
-  // Files are served from Firebase Hosting at /downloads/
-  static const _apkUrl = '/downloads/TriNetra.apk';
-  static const _winUrl = '/downloads/TriNetra-Windows.zip';
-  static const _debUrl = '/downloads/TriNetra.deb';
-  static const _dmgUrl = '/downloads/TriNetra.dmg';
+  @override
+  State<DownloadAppSection> createState() => _DownloadAppSectionState();
+}
+
+class _DownloadAppSectionState extends State<DownloadAppSection> {
+  // 🔥 ASLI ACTION: Files served securely from AWS S3 / CloudFront
+  static const _awsBucketUrl = 'https://trinetra-downloads.s3.ap-south-1.amazonaws.com';
+  
+  static const _apkUrl = '$_awsBucketUrl/TriNetra-v1.0.apk';
+  static const _winUrl = '$_awsBucketUrl/TriNetra-Windows-v1.0.exe'; // EXE format
+  static const _debUrl = '$_awsBucketUrl/TriNetra-Linux-v1.0.deb';
+  static const _dmgUrl = '$_awsBucketUrl/TriNetra-macOS-v1.0.dmg';
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      LogRocketService.instance.track('Download_Section_Viewed', properties: {
+        'os': defaultTargetPlatform.name,
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +56,7 @@ class DownloadAppSection extends StatelessWidget {
         color: isDark ? AppColors.cardDark : const Color(0xFFF0F7FF),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.2),
+          color: AppColors.primary.withOpacity(0.2), // Web Safe
           width: 1,
         ),
       ),
@@ -46,18 +71,15 @@ class DownloadAppSection extends StatelessWidget {
                   color: AppColors.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.download_rounded,
-                    color: AppColors.primary, size: 20),
+                child: const Icon(Icons.download_rounded, color: AppColors.primary, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
                 'Get the Native App',
                 style: TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight,
+                  fontWeight: FontWeight.w900, // TriNetra Bold
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                 ),
               ),
             ],
@@ -68,46 +90,80 @@ class DownloadAppSection extends StatelessWidget {
           if (isIOSBrowser) ...[
             _IOSPwaCard(isDark: isDark),
           ] else ...[
-            // All other platforms: show download buttons
-            _DownloadButton(
-              label: 'Android',
-              sublabel: 'APK  · v1.0',
-              icon: Icons.android,
-              color: const Color(0xFF3DDC84),
-              url: _apkUrl,
-              isDark: isDark,
-            ),
-            const SizedBox(height: 8),
-            _DownloadButton(
-              label: 'Windows',
-              sublabel: 'EXE · v1.0',
-              icon: Icons.desktop_windows_outlined,
-              color: const Color(0xFF0078D4),
-              url: _winUrl,
-              isDark: isDark,
-            ),
-            const SizedBox(height: 8),
-            _DownloadButton(
-              label: 'Linux',
-              sublabel: 'DEB · v1.0',
-              icon: Icons.laptop_outlined,
-              color: const Color(0xFFF57900),
-              url: _debUrl,
-              isDark: isDark,
-            ),
-            const SizedBox(height: 8),
-            _DownloadButton(
-              label: 'macOS',
-              sublabel: 'DMG · v1.0',
-              icon: Icons.laptop_mac_outlined,
-              color: const Color(0xFF888888),
-              url: _dmgUrl,
-              isDark: isDark,
-            ),
+            // 🔥 ASLI ACTION: Auto-Detect OS and Sort List (Blueprint Point 1)
+            ..._buildSortedDownloadButtons(isDark),
           ],
         ],
       ),
     );
+  }
+
+  // ─── Auto-Detect Logic ──────────────────────────────────────────
+  List<Widget> _buildSortedDownloadButtons(bool isDark) {
+    // 1. Create a list of all platforms
+    List<Map<String, dynamic>> buttonsInfo = [
+      {
+        'platform': TargetPlatform.android,
+        'label': 'Android',
+        'sublabel': 'APK  · v1.0',
+        'icon': Icons.android,
+        'color': const Color(0xFF3DDC84),
+        'url': _apkUrl,
+      },
+      {
+        'platform': TargetPlatform.windows,
+        'label': 'Windows',
+        'sublabel': 'EXE · v1.0',
+        'icon': Icons.desktop_windows_outlined,
+        'color': const Color(0xFF0078D4),
+        'url': _winUrl,
+      },
+      {
+        'platform': TargetPlatform.macOS,
+        'label': 'macOS',
+        'sublabel': 'DMG · v1.0',
+        'icon': Icons.laptop_mac_outlined,
+        'color': const Color(0xFF888888),
+        'url': _dmgUrl,
+      },
+      {
+        'platform': TargetPlatform.linux,
+        'label': 'Linux',
+        'sublabel': 'DEB · v1.0',
+        'icon': Icons.laptop_outlined,
+        'color': const Color(0xFFF57900),
+        'url': _debUrl,
+      },
+    ];
+
+    // 2. Sort: Bring the user's current OS to the absolute top
+    buttonsInfo.sort((a, b) {
+      if (a['platform'] == defaultTargetPlatform) return -1;
+      if (b['platform'] == defaultTargetPlatform) return 1;
+      return 0; // Keep others in default order
+    });
+
+    // 3. Build the widgets, Highlighting the first one (Detected OS)
+    List<Widget> widgets = [];
+    for (int i = 0; i < buttonsInfo.length; i++) {
+      final info = buttonsInfo[i];
+      final isHighlighted = (i == 0 && info['platform'] == defaultTargetPlatform);
+
+      widgets.add(
+        _DownloadButton(
+          label: info['label'],
+          sublabel: info['sublabel'],
+          icon: info['icon'],
+          color: info['color'],
+          url: info['url'],
+          isDark: isDark,
+          isHighlighted: isHighlighted, // Tell the button if it's the recommended one
+        ),
+      );
+      if (i < buttonsInfo.length - 1) widgets.add(const SizedBox(height: 8));
+    }
+
+    return widgets;
   }
 }
 
@@ -119,6 +175,7 @@ class _DownloadButton extends StatelessWidget {
   final Color color;
   final String url;
   final bool isDark;
+  final bool isHighlighted;
 
   const _DownloadButton({
     required this.label,
@@ -127,71 +184,97 @@ class _DownloadButton extends StatelessWidget {
     required this.color,
     required this.url,
     required this.isDark,
+    required this.isHighlighted,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
+        HapticFeedback.heavyImpact(); // 🔥 Premium click
+        LogRocketService.instance.track('App_Download_Clicked', properties: {'platform': label});
+        
         final uri = Uri.parse(url);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri);
+        try {
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication); // Force browser download
+          } else {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to connect to AWS Download Server.')));
+            }
+          }
+        } catch (e, st) {
+          await SentryService.instance.captureException(e, stackTrace: st);
         }
       },
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceDark : Colors.white,
+          // 🔥 ASLI ACTION: If Highlighted, give it a premium outline and background hint
+          color: isHighlighted 
+              ? (isDark ? AppColors.primary.withOpacity(0.15) : AppColors.primary.withOpacity(0.05))
+              : (isDark ? AppColors.surfaceDark : Colors.white),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
+            color: isHighlighted 
+                ? AppColors.primary 
+                : (isDark ? AppColors.dividerDark : AppColors.dividerLight),
+            width: isHighlighted ? 1.5 : 1.0,
           ),
+          boxShadow: isHighlighted ? [BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))] : [],
         ),
         child: Row(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: color.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, size: 18, color: color),
+              child: Icon(icon, size: 20, color: color),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                      if (isHighlighted) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(4)),
+                          child: const Text('Recommended', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ],
                   ),
                   Text(
                     sublabel,
                     style: TextStyle(
                       fontSize: 11,
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                     ),
                   ),
                 ],
               ),
             ),
             Icon(
-              Icons.download_outlined,
-              size: 18,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
+              Icons.download_rounded,
+              size: 20,
+              color: isHighlighted ? AppColors.primary : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
             ),
           ],
         ),
@@ -208,10 +291,10 @@ class _IOSPwaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
         ),
@@ -221,33 +304,22 @@ class _IOSPwaCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.ios_share, size: 18, color: AppColors.primary),
-              const SizedBox(width: 8),
+              const Icon(Icons.ios_share, size: 20, color: AppColors.primary),
+              const SizedBox(width: 10),
               Text(
                 'Install on iPhone / iPad',
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          _Step(
-              number: '1',
-              text: 'Tap the Share button at the bottom of Safari',
-              isDark: isDark),
-          _Step(
-              number: '2',
-              text: "Scroll down and tap 'Add to Home Screen'",
-              isDark: isDark),
-          _Step(
-              number: '3',
-              text: "Tap 'Add' — TriNetra will appear as a full-screen app",
-              isDark: isDark),
+          const SizedBox(height: 12),
+          _Step(number: '1', text: 'Tap the Share button at the bottom of Safari', isDark: isDark),
+          _Step(number: '2', text: "Scroll down and tap 'Add to Home Screen'", isDark: isDark),
+          _Step(number: '3', text: "Tap 'Add' — TriNetra will appear as a full-screen app", isDark: isDark),
         ],
       ),
     );
@@ -258,20 +330,19 @@ class _Step extends StatelessWidget {
   final String number;
   final String text;
   final bool isDark;
-  const _Step(
-      {required this.number, required this.text, required this.isDark});
+  const _Step({required this.number, required this.text, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 20,
-            height: 20,
-            margin: const EdgeInsets.only(top: 1, right: 10),
+            width: 22,
+            height: 22,
+            margin: const EdgeInsets.only(top: 1, right: 12),
             decoration: BoxDecoration(
               color: AppColors.primary.withOpacity(0.12),
               shape: BoxShape.circle,
@@ -280,8 +351,8 @@ class _Step extends StatelessWidget {
               child: Text(
                 number,
                 style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
                   color: AppColors.primary,
                 ),
               ),
@@ -291,10 +362,9 @@ class _Step extends StatelessWidget {
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 12,
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
               ),
             ),
           ),
