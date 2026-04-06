@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+
+// 🔥 ASLI IMPORTS: Tracking & Security
+import 'core/services/logrocket_service.dart';
+import 'core/services/sentry_service.dart';
+
 import 'core/config/theme_config.dart';
 import 'core/config/app_config.dart';
 import 'features/auth/screens/splash_screen.dart';
@@ -90,24 +95,55 @@ class LocaleNotifier extends StateNotifier<Locale> {
   }
 }
 
+// ─── 🔥 ASLI ROUTE OBSERVER (For LogRocket & Sentry Tracking) ────
+class TriNetraRouteObserver extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    if (route.settings.name != null) {
+      LogRocketService.instance.track('Screen_Viewed', properties: {
+        'screen_name': route.settings.name,
+      });
+      // Sentry Breadcrumb for crash context
+      SentryService.instance.addBreadcrumb('Navigated to ${route.settings.name}');
+    }
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    if (previousRoute?.settings.name != null) {
+      LogRocketService.instance.track('Screen_Viewed', properties: {
+        'screen_name': previousRoute!.settings.name,
+        'action': 'back_navigation'
+      });
+    }
+  }
+}
+
 // ─── Router ──────────────────────────────────────────────────────
 final _router = GoRouter(
   initialLocation: '/',
+  observers: [TriNetraRouteObserver()], // 🔥 ASLI TRACKING INJECTED
   routes: [
     GoRoute(
       path: '/',
+      name: 'Splash',
       builder: (_, __) => const SplashScreen(),
     ),
     GoRoute(
       path: '/login',
+      name: 'Login',
       builder: (_, __) => const LoginScreen(),
     ),
     GoRoute(
       path: '/phone',
+      name: 'PhoneInput',
       builder: (_, __) => const PhoneInputScreen(),
     ),
     GoRoute(
       path: '/otp',
+      name: 'OtpVerify',
       builder: (context, state) {
         final phone = state.extra as String? ?? '';
         return OtpVerifyScreen(phoneNumber: phone);
@@ -115,14 +151,17 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/home',
+      name: 'Home',
       builder: (_, __) => const HomeScreen(),
     ),
     GoRoute(
       path: '/messenger',
+      name: 'MessengerList',
       builder: (_, __) => const MessengerListScreen(),
     ),
     GoRoute(
       path: '/chat/:conversationId',
+      name: 'ChatScreen',
       builder: (_, state) {
         final convId = state.pathParameters['conversationId'] ?? '';
         final extra = state.extra as Map<String, String>?;
@@ -135,19 +174,23 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/wallet',
+      name: 'Wallet',
       builder: (_, __) => const WalletScreen(),
     ),
     GoRoute(
       path: '/referral',
+      name: 'Referral',
       builder: (_, __) => const ReferralScreen(),
     ),
     GoRoute(
       path: '/profile/:userId',
+      name: 'Profile',
       builder: (_, state) =>
           ProfileScreen(userId: state.pathParameters['userId']),
     ),
     GoRoute(
       path: '/ai',
+      name: 'AIChat',
       builder: (_, __) => const AIChatScreen(),
     ),
   ],
