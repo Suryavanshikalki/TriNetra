@@ -1,7 +1,11 @@
-// 🔥 Firebase का import (cloud_firestore) हटा दिया गया है 🔥
+import 'package:flutter/foundation.dart';
 
-/// TriNetra Coins Referral Model (AWS Ready)
-/// Collection: referrals/{uid}
+// ==============================================================
+// 👁️🔥 TRINETRA COINS & REFERRAL MODEL (Blueprint Point 6)
+// 100% REAL: No Firebase, AWS DynamoDB Ready, Riverpod Safe
+// ==============================================================
+
+@immutable
 class ReferralModel {
   final String userId;
   final String referralCode;
@@ -23,19 +27,20 @@ class ReferralModel {
     required this.createdAt,
   });
 
+  // ─── 💰 TRINETRA ECONOMY CONSTANTS (Point 6) ──────────────────
   /// Coins awarded per successful referral
   static const int coinsPerReferral = 100;
 
   /// Coins awarded to new user when they join via referral
   static const int welcomeBonus = 50;
 
-  /// Minimum coins required to redeem
+  /// Minimum coins required to redeem to TriNetra Wallet
   static const int minimumRedeem = 500;
 
-  /// 1 Coin = ₹0.10 (ad credit or payout)
+  /// 1 Coin = ₹0.10 (Real Money logic for Payout Wallet)
   static const double coinValueInRupees = 0.10;
 
-  // 🔥 FIXED: DocumentSnapshot हटाकर नॉर्मल Map कर दिया है 🔥
+  // ─── 🔥 ASLI AWS MAPPING ────────────────────────────────────────
   factory ReferralModel.fromMap(String docId, Map<String, dynamic> d) {
     return ReferralModel(
       userId: docId,
@@ -45,14 +50,13 @@ class ReferralModel {
       totalCoinsEarned: d['totalCoinsEarned'] ?? 0,
       coinsAvailable: d['coinsAvailable'] ?? 0,
       coinsRedeemed: d['coinsRedeemed'] ?? 0,
-      // 🔥 FIXED: Timestamp हटाकर स्टैंडर्ड DateTime कर दिया है 🔥
+      // AWS AppSync returns ISO8601 standard datetime strings
       createdAt: d['createdAt'] != null 
           ? DateTime.tryParse(d['createdAt'].toString()) ?? DateTime.now() 
           : DateTime.now(),
     );
   }
 
-  // 🔥 FIXED: toFirestore को बदलकर toMap कर दिया है और FieldValue हटा दिया है 🔥
   Map<String, dynamic> toMap() => {
     'referralCode': referralCode,
     'referredByUid': referredByUid,
@@ -60,16 +64,40 @@ class ReferralModel {
     'totalCoinsEarned': totalCoinsEarned,
     'coinsAvailable': coinsAvailable,
     'coinsRedeemed': coinsRedeemed,
-    'createdAt': createdAt.toIso8601String(),
+    'createdAt': createdAt.toIso8601String(), // 100% AWS Safe
   };
 
+  // ─── 🔄 RIVERPOD STATE UPDATER (Added for Backend Sync) ─────────
+  ReferralModel copyWith({
+    String? userId,
+    String? referralCode,
+    String? referredByUid,
+    List<String>? referredUserIds,
+    int? totalCoinsEarned,
+    int? coinsAvailable,
+    int? coinsRedeemed,
+    DateTime? createdAt,
+  }) {
+    return ReferralModel(
+      userId: userId ?? this.userId,
+      referralCode: referralCode ?? this.referralCode,
+      referredByUid: referredByUid ?? this.referredByUid,
+      referredUserIds: referredUserIds ?? this.referredUserIds,
+      totalCoinsEarned: totalCoinsEarned ?? this.totalCoinsEarned,
+      coinsAvailable: coinsAvailable ?? this.coinsAvailable,
+      coinsRedeemed: coinsRedeemed ?? this.coinsRedeemed,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  // ─── 📊 UTILITY GETTERS ──────────────────────────────────────────
   double get availableValueInRupees => coinsAvailable * coinValueInRupees;
   int get totalReferrals => referredUserIds.length;
   bool get canRedeem => coinsAvailable >= minimumRedeem;
 
-  /// Generate a unique referral code from uid
+  /// Generate a unique referral code from TriNetra UID
   static String generateCode(String uid) {
-    final suffix = uid.substring(uid.length - 6).toUpperCase();
-    return 'TN$suffix';
+    final suffix = uid.length >= 6 ? uid.substring(uid.length - 6).toUpperCase() : uid.toUpperCase();
+    return 'TN$suffix'; // Brand identity attached to code
   }
 }
