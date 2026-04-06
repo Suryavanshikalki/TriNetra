@@ -3,17 +3,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart'; // 🔥 ASLI DIRECT FILE DOWNLOAD ENGINE
 
 // 🔥 ASLI OTA (AUTO-UPDATE) ENGINE FOR ALL 6 PLATFORMS
 import 'package:shorebird_code_push/shorebird_code_push.dart'; 
 
-import '../../core/constants/app_colors.dart';
-import '../../features/auth/controllers/auth_controller.dart';
-import '../../core/services/sentry_service.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../../core/services/sentry_service.dart';
 
 // ==============================================================
 // 👁️🔥 TRINETRA MASTER FOUNDATION (Blueprint Point 1)
-// 100% REAL: 2-Sec Splash, Auto-Detect OS, Web Download Hub, OTA Updates
+// 100% REAL: 2-Sec Splash, Auto-Detect OS, Direct Download, OTA Updates
 // ==============================================================
 
 class TriNetraHubScreen extends ConsumerStatefulWidget {
@@ -30,6 +31,7 @@ class _TriNetraHubScreenState extends ConsumerState<TriNetraHubScreen> with Sing
   // Asli Shorebird OTA Engine
   final _shorebirdCodePush = ShorebirdCodePush();
   bool _isCheckingForUpdates = true;
+  bool _showWebHub = false; // 🔥 Smooth Transition Logic
 
   @override
   void initState() {
@@ -65,7 +67,7 @@ class _TriNetraHubScreenState extends ConsumerState<TriNetraHubScreen> with Sing
     // 3. Routing Logic (Gatekeeper Check)
     final authStatus = ref.read(authControllerProvider).status;
     
-    // Agar Web par hai, toh UI wahi rahega aur "Download Hub" dikhega
+    // Agar Web par hai, toh UI wahi rahega aur "Download Hub" smoothly dikhega
     // Agar App me hai aur logged in hai, toh Home jayega. Nahi toh Login (Gatekeeper) par.
     if (!kIsWeb) {
       if (authStatus == AuthStatus.authenticated) {
@@ -74,8 +76,22 @@ class _TriNetraHubScreenState extends ConsumerState<TriNetraHubScreen> with Sing
         context.go('/login');
       }
     } else {
-      // Web user stays on this screen to see the App interface + Download Hub
-      setState(() => _isCheckingForUpdates = false);
+      setState(() {
+        _isCheckingForUpdates = false;
+        _showWebHub = true;
+      });
+    }
+  }
+
+  // 🔥 DIRECT FILE DOWNLOAD LOGIC (NO APP STORE!)
+  Future<void> _downloadDirectFile(String fileUrl) async {
+    final Uri url = Uri.parse(fileUrl);
+    if (await canLaunchUrl(url)) {
+      // Direct Storage Download Trigger
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+      SentryService.instance.addBreadcrumb('Direct File Downloaded: $fileUrl');
+    } else {
+      SentryService.instance.captureMessage('Failed to download direct file: $fileUrl');
     }
   }
 
@@ -119,124 +135,138 @@ class _TriNetraHubScreenState extends ConsumerState<TriNetraHubScreen> with Sing
           Center(
             child: FadeTransition(
               opacity: _fadeAnimation,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 🔥 ASLI UNIVERSAL LOGO (Designed by AI via Canvas)
-                  const _TriNetraUniversalLogo(),
-                  
-                  const SizedBox(height: 24),
-                  
-                  const Text(
-                    'TriNetra',
-                    style: TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2.0,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  Text(
-                    'The Ultimate Super App',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.0,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                    ),
-                  ),
-
-                  // 🔥 WEB EXCLUSIVE DOWNLOAD HUB (Point 1 Blueprint)
-                  if (kIsWeb && !_isCheckingForUpdates) ...[
-                    const SizedBox(height: 60),
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10)),
-                        ],
+              child: SingleChildScrollView( // 🔥 Prevent layout overflow
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // 🔥 ASLI UNIVERSAL LOGO (Designed by AI via Canvas)
+                    const _TriNetraUniversalLogo(),
+                    
+                    const SizedBox(height: 24),
+                    
+                    const Text(
+                      'TriNetra',
+                      style: TextStyle(
+                        fontSize: 42,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.0,
+                        color: AppColors.primary,
                       ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Download TriNetra For Your Device',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: isDark ? Colors.white : Colors.black,
+                    ),
+                    
+                    const SizedBox(height: 8),
+                    
+                    Text(
+                      'The Ultimate Super App',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.0,
+                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      ),
+                    ),
+
+                    // 🔥 WEB EXCLUSIVE DOWNLOAD HUB (Point 1 Blueprint)
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeOutQuart,
+                      child: _showWebHub ? Padding(
+                        padding: const EdgeInsets.only(top: 40, bottom: 40),
+                        child: AnimatedOpacity(
+                          opacity: _showWebHub ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 600),
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.cardDark : AppColors.cardLight,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                              boxShadow: [
+                                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10)),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Download TriNetra For Your Device',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                
+                                // 📱 DIRECT APK DOWNLOAD (Highlighted if Android)
+                                _DownloadBtn(
+                                  icon: Icons.android, 
+                                  title: 'Download .APK File', 
+                                  isHighlighted: isAndroid,
+                                  onTap: () => _downloadDirectFile('https://trinetra-master.awsapps.com/downloads/TriNetra.apk'),
+                                ),
+                                
+                                // 🍏 iOS PWA LOGIC (Highlighted if iOS)
+                                _DownloadBtn(
+                                  icon: Icons.apple, 
+                                  title: 'Install iOS PWA', 
+                                  isHighlighted: isIOS,
+                                  onTap: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Tap Share -> "Add to Home Screen" on your iPhone Safari Browser'))
+                                    );
+                                  },
+                                ),
+                                
+                                // 💻 DIRECT EXE DOWNLOAD (Highlighted if Windows)
+                                _DownloadBtn(
+                                  icon: Icons.window, 
+                                  title: 'Download .EXE File', 
+                                  isHighlighted: isWindows,
+                                  onTap: () => _downloadDirectFile('https://trinetra-master.awsapps.com/downloads/TriNetra_Setup.exe'),
+                                ),
+                                
+                                // 🍎 DIRECT DMG DOWNLOAD (Highlighted if Mac)
+                                _DownloadBtn(
+                                  icon: Icons.desktop_mac, 
+                                  title: 'Download .DMG File', 
+                                  isHighlighted: isMac,
+                                  onTap: () => _downloadDirectFile('https://trinetra-master.awsapps.com/downloads/TriNetra_Mac.dmg'),
+                                ),
+                                
+                                // 🐧 DIRECT APPIMAGE DOWNLOAD (Highlighted if Linux)
+                                _DownloadBtn(
+                                  icon: Icons.terminal, 
+                                  title: 'Download .AppImage', 
+                                  isHighlighted: isLinux,
+                                  onTap: () => _downloadDirectFile('https://trinetra-master.awsapps.com/downloads/TriNetra.AppImage'),
+                                ),
+
+                                const SizedBox(height: 20),
+                                const Divider(),
+                                const SizedBox(height: 10),
+
+                                // 🔥 CONTINUE TO WEB APP BUTTON
+                                TextButton.icon(
+                                  onPressed: () {
+                                    final authStatus = ref.read(authControllerProvider).status;
+                                    if (authStatus == AuthStatus.authenticated) {
+                                      context.go('/home');
+                                    } else {
+                                      context.go('/login');
+                                    }
+                                  },
+                                  icon: const Icon(Icons.language, color: AppColors.primary),
+                                  label: const Text('Continue to Web Version', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                                )
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          
-                          // 📱 ANDROID BUTTON (Highlighted if Android)
-                          _DownloadBtn(
-                            icon: Icons.android, 
-                            title: 'Download for Android', 
-                            isHighlighted: isAndroid,
-                            onTap: () => SentryService.instance.addBreadcrumb('Downloading Android APK'),
-                          ),
-                          
-                          // 🍏 iOS BUTTON (Highlighted if iOS)
-                          _DownloadBtn(
-                            icon: Icons.apple, 
-                            title: 'Download for iOS', 
-                            isHighlighted: isIOS,
-                            onTap: () => SentryService.instance.addBreadcrumb('Redirecting to App Store'),
-                          ),
-                          
-                          // 💻 WINDOWS BUTTON (Highlighted if Windows)
-                          _DownloadBtn(
-                            icon: Icons.window, 
-                            title: 'Download for Windows', 
-                            isHighlighted: isWindows,
-                            onTap: () => SentryService.instance.addBreadcrumb('Downloading Windows EXE'),
-                          ),
-                          
-                          // 🍎 MAC BUTTON (Highlighted if Mac)
-                          _DownloadBtn(
-                            icon: Icons.desktop_mac, 
-                            title: 'Download for macOS', 
-                            isHighlighted: isMac,
-                            onTap: () => SentryService.instance.addBreadcrumb('Downloading Mac DMG'),
-                          ),
-                          
-                          // 🐧 LINUX BUTTON (Highlighted if Linux)
-                          _DownloadBtn(
-                            icon: Icons.terminal, 
-                            title: 'Download for Linux', 
-                            isHighlighted: isLinux,
-                            onTap: () => SentryService.instance.addBreadcrumb('Downloading Linux AppImage'),
-                          ),
-
-                          const SizedBox(height: 20),
-                          const Divider(),
-                          const SizedBox(height: 10),
-
-                          // 🔥 CONTINUE TO WEB APP BUTTON (Facebook PWA logic)
-                          TextButton.icon(
-                            onPressed: () {
-                              final authStatus = ref.read(authControllerProvider).status;
-                              if (authStatus == AuthStatus.authenticated) {
-                                context.go('/home');
-                              } else {
-                                context.go('/login');
-                              }
-                            },
-                            icon: const Icon(Icons.language, color: AppColors.primary),
-                            label: const Text('Continue to Web Version', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-                          )
-                        ],
-                      ),
-                    ),
-                  ]
-                ],
+                        ),
+                      ) : const SizedBox(height: 0),
+                    )
+                  ],
+                ),
               ),
             ),
           ),
@@ -260,7 +290,7 @@ class _TriNetraUniversalLogo extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1877F2), Color(0xFF0D5FCC)], // Facebook 2026 Premium Blue
+          colors: [Color(0xFF1877F2), Color(0xFF0D5FCC)], 
         ),
         boxShadow: [
           BoxShadow(
@@ -368,7 +398,7 @@ class _DownloadBtn extends StatelessWidget {
               ),
               const Spacer(),
               if (isHighlighted)
-                const Icon(Icons.star, color: Colors.amber, size: 18), // Highlight indicator
+                const Icon(Icons.star, color: Colors.amber, size: 18), 
             ],
           ),
         ),
