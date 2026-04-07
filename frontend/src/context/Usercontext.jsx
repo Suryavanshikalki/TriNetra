@@ -17,51 +17,8 @@ export const UserProvider = ({ children }) => {
   const [profile, setProfile] = useState(null); // DynamoDB Profile Data (Point 3)
   const [loading, setLoading] = useState(true);
 
-  // ─── 1. REAL AWS SESSION SYNC (Point 2: Gatekeeper) ─────────────
-  useEffect(() => {
-    syncUserSession();
-  }, []);
-
-  const syncUserSession = async () => {
-    try {
-      // 🔥 Step 1: AWS Cognito से असली यूजर सेशन उठाना
-      const { username, userId } = await getCurrentUser();
-      const attributes = await fetchUserAttributes();
-
-      const authenticatedUser = {
-        trinetraId: username, // Point 2: Permanent ID
-        email: attributes.email,
-        phone: attributes.phone_number,
-        sub: userId
-      };
-
-      setUser(authenticatedUser);
-
-      // 🔥 Step 2: AWS DynamoDB से यूजर का 'Asli' प्रोफाइल लाना (Point 3 & 6)
-      await fetchFullProfile(username);
-
-      // 🔥 Step 3: Real-time Identity Tracking (Safety Lock Added)
-      try {
-        if (typeof LogRocket !== 'undefined') {
-          LogRocket.identify(username, {
-            name: attributes.name || 'TriNetra User',
-            email: attributes.email,
-          });
-        }
-      } catch (trackerErr) {
-        console.warn("🛡️ TriNetra: Tracker blocked by browser, but app is safe.");
-      }
-
-    } catch (err) {
-      console.log("🛰️ TriNetra Gatekeeper: No active AWS session. User needs to login.");
-      setUser(null);
-      setProfile(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ─── 2. FETCH FULL PROFILE (Point 3: Profile & Connections) ─────
+  // ─── 1. FETCH FULL PROFILE (Point 3: Profile & Connections) ─────
+  // 🔥 FIX: Isko upar rakha gaya hai taaki hoisting error na aaye
   const fetchFullProfile = async (trinetraId) => {
     try {
       const res = await client.graphql({
@@ -83,13 +40,59 @@ export const UserProvider = ({ children }) => {
       try {
         Sentry.captureException(err);
       } catch (sentryErr) {
-        // Safe catch if Sentry is blocked
+        // Safe catch if Sentry is blocked by user's browser
       }
       console.error("❌ AWS Profile Sync Failed", err);
     }
   };
 
-  // ─── 3. REFRESH PROFILE (Point 6 & 11: Balance/Credits) ─────────
+  // ─── 2. REAL AWS SESSION SYNC (Point 2: Gatekeeper) ─────────────
+  // 🔥 FIX: Isko bhi useEffect se pehle define kiya gaya hai
+  const syncUserSession = async () => {
+    try {
+      // 🔥 Step 1: AWS Cognito से असली यूजर सेशन उठाना
+      const { username, userId } = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
+
+      const authenticatedUser = {
+        trinetraId: username, // Point 2: Permanent ID
+        email: attributes.email,
+        phone: attributes.phone_number,
+        sub: userId
+      };
+
+      setUser(authenticatedUser);
+
+      // 🔥 Step 2: AWS DynamoDB से यूजर का 'Asli' प्रोफाइल लाना (Point 3 & 6)
+      await fetchFullProfile(username);
+
+      // 🔥 Step 3: Real-time Identity Tracking (Point 12H)
+      try {
+        if (typeof LogRocket !== 'undefined') {
+          LogRocket.identify(username, {
+            name: attributes.name || 'TriNetra User',
+            email: attributes.email,
+          });
+        }
+      } catch (trackerErr) {
+        console.warn("🛡️ TriNetra: Tracker loaded safely.");
+      }
+
+    } catch (err) {
+      console.log("🛰️ TriNetra Gatekeeper: No active AWS session. User needs to login.");
+      setUser(null);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── 3. TRIGGER ENGINE ON LOAD ─────────────
+  useEffect(() => {
+    syncUserSession();
+  }, []);
+
+  // ─── 4. REFRESH PROFILE (Point 6 & 11: Balance/Credits) ─────────
   const refreshUserData = () => {
     if (user?.trinetraId) fetchFullProfile(user.trinetraId);
   };
