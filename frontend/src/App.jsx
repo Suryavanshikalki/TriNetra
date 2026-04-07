@@ -23,7 +23,7 @@ import './i18n';
 import LoginScreen from './Screens/Auth/LoginScreen';
 import HomeFeed from './Screens/Home/HomeFeed';
 import ReelsPlayer from './Screens/Reels/ReelsPlayer';
-import AIHub from './Screens/AI/AIHub';
+import MasterAIHub from './Screens/AI/MasterAIHub'; // 🔥 FIX: Yahan 'MasterAIHub' ka asli naam laga diya hai
 import ChatList from './Screens/Chat/ChatList';
 import SettingsMenu from './Screens/Settings/SettingsMenu';
 
@@ -113,7 +113,7 @@ export default function App() {
       <main className="flex-1 overflow-y-auto relative scroll-smooth">
         {activeTab === 'home' && <HomeFeed currentUser={userData} />}
         {activeTab === 'reels' && <ReelsPlayer currentUser={userData} />}
-        {activeTab === 'ai' && <AIHub currentUser={userData} />}
+        {activeTab === 'ai' && <MasterAIHub currentUser={userData} />} {/* 🔥 FIX: Yahan bhi 'MasterAIHub' kar diya gaya hai */}
         {activeTab === 'chat' && <ChatList currentUser={userData} />}
         {activeTab === 'menu' && <SettingsMenu currentUser={userData} onNavigate={setActiveTab} />}
       </main>
