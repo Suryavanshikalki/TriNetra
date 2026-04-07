@@ -289,6 +289,17 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          
+      # 🔥 THE MASTER RADAR: DART SCANNER 🔥
+      - name: 🕵️ DART ERROR SCANNER (Deep Search)
+        shell: bash
+        run: |
+          APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
+          cd "$APP_DIR"
+          flutter pub get
+          echo "🔥 Scanning your code for any hidden spelling mistakes or missing files..."
+          flutter analyze
+          
       - name: Build Web PWA
         shell: bash
         run: |
