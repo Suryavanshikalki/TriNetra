@@ -2,8 +2,8 @@ name: TriNetra Final - All 6 Platforms & AWS Launch
 
 on:
   push:
-    branches: [ main ]    # 🔥 ऑटो-रन चालू कर दिया है! (कमिट करते ही काम शुरू)
-  workflow_dispatch:      # ✅ मैनुअल बटन भी चालू है
+    branches: [ main ]    # 🔥 ऑटो-रन चालू है
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -33,6 +33,10 @@ jobs:
           cd "$APP_DIR"
           flutter clean
           flutter pub get
+          
+          echo "🔥 AUTO-PATCHING: Fixing Facebook Audience Network Namespace Error..."
+          find ~/.pub-cache/hosted/pub.dev/facebook_audience_network*/android/build.gradle -type f -exec sed -i 's/android {/android {\n    namespace "com.facebook.audiencenetwork"/g' {} + || true
+
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
           # 🔥 ALL 17 KEYS INJECTED (APK)
@@ -98,7 +102,11 @@ jobs:
           cd "$APP_DIR"
           flutter config --enable-windows-desktop
           flutter clean
+          
+          echo "🔥 AUTO-PATCHING: Upgrading Sentry to fix CMake 3.31 crash..."
+          flutter pub upgrade sentry_flutter
           flutter pub get
+          
           # 🔥 ALL 17 KEYS INJECTED
           flutter build windows --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
@@ -143,7 +151,11 @@ jobs:
           cd "$APP_DIR"
           flutter config --enable-linux-desktop
           flutter clean
+          
+          echo "🔥 AUTO-PATCHING: Upgrading Sentry to fix CMake 3.31 crash..."
+          flutter pub upgrade sentry_flutter
           flutter pub get
+          
           # 🔥 ALL 17 KEYS INJECTED
           flutter build linux --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
@@ -186,8 +198,9 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Fixing device_info_plus Vision Pro bug safely..."
+          echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate & device_info iOS Bugs..."
           find ~/.pub-cache/hosted -name "FPPDeviceInfoPlusPlugin.m" -exec sed -i '' 's/isiOSAppOnVision/isMacCatalystApp/g' {} + || true
+          find ~/.pub-cache/hosted/pub.dev/flutter_vibrate* -name "SwiftVibratePlugin.swift" -exec sed -i '' 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' {} + || true
           
           echo "🔥 Safe iOS Deployment Target (For AWS Amplify)..."
           find ios -name "project.pbxproj" -exec sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9\.]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/g' {} + || true
@@ -239,7 +252,8 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 Safe macOS Deployment Target (For AWS Amplify)..."
+          echo "🔥 AUTO-PATCHING: Safe macOS Deployment Target (For AWS Amplify)..."
+          find macos -name "Podfile" -exec sed -i '' "s/platform :osx, '10.11'/platform :osx, '10.15'/g" {} + || true
           find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
@@ -314,5 +328,4 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR/build/web"
           echo "🔥 Build Pass! AWS Sync is PAUSED to save billing."
-          # 🔥 डिप्लॉयमेंट बंद कर दिया गया है ताकि बिल न बढ़े!
           # aws s3 sync . s3://trinetra-web-app --delete || true
