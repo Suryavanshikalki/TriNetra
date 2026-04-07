@@ -1,7 +1,8 @@
-name: TriNetra Final - All 6 Platforms & AWS Launch
+Name: TriNetra Final - All 6 Platforms & AWS Launch
 on:
-  push:
-    branches: [ main ]
+  # push:
+  #   branches: [ main ]  <-- 🔥 AWS का केस जब तक पास न हो, इसे बंद रखना ही समझदारी है।
+  workflow_dispatch:      # ✅ सिर्फ बटन दबाने पर चलेगा
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -77,11 +78,16 @@ jobs:
           flutter config --enable-windows-desktop
           flutter clean
           flutter pub get
+          # 🔥 Missing Keys added!
           flutter build windows --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}"
+            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
+            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
+            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
+            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
+            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -108,11 +114,16 @@ jobs:
           flutter config --enable-linux-desktop
           flutter clean
           flutter pub get
+          # 🔥 Missing Keys added!
           flutter build linux --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}"
+            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
+            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
+            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
+            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
+            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -187,11 +198,16 @@ jobs:
           find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
+          # 🔥 Missing Keys added!
           flutter build macos --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}"
+            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
+            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
+            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
+            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
+            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
             
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
@@ -234,4 +250,5 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR/build/web"
           echo "🔥 Syncing Web App directly to AWS S3 Bucket..."
+          # AWS S3 Sync command (Case Clear hone ke baad hi chalana)
           aws s3 sync . s3://trinetra-web-app --delete || true
