@@ -18,7 +18,7 @@ import 'core/services/logrocket_service.dart';
 import 'app.dart';
 
 // 🔥 JODNA HAI (ADDED): Dummy config ताकि गिटहब 'Undefined name amplifyconfig' का एरर न दे! 🔥
-// जब ऐप को रन करना हो, तो इसे असली कॉन्फिग से बदल लीजिएगा।
+// जब ऐप को रन करना আসতে हो, तो इसे असली कॉन्फिग से बदल लीजिएगा।
 const String amplifyconfig = '''{}''';
 
 void main() async {
