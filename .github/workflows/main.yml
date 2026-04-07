@@ -42,8 +42,8 @@ jobs:
 
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
-          # 🔥 ALL 17 KEYS INJECTED (APK)
-          flutter build apk --release \
+          # 🔥 Verbose (-v) added for deep error tracking
+          flutter build apk --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
@@ -62,8 +62,7 @@ jobs:
             --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
             --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
             
-          # 🔥 ALL 17 KEYS INJECTED (APPBUNDLE)
-          flutter build appbundle --release \
+          flutter build appbundle --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
@@ -110,8 +109,8 @@ jobs:
           flutter pub add sentry_flutter@^8.11.0
           flutter pub get
           
-          # 🔥 ALL 17 KEYS INJECTED
-          flutter build windows --release \
+          # 🔥 Verbose (-v) added
+          flutter build windows --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
@@ -159,8 +158,8 @@ jobs:
           flutter pub add sentry_flutter@^8.11.0
           flutter pub get
           
-          # 🔥 ALL 17 KEYS INJECTED
-          flutter build linux --release \
+          # 🔥 Verbose (-v) added
+          flutter build linux --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
@@ -184,7 +183,7 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴 (🔥 Shifted to Latest macos-15 for Xcode 16 Fix)
+  # 4. iOS BUILD 🔴 
   build-ios:
     runs-on: macos-15
     timeout-minutes: 60
@@ -205,8 +204,8 @@ jobs:
           find ~/.pub-cache/hosted -name "SwiftVibratePlugin.swift" -exec sed -i '' 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' {} + || true
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
-          # 🔥 ALL 17 KEYS INJECTED
-          flutter build ios --release --no-codesign \
+          # 🔥 Verbose (-v) added
+          flutter build ios --release --no-codesign -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
@@ -231,7 +230,7 @@ jobs:
           name: iOS-Release-Unsigned
           path: '**/build/ios/iphoneos/Runner.app'
 
-  # 5. macOS BUILD 🟠 (🔥 Shifted to Latest macos-15 for Xcode 16 Fix)
+  # 5. macOS BUILD 🟠
   build-macos:
     runs-on: macos-15
     timeout-minutes: 60
@@ -256,8 +255,8 @@ jobs:
           find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
-          # 🔥 ALL 17 KEYS INJECTED
-          flutter build macos --release \
+          # 🔥 Verbose (-v) added
+          flutter build macos --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
@@ -298,7 +297,7 @@ jobs:
           flutter clean
           flutter pub get
           
-          # 🔥 Verbose Flag (-v) Added: Taaki agar Dart code me error ho to exact line dikh jaye!
+          # 🔥 Verbose Flag (-v) Added: Exact error line milegi!
           flutter build web --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
