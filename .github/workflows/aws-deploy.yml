@@ -1,11 +1,12 @@
-name: TriNetra Master AWS Deploy
+name: TriNetra Master AWS Deploy (Safe Mode)
 
 on:
-  push:
-    branches: [ main ]
+  # push:
+  #   branches: [ main ] # 🔥 OFF: अब पुश करने पर खुद से बिल नहीं बढ़ेगा
+  workflow_dispatch:      # ✅ ON: सिर्फ जब तुम बटन दबाओगे तभी चलेगा
 
 jobs:
-  # 🎨 Phase 1: Frontend को S3 पर भेजना
+  # 🎨 Phase 1: Frontend Build (Deployment Paused)
   build-and-deploy-frontend:
     runs-on: ubuntu-latest
     steps:
@@ -20,33 +21,29 @@ jobs:
     - name: Build Frontend
       run: |
         cd frontend
-        # पुराने कचरे को हटाकर ताज़ा इनस्टॉल
         rm -rf node_modules package-lock.json
         npm install
-        # गायब पैकेजेस का ब्रह्मास्त्र
         npm install i18next react-i18next i18next-browser-languagedetector lucide-react
-        # बिल्ड को फ़ोर्स करना ताकि dist फोल्डर पक्का बने
         CI=false npm run build
 
     - name: Connect to AWS
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        # 🔥 आपकी तिजोरी वाले असली नाम
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1 
 
-    - name: Deploy to S3 Bucket
+    - name: Deploy to S3 Bucket (PAUSED)
       run: |
-        # 🔥 ACL एरर से बचने के लिए सीधा सिंक (Access Denied नहीं आएगा)
-        if [ -d "frontend/dist" ]; then
-          aws s3 sync frontend/dist/ s3://trinetra-app-live --delete
-        else
-          echo "TriNetra Error: dist folder missing! Build failed."
-          exit 1
-        fi
+        # 🔥 बिलिंग रोकने के लिए नीचे की लाइन कमेंट कर दी गई है
+        echo "S3 Sync Paused: Account Verification Pending"
+        # if [ -d "frontend/dist" ]; then
+        #   aws s3 sync frontend/dist/ s3://trinetra-app-live --delete
+        # else
+        #   exit 1
+        # fi
 
-  # 🧠 Phase 2: Backend (App Runner) - Frontend और Backend दोनों 100% AWS से!
+  # 🧠 Phase 2: Backend (Trigger Paused)
   deploy-backend:
     runs-on: ubuntu-latest
     needs: build-and-deploy-frontend
@@ -57,6 +54,8 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1
-    - name: Trigger App Runner
+    - name: Trigger App Runner (PAUSED)
       run: |
-        aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
+        # 🔥 ARN खाली होने पर एरर रोकने के लिए इसे रोका गया है
+        echo "App Runner Trigger Paused"
+        # aws apprunner start-deployment --service-arn ${{ secrets.AWS_APP_RUNNER_ARN }}
