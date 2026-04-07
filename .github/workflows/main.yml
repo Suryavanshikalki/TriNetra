@@ -1,8 +1,8 @@
 name: TriNetra Final - All 6 Platforms & AWS Launch
 
 on:
-  # push:
-  #   branches: [ main ] # 🔥 जब तक AWS सपोर्ट का केस पास न हो, इसे बंद ही रखना ताकि बिल न बढ़े
+  push:
+    branches: [ main ] # 🔥 ऑटो-रन अब चालू हो गया है!
   workflow_dispatch:      # ✅ सिर्फ बटन दबाने पर चलेगा
 
 env:
