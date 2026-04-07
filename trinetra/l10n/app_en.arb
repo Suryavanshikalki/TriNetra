@@ -3,7 +3,7 @@
   "appName": "TriNetra",
   "tagline": "Connect. Share. Grow.",
   
-  "--- GATEKEEPER & LOGIN (Point 2) ---": "",
+  "headerGatekeeper": "--- GATEKEEPER & LOGIN (Point 2) ---",
   "login": "Log In",
   "logout": "Log Out",
   "createAccount": "Create new account",
@@ -19,7 +19,7 @@
   "loginGithub": "Access Master AI via GitHub",
   "developerAccessOnly": "Developers & OS Creators Only",
 
-  "--- NAVIGATION & TABS ---": "",
+  "headerNavigation": "--- NAVIGATION & TABS ---",
   "home": "Home",
   "friends": "Friends",
   "reels": "Reels",
@@ -29,7 +29,7 @@
   "profile": "Profile",
   "menu": "Menu",
 
-  "--- FEED & AUTO-ESCALATION (Point 4) ---": "",
+  "headerFeed": "--- FEED & AUTO-ESCALATION (Point 4) ---",
   "whatsOnYourMind": "What's on your mind?",
   "like": "Like",
   "comment": "Comment",
@@ -45,7 +45,7 @@
   "escalationTierCM": "Escalating to CM/PM Level...",
   "escalationTierSC": "Escalating to Supreme Court/International...",
 
-  "--- WHATSAPP 2.0 (Point 5) ---": "",
+  "headerWhatsapp": "--- WHATSAPP 2.0 (Point 5) ---",
   "messenger": "Messenger",
   "audioCall": "Audio Call",
   "videoCall": "Video Call",
@@ -54,7 +54,7 @@
   "sendLocation": "Send Location",
   "onlyMutualsCanMessage": "Only mutual connections can send messages.",
 
-  "--- THE ECONOMY & PAYMENTS (Point 6) ---": "",
+  "headerEconomy": "--- THE ECONOMY & PAYMENTS (Point 6) ---",
   "wallet": "TriNetra Pay",
   "transactionHistory": "Payment History",
   "requestPayout": "Transfer to Bank Account",
@@ -64,14 +64,14 @@
   "payWithPaddle": "Pay via Paddle",
   "payWithAdyen": "Pay via Adyen",
   
-  "--- BOOST & REVENUE MODELS ---": "",
+  "headerBoost": "--- BOOST & REVENUE MODELS ---",
   "boostPost": "Boost Post",
   "boostFree": "Free Boost (70% TriNetra / 30% User) - Ad Supported",
   "boostPaid25": "Paid Boost (25% TriNetra / 75% User) - ₹349/day",
   "boostPaid100": "Pro Boost + Monetization (100% User) - ₹799/day",
   "boostAuto": "Pro Auto-Boost (Marketing Network) - ₹28,000/month",
 
-  "--- 6-IN-1 MASTER AI BRAIN (Point 11) ---": "",
+  "headerAi": "--- 6-IN-1 MASTER AI BRAIN (Point 11) ---",
   "aiAssist": "Master AI Brain",
   "aiChatbot": "Mode A: Chatbot (Meta/GPT/Gemini/DeepSeek)",
   "aiChatbotFree": "Free Premium (8 Messages/Day)",
@@ -83,7 +83,7 @@
   "aiSuperAgenticPaid": "Human-Brain Engine (900 Credits) - ₹9999/month",
   "aiOSCreator": "OS Creation Tier - ₹79999/month (5000 Premium Credits)",
 
-  "--- SETTINGS & PRIVACY (Point 12) ---": "",
+  "headerSettings": "--- SETTINGS & PRIVACY (Point 12) ---",
   "settings": "Settings & Privacy",
   "accountsCentre": "Accounts Centre",
   "privacyCheckup": "Privacy Checkup",
@@ -98,7 +98,7 @@
   "communityStandards": "Community Standards and Legal Policies",
   "termsPrivacy": "By continuing, you agree to our Terms of Service and Privacy Policy.",
 
-  "--- ERRORS & ALERTS ---": "",
+  "headerErrors": "--- ERRORS & ALERTS ---",
   "invalidPhone": "Invalid phone number. Please check and try again.",
   "tooManyAttempts": "Too many attempts. Please wait before trying again.",
   "incorrectOtp": "Incorrect OTP. Please enter the correct code.",
