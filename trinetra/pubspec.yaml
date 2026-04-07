@@ -10,7 +10,7 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
-  flutter: '>=3.26.0' # Facebook 2026 Standard requires latest Flutter
+  flutter: '>=3.24.0' # 🔥 FIX: GitHub Actions ke stable channel ko crash hone se bachane ke liye safe version
 
 dependencies:
   flutter:
@@ -136,7 +136,7 @@ flutter:
   generate: true                    # For Auto-generating L10n Files
 
   assets:
-    - .env                          # Yahan tumhari 17 ASLI KEYS load hongi
+    # - .env                        # 🔥 MASTER FIX: GitHub par .env file nahi hoti, isse build crash hota hai! Isey band kar diya, kyonki humne Actions me 17 keys pehle hi bhej di hain.
     - assets/images/
     - assets/lottie/
     - assets/icons/
