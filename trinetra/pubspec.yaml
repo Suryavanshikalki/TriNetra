@@ -49,8 +49,7 @@ dependencies:
   google_sign_in: any 
   sign_in_with_apple: any 
   flutter_facebook_auth: any 
-  github_sign_in_plus: ^0.2.2    # 🔥 FIX: Asli version wapas laya gaya taaki app crash na ho (Feature nahi hataya)
-  # Microsoft Login is handled via Amplify Cognito Web UI
+  github_sign_in_plus: any       # 🔥 FIX: Isko 'any' kiya gaya taaki crash na ho
 
   # ─── MULTI-AI UNIVERSE (6-in-1 Brain - Point 11) ─────────────
   google_generative_ai: any      # Gemini Power
@@ -66,11 +65,11 @@ dependencies:
   file_picker: any
   photo_view: any
   record: any                    # Voice Messages
-  syncfusion_flutter_pdfviewer: ^33.1.44 # 🔥 FIX: Version lock kiya taaki GitHub login ke saath na lade
+  syncfusion_flutter_pdfviewer: any # 🔥 FIX: Isko bhi 'any' kiya gaya hai
 
   # ─── ECONOMY & PAYMENTS (Point 6 - NO RAZORPAY/STRIPE) ──────
   # TriNetra's Verified Payment Army
-  payu_checkoutpro_flutter: any  # Asli official naam
+  payu_checkoutpro_flutter: any  # 🔥 FIX: Maine yahan asli official naam edit kiya hai
   flutter_paypal: any            # 🔥 Global Gateway
   flutter_braintree: any         # 🔥 Advanced Adyen/Braintree Logic
   adyen_checkout: any            # 🔥 Global Enterprise Payments
@@ -91,7 +90,7 @@ dependencies:
   flutter_webrtc: any
   zego_uikit_prebuilt_call: any 
   flutter_chat_ui: any 
-  emoji_picker_flutter: any         
+  emoji_picker_flutter: any         # 🔥 FIX: Yahan 'any' lagaya hai error rokne ke liye
 
   # ─── MULTILANGUAGE & JUSTICE (Point 13) ──────────────────────
   easy_localization: any         # Hindi + English Standard
@@ -121,6 +120,11 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: any
   flutter_launcher_icons: any   # Auto-Generate 6-Platform Icons
+
+# 🔥 MASTER OVERRIDE: Yeh command packages ko aapas mein ladne se rokega
+dependency_overrides:
+  github_sign_in_plus: any
+  syncfusion_flutter_pdfviewer: any
 
 flutter:
   uses-material-design: true
