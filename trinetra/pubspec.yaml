@@ -129,7 +129,7 @@ dependency_overrides:
   path_provider: any
   http: any
   intl: any
-  flutter_localizations: any
+  # 🔥 FIX: Yahan se flutter_localizations hata diya gaya hai taaki internet wala error na aaye
 
 flutter:
   uses-material-design: true
