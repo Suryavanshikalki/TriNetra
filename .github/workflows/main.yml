@@ -1,7 +1,8 @@
-Name: TriNetra Final - All 6 Platforms & AWS Launch
+name: TriNetra Final - All 6 Platforms & AWS Launch
+
 on:
   # push:
-  #   branches: [ main ]  <-- 🔥 AWS का केस जब तक पास न हो, इसे बंद रखना ही समझदारी है।
+  #   branches: [ main ] # 🔥 जब तक AWS सपोर्ट का केस पास न हो, इसे बंद ही रखना ताकि बिल न बढ़े
   workflow_dispatch:      # ✅ सिर्फ बटन दबाने पर चलेगा
 
 env:
@@ -34,20 +35,40 @@ jobs:
           flutter pub get
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
+          # 🔥 ALL 17 KEYS INJECTED (APK)
           flutter build apk --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
+            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
+            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
+            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
             --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
             --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
             
+          # 🔥 ALL 17 KEYS INJECTED (APPBUNDLE)
           flutter build appbundle --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
+            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
+            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
+            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
@@ -78,11 +99,20 @@ jobs:
           flutter config --enable-windows-desktop
           flutter clean
           flutter pub get
-          # 🔥 Missing Keys added!
+          # 🔥 ALL 17 KEYS INJECTED
           flutter build windows --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
+            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
+            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
+            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
@@ -114,11 +144,20 @@ jobs:
           flutter config --enable-linux-desktop
           flutter clean
           flutter pub get
-          # 🔥 Missing Keys added!
+          # 🔥 ALL 17 KEYS INJECTED
           flutter build linux --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
+            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
+            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
+            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
@@ -156,10 +195,20 @@ jobs:
           find ios -name "project.pbxproj" -exec sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9\.]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/g' {} + || true
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
+          # 🔥 ALL 17 KEYS INJECTED
           flutter build ios --release --no-codesign \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
+            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
+            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
+            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
@@ -198,11 +247,20 @@ jobs:
           find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
-          # 🔥 Missing Keys added!
+          # 🔥 ALL 17 KEYS INJECTED
           flutter build macos --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
+            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
+            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
+            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
@@ -230,10 +288,20 @@ jobs:
           cd "$APP_DIR"
           flutter clean
           flutter pub get
+          # 🔥 ALL 17 KEYS INJECTED
           flutter build web --release \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
+            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
             --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
+            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
+            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
+            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
             --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
             --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
@@ -250,5 +318,5 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR/build/web"
           echo "🔥 Syncing Web App directly to AWS S3 Bucket..."
-          # AWS S3 Sync command (Case Clear hone ke baad hi chalana)
+          # AWS S3 Sync command (AWS केस पास होने के बाद ही इसे चालू करना)
           aws s3 sync . s3://trinetra-web-app --delete || true
