@@ -70,7 +70,7 @@ dependencies:
 
   # ─── ECONOMY & PAYMENTS (Point 6 - NO RAZORPAY/STRIPE) ──────
   # TriNetra's Verified Payment Army
-  payu_checkoutpro: any          # 🔥 Asli India Gateway
+  payu_checkoutpro_flutter: any  # 🔥 FIX: Maine yahan asli official naam edit kiya hai
   flutter_paypal: any            # 🔥 Global Gateway
   flutter_braintree: any         # 🔥 Advanced Adyen/Braintree Logic
   adyen_checkout: any            # 🔥 Global Enterprise Payments
