@@ -24,7 +24,7 @@ import LoginScreen from './Screens/Auth/LoginScreen';
 import HomeFeed from './Screens/Home/HomeFeed';
 import ReelsPlayer from './Screens/Reels/ReelsPlayer';
 import MasterAIHub from './Screens/AI/MasterAIHub'; // 🔥 FIX: Yahan 'MasterAIHub' ka asli naam laga diya hai
-import ChatList from './Screens/Chat/ChatList';
+import ChatList from './Screens/Messenger/ChatList'; // 🔥 FIX: Yahan tumhara asli folder 'Messenger' set kar diya hai!
 import SettingsMenu from './Screens/Settings/SettingsMenu';
 
 // 🔥 REAL-TIME TRACKING (Point 12H)
