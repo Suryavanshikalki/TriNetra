@@ -8,7 +8,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 
 // 🔥 ASLI INFRASTRUCTURE INITIALIZATION (No Dummy)
-import { initTriNetraAuth } from './aws-auth'; // Point 2: Gatekeeper
+import awsAuthConfig from './aws-auth'; // Point 2: AWS Gatekeeper Config
+import { Amplify } from 'aws-amplify'; // 🔥 FIX: Official AWS Engine Router
 import * as Sentry from "@sentry/react";
 import LogRocket from 'logrocket';
 import './i18n'; // Point 13: i18next Engine (Small 'i')
@@ -33,8 +34,8 @@ Sentry.init({
 });
 
 // ─── 2. AWS GATEKEEPER STARTUP (Point 1 & 2) ─────────────────────
-// Initialize AWS Amplify & Cognito before rendering the UI
-initTriNetraAuth();
+// 🔥 FIX: Initialize AWS Amplify with the config securely
+Amplify.configure(awsAuthConfig);
 
 // ─── 3. MASTER RENDERING ENGINE (6-Platform Support) ─────────────
 const rootElement = document.getElementById('root');
