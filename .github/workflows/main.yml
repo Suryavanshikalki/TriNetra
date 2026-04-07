@@ -34,8 +34,11 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 AUTO-PATCHING: Fixing Facebook Audience Network Namespace Error..."
-          find ~/.pub-cache/hosted/pub.dev/facebook_audience_network*/android/build.gradle -type f -exec sed -i 's/android {/android {\n    namespace "com.facebook.audiencenetwork"/g' {} + || true
+          echo "🔥 AUTO-PATCHING: Injecting Namespace for Facebook Audience Network..."
+          FAN_DIR=$(find ~/.pub-cache/hosted -name "facebook_audience_network*" -type d | head -n 1)
+          if [ -n "$FAN_DIR" ]; then
+            sed -i.bak 's/android {/android {\n    namespace "com.facebook.audiencenetwork"/g' "$FAN_DIR/android/build.gradle" || true
+          fi
 
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
@@ -103,8 +106,8 @@ jobs:
           flutter config --enable-windows-desktop
           flutter clean
           
-          echo "🔥 AUTO-PATCHING: Upgrading Sentry to fix CMake 3.31 crash..."
-          flutter pub upgrade sentry_flutter
+          echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
+          flutter pub add sentry_flutter@^8.11.0
           flutter pub get
           
           # 🔥 ALL 17 KEYS INJECTED
@@ -152,8 +155,8 @@ jobs:
           flutter config --enable-linux-desktop
           flutter clean
           
-          echo "🔥 AUTO-PATCHING: Upgrading Sentry to fix CMake 3.31 crash..."
-          flutter pub upgrade sentry_flutter
+          echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
+          flutter pub add sentry_flutter@^8.11.0
           flutter pub get
           
           # 🔥 ALL 17 KEYS INJECTED
@@ -181,9 +184,9 @@ jobs:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
 
-  # 4. iOS BUILD 🔴
+  # 4. iOS BUILD 🔴 (🔥 Shifted to Latest macos-15 for Xcode 16 Fix)
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-15
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -198,12 +201,8 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate & device_info iOS Bugs..."
-          find ~/.pub-cache/hosted -name "FPPDeviceInfoPlusPlugin.m" -exec sed -i '' 's/isiOSAppOnVision/isMacCatalystApp/g' {} + || true
-          find ~/.pub-cache/hosted/pub.dev/flutter_vibrate* -name "SwiftVibratePlugin.swift" -exec sed -i '' 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' {} + || true
-          
-          echo "🔥 Safe iOS Deployment Target (For AWS Amplify)..."
-          find ios -name "project.pbxproj" -exec sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9\.]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/g' {} + || true
+          echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate iOS Simulator Bug..."
+          find ~/.pub-cache/hosted -name "SwiftVibratePlugin.swift" -exec sed -i '' 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' {} + || true
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
           # 🔥 ALL 17 KEYS INJECTED
@@ -232,9 +231,9 @@ jobs:
           name: iOS-Release-Unsigned
           path: '**/build/ios/iphoneos/Runner.app'
 
-  # 5. macOS BUILD 🟠
+  # 5. macOS BUILD 🟠 (🔥 Shifted to Latest macos-15 for Xcode 16 Fix)
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-15
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -252,7 +251,7 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 AUTO-PATCHING: Safe macOS Deployment Target (For AWS Amplify)..."
+          echo "🔥 AUTO-PATCHING: Safe macOS Deployment Target..."
           find macos -name "Podfile" -exec sed -i '' "s/platform :osx, '10.11'/platform :osx, '10.15'/g" {} + || true
           find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
           
@@ -298,8 +297,9 @@ jobs:
           cd "$APP_DIR"
           flutter clean
           flutter pub get
-          # 🔥 ALL 17 KEYS INJECTED
-          flutter build web --release \
+          
+          # 🔥 Verbose Flag (-v) Added: Taaki agar Dart code me error ho to exact line dikh jaye!
+          flutter build web --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
             --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
