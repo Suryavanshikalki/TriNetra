@@ -49,7 +49,7 @@ dependencies:
   google_sign_in: any 
   sign_in_with_apple: any 
   flutter_facebook_auth: any 
-  github_sign_in: any            # 🔥 FIX: Jo abhi asli aur safe naam diya tha, bas wo add kar diya hai (Feature delete nahi hua)
+  github_sign_in_plus: any       # 🔥 FIX: Asli Plus package wapas laya gaya!
 
   # ─── MULTI-AI UNIVERSE (6-in-1 Brain - Point 11) ─────────────
   google_generative_ai: any      # Gemini Power
@@ -121,9 +121,15 @@ dev_dependencies:
   flutter_lints: any
   flutter_launcher_icons: any   # Auto-Generate 6-Platform Icons
 
-# 🔥 MASTER OVERRIDE: Yeh command packages ko aapas mein ladne se rokega
+# 🔥 MASTER OVERRIDE: Yeh command packages ko aapas mein ladne se rokega!
 dependency_overrides:
+  github_sign_in_plus: any
+  flutter_paypal: any
   syncfusion_flutter_pdfviewer: any
+  path_provider: any
+  http: any
+  intl: any
+  flutter_localizations: any
 
 flutter:
   uses-material-design: true
