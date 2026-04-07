@@ -2,8 +2,8 @@ name: TriNetra Final - All 6 Platforms & AWS Launch
 
 on:
   push:
-    branches: [ main ] # 🔥 ऑटो-रन अब चालू हो गया है!
-  workflow_dispatch:      # ✅ सिर्फ बटन दबाने पर चलेगा
+    branches: [ main ]    # 🔥 ऑटो-रन चालू कर दिया है! (कमिट करते ही काम शुरू)
+  workflow_dispatch:      # ✅ मैनुअल बटन भी चालू है
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -313,6 +313,6 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR/build/web"
-          echo "🔥 Syncing Web App directly to AWS S3 Bucket..."
-          # AWS S3 Sync command (AWS केस पास होने के बाद ही इसे चालू करना)
-          aws s3 sync . s3://trinetra-web-app --delete || true
+          echo "🔥 Build Pass! AWS Sync is PAUSED to save billing."
+          # 🔥 डिप्लॉयमेंट बंद कर दिया गया है ताकि बिल न बढ़े!
+          # aws s3 sync . s3://trinetra-web-app --delete || true
