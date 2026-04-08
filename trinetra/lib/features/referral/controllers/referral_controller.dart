@@ -1,7 +1,8 @@
-import 'dart:convert';
+import 'dart:convert'; // 🔥 FIXED: 'Import' का 'I' छोटा (small) कर दिया है
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amplify_flutter/amplify_flutter.dart'; // 🔥 ASLI AWS CORE
+import 'package:amplify_api/amplify_api.dart'; // 🔥 FIXED: GraphQLRequest के लिए API पैकेज जोड़ दिया है
 import '../../../core/services/sentry_service.dart'; // 🔥 ASLI ERRORS
 import '../../../core/services/logrocket_service.dart'; // 🔥 ASLI TRACKING
 import '../../auth/controllers/auth_controller.dart';
