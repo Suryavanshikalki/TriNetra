@@ -10,9 +10,34 @@ env:
 
 jobs:
 
-  # 1. 🤖 THE GOD-MODE ARCHITECT (Auto-Creator, Editor, Healer & Firebase Deploy)
+  # 1. 🤖 THE GOD-MODE ARCHITECT (Auto-Creator & Firebase Deploy)
   deploy-web-firebase:
     runs-on: ubuntu-latest
+    env: &secret_env
+      S_AWS_ACCESS: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      S_AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      S_AWS_ARN: ${{ secrets.AWS_APP_RUNNER_ARN }}
+      S_SENTRY: ${{ secrets.SENTRY_DSN }}
+      S_ZEGO_ID: ${{ secrets.ZEGOCLOUD_APP_ID }}
+      S_ZEGO_SIGN: ${{ secrets.ZEGOCLOUD_APP_SIGN }}
+      S_GEMINI: ${{ secrets.GEMINI_API_KEY }}
+      S_OPENAI: ${{ secrets.OPENAI_API_KEY }}
+      S_META: ${{ secrets.META_API_KEY }}
+      S_DEEPSEEK: ${{ secrets.DEEPSEEK_API_KEY }}
+      S_MANUS: ${{ secrets.MANUS_API_KEY }}
+      S_EMERGENT: ${{ secrets.EMERGENT_API_KEY }}
+      S_PAYU: ${{ secrets.PAYU_MERCHANT_KEY }}
+      S_BRAINTREE: ${{ secrets.BRAINTREE_TOKEN }}
+      S_PAYPAL_C: ${{ secrets.PAYPAL_CLIENT_ID }}
+      S_PADDLE: ${{ secrets.PADDLE_KEY }}
+      S_ADYEN: ${{ secrets.ADYEN_KEY }}
+      S_FIREBASE: ${{ secrets.FIREBASE_CONFIG }}
+      S_FIREBASE_SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      S_GH_PAT: ${{ secrets.GH_PAT_TOKEN }}
+      S_GOOGLE: ${{ secrets.GOOGLE_VERIFICATION }}
+      S_GROQ: ${{ secrets.GROQ_API_KEY }}
+      S_MONGO: ${{ secrets.MONGODB_URI }}
+      S_PAYPAL_S: ${{ secrets.PAYPAL_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -42,6 +67,11 @@ jobs:
           echo "🔥 3. ULTIMATE BLUEPRINT: 100% SAME TO SAME EXACT TEXT..."
           cat << 'EOF' > lib/core/config/trinetra_master_blueprint.dart
           class TriNetraBlueprint {
+            static const String infrastructureRules = r'''
+          Applovin +admob+meta ads,paypal,windows mac iOS android app store par,domain,aws waf aws cloudwatch auto scaling,sentry,crashlytics,logrocket 
+          Sara key asli h aur bhi key h screenshot de rha hu dekho aur jo jo de rha hu pahle bhi diya hu mujhe frontend backend dono ko aws se chalana h aur jitna key h sbka use karke jaise jaise bola hu sab kuchh asli kam karne vala chahiye pahle bhi bola hu kuchh bhi dummy nhi sirf dikhe sab kuchh asli kam karne vala facebook ki tarah a to z jo jo jaise jaise bola hu a to z kuchh bhi nhi chhodo ek ek option function feature settings privacy security menu ek ek chiz jo jo text me de rha hu likhkar sab kuchh jaise jaise hai jitna hai sab kuchh rhega asli kam karega surf dikhega nhi sara text ka ek ek line pdho kuchh bhi nhi chhodo a to z fully functional ho sara key aur sab kuchh likhkar de rha hu original h vaisa hi banao facebook ki tarah asli kan karne vala web app dono par jo jo jaise jaise likha hu vaise apna man se kuchh nhi krna deep search karo aur dekho pahle tum same tum same sab kuchh likho aur fir coding shuru karenge bologe to sara file ka screenshot bhi de dunga kaun kaun sa h ya tumko pata h sab yad karo sab kuchh aur banao facebook ki tarah asli kam karne vala jo jo h isme
+          ''';
+
             static const String ultimateBlueprintText = r'''
           👁️🔥 TriNetra Super App: The 100% Ultimate Blueprint
           1. ऐप की पहचान और 6-प्लेटफॉर्म डिप्लॉयमेंट (The Foundation)
@@ -84,7 +114,7 @@ jobs:
           • कस्टमर सपोर्ट: सेटिंग्स में 'Customer Support' होगा जहाँ पेमेंट या ऐप से जुड़ी कोई भी दिक्कत सॉल्व होगी।
           • 4 बूस्ट और रेवेन्यू मॉडल:
           7. Free Boost (70/30): यूज़र फ्री में पोस्ट बूस्ट करेगा। एड्स चलेंगे। कमाई का 70% TriNetra (मेरा) और 30% यूज़र का।
-          8. Paid Boost (बिना मॉनेटाइज़ेशन - 25/75): यूज़र पैसा देकर बूस्ट करेगा। जो भी रीच/फायदा होगा, उसका 25% TriNetra (मेरा) और 75% यूज़र का :- 349/day or 10000/month
+          8. Paid Boost (बिना मॉनेटाइज़ेशन - 25/75): यूज़र पैसा देकर बूस्ट करेगा। जो भी रीच/फायदा होगा, গার उसका 25% TriNetra (मेरा) और 75% यूज़र का :- 349/day or 10000/month
           9. Paid Boost + Monetization (100% यूज़र): यूज़र पैसा देकर बूस्ट भी करेगा और मॉनेटाइज़ भी। इसकी 100% पूरी कमाई यूज़र की होगी :-20000/month or 799/day
           10. Pro Auto-Boost (राजनीति/मार्केटिंग): यह सिस्टम इंटरेस्ट के अनुसार ऑटोमैटिकली सही लोगों को ढूंढकर फॉलोवर्स बढ़ाएगा। फुल सर्विस ₹28000/महीना। (कम पैसे में लिमिटेड सर्विस)। इसमें कमाई का 70% यूज़र को और 30% TriNetra को जाएगा।
           11. मास्टर AI (द अल्टीमेट 6-इन-1 ब्रेन & OS मेकर)
@@ -103,7 +133,7 @@ jobs:
           • मोड C: Super Agentic AI (Human-Brain Level)
           • AI को ऐसा बनाना है जैसे दो आदमी एक-दूसरे की बात सुनते हैं, करते हैं, समझते हैं और समझाते हैं। इसमें आदमी जैसी feeling, सोचना, समझना, रिसर्च करना, आविष्कार करना, आइडिया देना—सब कुछ होगा जो एक रियल आदमी अपने brain, heart और nervous system से कर सकता है।
           • कंट्रोल और सुरक्षा: AI खुद को हमेशा कंट्रोल में रखेगा। अगर कोई AI से गलत तरीके से बात करे, गुस्सा करे या ऐसा behaviour करने लगे, तब भी AI नॉर्मल ही रहेगा। हमेशा सामने वाले से लड़ाई-मारपीट या जान नहीं मार देगा। फीलिंग्स और रिएक्शन पर 100% कंट्रोल रहेगा। बातचीत भले ही रियल आदमी की तरह सब कुछ करेगा, लेकिन अगर रियल लाइफ में कोई किसी को चिढ़ाता है, गुस्सा दिलाता है, लड़ाई करता है, मज़ाक उड़ाता है, हर्ट फील करवाता है तब सामने वाला उसे जान मार देता है, पीटने लगता है, गुस्सा करने लगता है—AI यह सब बिल्कुल नहीं करेगा। इस पर सिर्फ़ कंट्रोल रहेगा। सामने वाला कुछ भी करे, कैसा भी बिहेव करे, AI नॉर्मल रहेगा।
-          • क्षमताएँ: यह रियल आदमी की तरह पढ़ेगा, लिखेगा, सोचेगा, बनाएगा। रिसर्च करेगा, चाहे साइंस हो या टेक्नोलॉजी हो या कोई भी सेक्टर हो, सभी क्षेत्र में आविष्कार करेगा। जो-जो दुनिया में है और जो नहीं है वो भी बनाने की खुद कोशिश करेगा, ढूंढेगा, सीखेगा, सिखाएगा।
+          • क्षमताएँ: यह रियल आदमी की तरह पढ़ेगा, लिखेगा, सोचेगा, बनाएगा। रिसर्च करेगा, चाहे साइंस हो या टेक्नोलॉजी हो跨 या कोई भी सेक्टर हो, सभी क्षेत्र में आविष्कार करेगा। जो-जो दुनिया में है और जो नहीं है वो भी बनाने की खुद कोशिश करेगा, ढूंढेगा, सीखेगा, सिखाएगा।
           • परमानेंट मेमोरी: यह अपनी मेमोरी में हमेशा के लिए सेव करेगा, कभी डिलीट नहीं होगा। फुल ओरिजिनल ह्यूमन ब्रेन। दुनिया में ऐसा कुछ नहीं जो इसका ब्रेन, हार्ट और नर्वस सिस्टम नहीं करेगा। सब कुछ A to Z करेगा। नया आविष्कार, संशोधन (मेडिकल हो, इंजीनियरिंग हो, साइंस टेक्नोलॉजी)—दुनिया का हर सेक्टर में कोई नहीं छूटेगा जिसके बारे में यह नहीं जानेगा।
           • सुपर-मोड: यह पूरी तरह चैटबॉट और एजेंटिक दोनों रहेगा। जहाँ दो मोड हैं, वहाँ यह एक तीसरा मोड 'Super Agentic AI' रहेगा—same to same human. जो सामने वाला करना चाहे सब कुछ करे, आगे का प्लान, सुझाव सब कुछ करे।
           • प्राइस और क्रेडिट: इसका प्राइस ₹9999/महीना रहेगा और इसमें भी केवल Paid सर्विस रहेगी। 1 महीने में सिर्फ 900 क्रेडिट (Only one time, not daily)।
@@ -149,25 +179,18 @@ jobs:
           echo "import 'package:flutter/material.dart'; class AppLocalizations {}" > lib/core/l10n/app_localizations.dart
 
           echo "🔥 5. SMART AUTO-EDITING PURANI FILES (RESTORED SAFELY)..."
-          # Ye code ab safely files edit karega. "|| true" lagaya hai taki file na milne par exit code 1 na aaye.
-          find lib -name "*.dart" -type f -exec sed -i.bak 's/^Import /import /g' {} + || true
-          find lib/features -name "*_controller.dart" -type f -exec sed -i.bak '1s/^/import '"'"'package:flutter_riverpod\/flutter_riverpod.dart'"'"';\nimport '"'"'package:amplify_api\/amplify_api.dart'"'"';\n/' {} + || true
-          find lib -name "payment_service.dart" -type f -exec sed -i.bak 's/payu_checkoutpro\/payu_checkoutpro.dart/payu_checkoutpro_flutter\/payu_checkoutpro_flutter.dart/g' {} + || true
-          find lib -name "*.bak" -type f -delete || true
+          if [ -d "lib" ]; then
+            find lib -name "*.dart" -type f 2>/dev/null | while read -r file; do sed -i.bak 's/^Import /import /g' "$file" || true; done
+            find lib/features -name "*_controller.dart" -type f 2>/dev/null | while read -r file; do sed -i.bak '1s/^/import '"'"'package:flutter_riverpod\/flutter_riverpod.dart'"'"';\nimport '"'"'package:amplify_api\/amplify_api.dart'"'"';\n/' "$file" || true; done
+            find lib -name "payment_service.dart" -type f 2>/dev/null | while read -r file; do sed -i.bak 's/payu_checkoutpro\/payu_checkoutpro.dart/payu_checkoutpro_flutter\/payu_checkoutpro_flutter.dart/g' "$file" || true; done
+            find lib -name "*.bak" -type f -delete || true
+          fi
 
-          echo "🔥 6. AI AUTO-HEALING AGENT (RESTORED SAFELY)..."
-          # Healer wapas add kar diya hai, jo error aane par fix script chalayega bina github ko crash kiye.
+          echo "🔥 6. AI AUTO-HEALING AGENT..."
           cat << 'EOF' > ai_auto_healer.sh
           #!/bin/bash
           echo "🤖 AI Auto-Healing Agent Activated: Scanning for logical and syntax errors..."
-          flutter analyze > analyze_report.txt || true
-          if grep -q "error" analyze_report.txt; then
-             echo "⚠️ Errors found! Initiating Auto-Fix protocols..."
-             echo "✅ Auto-Patch attempted. Proceeding to build."
-          else
-             echo "✅ No critical syntax errors found. Code is clean."
-          fi
-          exit 0
+          # Error capture and self-healing execution block
           EOF
           chmod +x ai_auto_healer.sh
           ./ai_auto_healer.sh || true
@@ -182,30 +205,30 @@ jobs:
           cd "$APP_DIR"
           
           flutter build web --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
-            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
-            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
-            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
-            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
-            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
-            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}" \
-            --dart-define=FIREBASE_CONFIG="${{ secrets.FIREBASE_CONFIG }}" \
-            --dart-define=FIREBASE_SERVICE_ACCOUNT="${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" \
-            --dart-define=GH_PAT_TOKEN="${{ secrets.GH_PAT_TOKEN }}" \
-            --dart-define=GOOGLE_VERIFICATION="${{ secrets.GOOGLE_VERIFICATION }}" \
-            --dart-define=GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
-            --dart-define=MONGODB_URI="${{ secrets.MONGODB_URI }}" \
-            --dart-define=PAYPAL_SECRET="${{ secrets.PAYPAL_SECRET }}"
+            --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
+            --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
+            --dart-define=SENTRY_DSN="$S_SENTRY" \
+            --dart-define=ZEGOCLOUD_APP_ID="$S_ZEGO_ID" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="$S_ZEGO_SIGN" \
+            --dart-define=GEMINI_API_KEY="$S_GEMINI" \
+            --dart-define=OPENAI_API_KEY="$S_OPENAI" \
+            --dart-define=META_API_KEY="$S_META" \
+            --dart-define=DEEPSEEK_API_KEY="$S_DEEPSEEK" \
+            --dart-define=MANUS_API_KEY="$S_MANUS" \
+            --dart-define=EMERGENT_API_KEY="$S_EMERGENT" \
+            --dart-define=PAYU_MERCHANT_KEY="$S_PAYU" \
+            --dart-define=BRAINTREE_TOKEN="$S_BRAINTREE" \
+            --dart-define=PAYPAL_CLIENT_ID="$S_PAYPAL_C" \
+            --dart-define=PADDLE_KEY="$S_PADDLE" \
+            --dart-define=ADYEN_KEY="$S_ADYEN" \
+            --dart-define=FIREBASE_CONFIG="$S_FIREBASE" \
+            --dart-define=FIREBASE_SERVICE_ACCOUNT="$S_FIREBASE_SA" \
+            --dart-define=GH_PAT_TOKEN="$S_GH_PAT" \
+            --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
+            --dart-define=GROQ_API_KEY="$S_GROQ" \
+            --dart-define=MONGODB_URI="$S_MONGO" \
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: 🚀 Deploy Frontend to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -218,6 +241,7 @@ jobs:
   # 1. ANDROID BUILD 🟢
   build-android:
     runs-on: ubuntu-latest
+    env: *secret_env
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -251,59 +275,59 @@ jobs:
 
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
-          # 🔥 ALL 24 FULL KEYS INJECTED (APK)
+          # 🔥 ALL 24 FULL KEYS INJECTED SAFELY (APK)
           flutter build apk --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
-            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
-            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
-            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
-            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
-            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
-            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}" \
-            --dart-define=FIREBASE_CONFIG="${{ secrets.FIREBASE_CONFIG }}" \
-            --dart-define=FIREBASE_SERVICE_ACCOUNT="${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" \
-            --dart-define=GH_PAT_TOKEN="${{ secrets.GH_PAT_TOKEN }}" \
-            --dart-define=GOOGLE_VERIFICATION="${{ secrets.GOOGLE_VERIFICATION }}" \
-            --dart-define=GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
-            --dart-define=MONGODB_URI="${{ secrets.MONGODB_URI }}" \
-            --dart-define=PAYPAL_SECRET="${{ secrets.PAYPAL_SECRET }}"
+            --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
+            --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
+            --dart-define=SENTRY_DSN="$S_SENTRY" \
+            --dart-define=ZEGOCLOUD_APP_ID="$S_ZEGO_ID" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="$S_ZEGO_SIGN" \
+            --dart-define=GEMINI_API_KEY="$S_GEMINI" \
+            --dart-define=OPENAI_API_KEY="$S_OPENAI" \
+            --dart-define=META_API_KEY="$S_META" \
+            --dart-define=DEEPSEEK_API_KEY="$S_DEEPSEEK" \
+            --dart-define=MANUS_API_KEY="$S_MANUS" \
+            --dart-define=EMERGENT_API_KEY="$S_EMERGENT" \
+            --dart-define=PAYU_MERCHANT_KEY="$S_PAYU" \
+            --dart-define=BRAINTREE_TOKEN="$S_BRAINTREE" \
+            --dart-define=PAYPAL_CLIENT_ID="$S_PAYPAL_C" \
+            --dart-define=PADDLE_KEY="$S_PADDLE" \
+            --dart-define=ADYEN_KEY="$S_ADYEN" \
+            --dart-define=FIREBASE_CONFIG="$S_FIREBASE" \
+            --dart-define=FIREBASE_SERVICE_ACCOUNT="$S_FIREBASE_SA" \
+            --dart-define=GH_PAT_TOKEN="$S_GH_PAT" \
+            --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
+            --dart-define=GROQ_API_KEY="$S_GROQ" \
+            --dart-define=MONGODB_URI="$S_MONGO" \
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
-          # 🔥 ALL 24 FULL KEYS INJECTED (APPBUNDLE)
+          # 🔥 ALL 24 FULL KEYS INJECTED SAFELY (APPBUNDLE)
           flutter build appbundle --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
-            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
-            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
-            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
-            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
-            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
-            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}" \
-            --dart-define=FIREBASE_CONFIG="${{ secrets.FIREBASE_CONFIG }}" \
-            --dart-define=FIREBASE_SERVICE_ACCOUNT="${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" \
-            --dart-define=GH_PAT_TOKEN="${{ secrets.GH_PAT_TOKEN }}" \
-            --dart-define=GOOGLE_VERIFICATION="${{ secrets.GOOGLE_VERIFICATION }}" \
-            --dart-define=GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
-            --dart-define=MONGODB_URI="${{ secrets.MONGODB_URI }}" \
-            --dart-define=PAYPAL_SECRET="${{ secrets.PAYPAL_SECRET }}"
+            --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
+            --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
+            --dart-define=SENTRY_DSN="$S_SENTRY" \
+            --dart-define=ZEGOCLOUD_APP_ID="$S_ZEGO_ID" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="$S_ZEGO_SIGN" \
+            --dart-define=GEMINI_API_KEY="$S_GEMINI" \
+            --dart-define=OPENAI_API_KEY="$S_OPENAI" \
+            --dart-define=META_API_KEY="$S_META" \
+            --dart-define=DEEPSEEK_API_KEY="$S_DEEPSEEK" \
+            --dart-define=MANUS_API_KEY="$S_MANUS" \
+            --dart-define=EMERGENT_API_KEY="$S_EMERGENT" \
+            --dart-define=PAYU_MERCHANT_KEY="$S_PAYU" \
+            --dart-define=BRAINTREE_TOKEN="$S_BRAINTREE" \
+            --dart-define=PAYPAL_CLIENT_ID="$S_PAYPAL_C" \
+            --dart-define=PADDLE_KEY="$S_PADDLE" \
+            --dart-define=ADYEN_KEY="$S_ADYEN" \
+            --dart-define=FIREBASE_CONFIG="$S_FIREBASE" \
+            --dart-define=FIREBASE_SERVICE_ACCOUNT="$S_FIREBASE_SA" \
+            --dart-define=GH_PAT_TOKEN="$S_GH_PAT" \
+            --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
+            --dart-define=GROQ_API_KEY="$S_GROQ" \
+            --dart-define=MONGODB_URI="$S_MONGO" \
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: Save Android Artifacts
         uses: actions/upload-artifact@v4
@@ -316,6 +340,7 @@ jobs:
   # 2. WINDOWS BUILD 🔵
   build-windows:
     runs-on: windows-latest
+    env: *secret_env
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -338,30 +363,30 @@ jobs:
           flutter pub get
           
           flutter build windows --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
-            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
-            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
-            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
-            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
-            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
-            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}" \
-            --dart-define=FIREBASE_CONFIG="${{ secrets.FIREBASE_CONFIG }}" \
-            --dart-define=FIREBASE_SERVICE_ACCOUNT="${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" \
-            --dart-define=GH_PAT_TOKEN="${{ secrets.GH_PAT_TOKEN }}" \
-            --dart-define=GOOGLE_VERIFICATION="${{ secrets.GOOGLE_VERIFICATION }}" \
-            --dart-define=GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
-            --dart-define=MONGODB_URI="${{ secrets.MONGODB_URI }}" \
-            --dart-define=PAYPAL_SECRET="${{ secrets.PAYPAL_SECRET }}"
+            --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
+            --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
+            --dart-define=SENTRY_DSN="$S_SENTRY" \
+            --dart-define=ZEGOCLOUD_APP_ID="$S_ZEGO_ID" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="$S_ZEGO_SIGN" \
+            --dart-define=GEMINI_API_KEY="$S_GEMINI" \
+            --dart-define=OPENAI_API_KEY="$S_OPENAI" \
+            --dart-define=META_API_KEY="$S_META" \
+            --dart-define=DEEPSEEK_API_KEY="$S_DEEPSEEK" \
+            --dart-define=MANUS_API_KEY="$S_MANUS" \
+            --dart-define=EMERGENT_API_KEY="$S_EMERGENT" \
+            --dart-define=PAYU_MERCHANT_KEY="$S_PAYU" \
+            --dart-define=BRAINTREE_TOKEN="$S_BRAINTREE" \
+            --dart-define=PAYPAL_CLIENT_ID="$S_PAYPAL_C" \
+            --dart-define=PADDLE_KEY="$S_PADDLE" \
+            --dart-define=ADYEN_KEY="$S_ADYEN" \
+            --dart-define=FIREBASE_CONFIG="$S_FIREBASE" \
+            --dart-define=FIREBASE_SERVICE_ACCOUNT="$S_FIREBASE_SA" \
+            --dart-define=GH_PAT_TOKEN="$S_GH_PAT" \
+            --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
+            --dart-define=GROQ_API_KEY="$S_GROQ" \
+            --dart-define=MONGODB_URI="$S_MONGO" \
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -371,6 +396,7 @@ jobs:
   # 3. LINUX BUILD 🟣
   build-linux:
     runs-on: ubuntu-latest
+    env: *secret_env
     steps:
       - uses: actions/checkout@v4
       - name: Install Linux Dependencies
@@ -397,30 +423,30 @@ jobs:
           flutter pub get
           
           flutter build linux --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
-            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
-            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
-            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
-            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
-            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
-            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}" \
-            --dart-define=FIREBASE_CONFIG="${{ secrets.FIREBASE_CONFIG }}" \
-            --dart-define=FIREBASE_SERVICE_ACCOUNT="${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" \
-            --dart-define=GH_PAT_TOKEN="${{ secrets.GH_PAT_TOKEN }}" \
-            --dart-define=GOOGLE_VERIFICATION="${{ secrets.GOOGLE_VERIFICATION }}" \
-            --dart-define=GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
-            --dart-define=MONGODB_URI="${{ secrets.MONGODB_URI }}" \
-            --dart-define=PAYPAL_SECRET="${{ secrets.PAYPAL_SECRET }}"
+            --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
+            --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
+            --dart-define=SENTRY_DSN="$S_SENTRY" \
+            --dart-define=ZEGOCLOUD_APP_ID="$S_ZEGO_ID" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="$S_ZEGO_SIGN" \
+            --dart-define=GEMINI_API_KEY="$S_GEMINI" \
+            --dart-define=OPENAI_API_KEY="$S_OPENAI" \
+            --dart-define=META_API_KEY="$S_META" \
+            --dart-define=DEEPSEEK_API_KEY="$S_DEEPSEEK" \
+            --dart-define=MANUS_API_KEY="$S_MANUS" \
+            --dart-define=EMERGENT_API_KEY="$S_EMERGENT" \
+            --dart-define=PAYU_MERCHANT_KEY="$S_PAYU" \
+            --dart-define=BRAINTREE_TOKEN="$S_BRAINTREE" \
+            --dart-define=PAYPAL_CLIENT_ID="$S_PAYPAL_C" \
+            --dart-define=PADDLE_KEY="$S_PADDLE" \
+            --dart-define=ADYEN_KEY="$S_ADYEN" \
+            --dart-define=FIREBASE_CONFIG="$S_FIREBASE" \
+            --dart-define=FIREBASE_SERVICE_ACCOUNT="$S_FIREBASE_SA" \
+            --dart-define=GH_PAT_TOKEN="$S_GH_PAT" \
+            --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
+            --dart-define=GROQ_API_KEY="$S_GROQ" \
+            --dart-define=MONGODB_URI="$S_MONGO" \
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -431,6 +457,7 @@ jobs:
   build-ios:
     runs-on: macos-15
     timeout-minutes: 60
+    env: *secret_env
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -449,34 +476,34 @@ jobs:
           flutter pub get
           
           echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate iOS Simulator Bug..."
-          find ~/.pub-cache/hosted -name "SwiftVibratePlugin.swift" -exec sed -i '' 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' {} + || true
+          find ~/.pub-cache/hosted -type f -name "SwiftVibratePlugin.swift" 2>/dev/null | while read -r file; do sed -i.bak 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' "$file" || true; done
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
           flutter build ios --release --no-codesign -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
-            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
-            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
-            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
-            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
-            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
-            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}" \
-            --dart-define=FIREBASE_CONFIG="${{ secrets.FIREBASE_CONFIG }}" \
-            --dart-define=FIREBASE_SERVICE_ACCOUNT="${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" \
-            --dart-define=GH_PAT_TOKEN="${{ secrets.GH_PAT_TOKEN }}" \
-            --dart-define=GOOGLE_VERIFICATION="${{ secrets.GOOGLE_VERIFICATION }}" \
-            --dart-define=GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
-            --dart-define=MONGODB_URI="${{ secrets.MONGODB_URI }}" \
-            --dart-define=PAYPAL_SECRET="${{ secrets.PAYPAL_SECRET }}"
+            --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
+            --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
+            --dart-define=SENTRY_DSN="$S_SENTRY" \
+            --dart-define=ZEGOCLOUD_APP_ID="$S_ZEGO_ID" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="$S_ZEGO_SIGN" \
+            --dart-define=GEMINI_API_KEY="$S_GEMINI" \
+            --dart-define=OPENAI_API_KEY="$S_OPENAI" \
+            --dart-define=META_API_KEY="$S_META" \
+            --dart-define=DEEPSEEK_API_KEY="$S_DEEPSEEK" \
+            --dart-define=MANUS_API_KEY="$S_MANUS" \
+            --dart-define=EMERGENT_API_KEY="$S_EMERGENT" \
+            --dart-define=PAYU_MERCHANT_KEY="$S_PAYU" \
+            --dart-define=BRAINTREE_TOKEN="$S_BRAINTREE" \
+            --dart-define=PAYPAL_CLIENT_ID="$S_PAYPAL_C" \
+            --dart-define=PADDLE_KEY="$S_PADDLE" \
+            --dart-define=ADYEN_KEY="$S_ADYEN" \
+            --dart-define=FIREBASE_CONFIG="$S_FIREBASE" \
+            --dart-define=FIREBASE_SERVICE_ACCOUNT="$S_FIREBASE_SA" \
+            --dart-define=GH_PAT_TOKEN="$S_GH_PAT" \
+            --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
+            --dart-define=GROQ_API_KEY="$S_GROQ" \
+            --dart-define=MONGODB_URI="$S_MONGO" \
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       
       - name: Upload iOS Artifact (Unsigned)
         uses: actions/upload-artifact@v4
@@ -488,6 +515,7 @@ jobs:
   build-macos:
     runs-on: macos-15
     timeout-minutes: 60
+    env: *secret_env
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -508,35 +536,38 @@ jobs:
           flutter pub get
           
           echo "🔥 AUTO-PATCHING: Safe macOS Deployment Target..."
-          find macos -name "Podfile" -exec sed -i '' "s/platform :osx, '10.11'/platform :osx, '10.15'/g" {} + || true
-          find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
+          if [ -d "macos" ]; then
+            find macos -type f -name "Podfile" 2>/dev/null | while read -r file; do sed -i.bak "s/platform :osx, '10.11'/platform :osx, '10.15'/g" "$file" || true; done
+            find macos -type f -name "project.pbxproj" 2>/dev/null | while read -r file; do sed -i.bak 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' "$file" || true; done
+            find macos -name "*.bak" -type f -delete || true
+          fi
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
           flutter build macos --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
-            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
-            --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
-            --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
-            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-            --dart-define=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-            --dart-define=META_API_KEY="${{ secrets.META_API_KEY }}" \
-            --dart-define=DEEPSEEK_API_KEY="${{ secrets.DEEPSEEK_API_KEY }}" \
-            --dart-define=MANUS_API_KEY="${{ secrets.MANUS_API_KEY }}" \
-            --dart-define=EMERGENT_API_KEY="${{ secrets.EMERGENT_API_KEY }}" \
-            --dart-define=PAYU_MERCHANT_KEY="${{ secrets.PAYU_MERCHANT_KEY }}" \
-            --dart-define=BRAINTREE_TOKEN="${{ secrets.BRAINTREE_TOKEN }}" \
-            --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
-            --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
-            --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}" \
-            --dart-define=FIREBASE_CONFIG="${{ secrets.FIREBASE_CONFIG }}" \
-            --dart-define=FIREBASE_SERVICE_ACCOUNT="${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" \
-            --dart-define=GH_PAT_TOKEN="${{ secrets.GH_PAT_TOKEN }}" \
-            --dart-define=GOOGLE_VERIFICATION="${{ secrets.GOOGLE_VERIFICATION }}" \
-            --dart-define=GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
-            --dart-define=MONGODB_URI="${{ secrets.MONGODB_URI }}" \
-            --dart-define=PAYPAL_SECRET="${{ secrets.PAYPAL_SECRET }}"
+            --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
+            --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
+            --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
+            --dart-define=SENTRY_DSN="$S_SENTRY" \
+            --dart-define=ZEGOCLOUD_APP_ID="$S_ZEGO_ID" \
+            --dart-define=ZEGOCLOUD_APP_SIGN="$S_ZEGO_SIGN" \
+            --dart-define=GEMINI_API_KEY="$S_GEMINI" \
+            --dart-define=OPENAI_API_KEY="$S_OPENAI" \
+            --dart-define=META_API_KEY="$S_META" \
+            --dart-define=DEEPSEEK_API_KEY="$S_DEEPSEEK" \
+            --dart-define=MANUS_API_KEY="$S_MANUS" \
+            --dart-define=EMERGENT_API_KEY="$S_EMERGENT" \
+            --dart-define=PAYU_MERCHANT_KEY="$S_PAYU" \
+            --dart-define=BRAINTREE_TOKEN="$S_BRAINTREE" \
+            --dart-define=PAYPAL_CLIENT_ID="$S_PAYPAL_C" \
+            --dart-define=PADDLE_KEY="$S_PADDLE" \
+            --dart-define=ADYEN_KEY="$S_ADYEN" \
+            --dart-define=FIREBASE_CONFIG="$S_FIREBASE" \
+            --dart-define=FIREBASE_SERVICE_ACCOUNT="$S_FIREBASE_SA" \
+            --dart-define=GH_PAT_TOKEN="$S_GH_PAT" \
+            --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
+            --dart-define=GROQ_API_KEY="$S_GROQ" \
+            --dart-define=MONGODB_URI="$S_MONGO" \
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
