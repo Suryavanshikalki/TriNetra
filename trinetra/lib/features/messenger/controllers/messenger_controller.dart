@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async'; // 🔥 FIXED: 'Import' का 'I' छोटा (small) कर दिया है
 import 'package:amplify_flutter/amplify_flutter.dart'; // 🔥 ASLI AWS CORE
 import 'package:amplify_api/amplify_api.dart'; // 🔥 ASLI GRAPHQL
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,9 +70,11 @@ class MessengerController extends StateNotifier<MessengerState> {
   // 🔥 ASLI AWS SUBSCRIPTION: New chats appear in real-time
   void _subscribeToConversations() {
     final subscriptionRequest = ModelSubscriptions.onCreate(ConversationModel.classType);
-    final operation = Amplify.API.subscribe(
-      subscriptionRequest,
-      onData: (event) {
+    final operation = Amplify.API.subscribe(subscriptionRequest);
+    
+    // 🔥 FIXED: AWS का सही 'listen' सिंटैक्स लगा दिया है ताकि रियल-टाइम चैट काम करे
+    _convSubscription = operation.listen(
+      (event) {
         final newConv = event.data;
         if (newConv != null) {
           state = state.copyWith(conversations: [newConv, ...state.conversations]);
@@ -80,7 +82,6 @@ class MessengerController extends StateNotifier<MessengerState> {
       },
       onError: (e) => safePrint('Subscription Error: $e'),
     );
-    _convSubscription = operation.listen((event) {});
   }
 
   @override
@@ -161,16 +162,18 @@ class ChatController extends StateNotifier<ChatState> {
   // 🔥 ASLI AWS SUBSCRIPTION: Incoming messages appear instantly
   void _subscribeToMessages() {
     final subscriptionRequest = ModelSubscriptions.onCreate(MessageModel.classType);
-    final operation = Amplify.API.subscribe(
-      subscriptionRequest,
-      onData: (event) {
+    final operation = Amplify.API.subscribe(subscriptionRequest);
+    
+    // 🔥 FIXED: AWS का सही 'listen' सिंटैक्स लगा दिया है ताकि मैसेज तुरंत स्क्रीन पर आएं
+    _msgSubscription = operation.listen(
+      (event) {
         final newMessage = event.data;
         if (newMessage != null && newMessage.conversationId == _conversationId) {
           state = state.copyWith(messages: [newMessage, ...state.messages]);
         }
       },
+      onError: (e) => safePrint('Message Subscription Error: $e'),
     );
-    _msgSubscription = operation.listen((_) {});
   }
 
   // 🔥 ASLI AWS MUTATION: Send real message to DynamoDB
