@@ -32,7 +32,7 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
-          echo "🔥 AUTO-PATCHING: Creating missing asset folders (Git ignores empty folders)..."
+          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales
           
           flutter clean
@@ -115,10 +115,9 @@ jobs:
           flutter clean
           
           echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
-          flutter pub add sentry_flutter:^8.11.0
+          sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
           flutter pub get
           
-          # 🔥 Verbose (-v) added
           flutter build windows --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
@@ -168,10 +167,9 @@ jobs:
           flutter clean
           
           echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
-          flutter pub add sentry_flutter:^8.11.0
+          sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
           flutter pub get
           
-          # 🔥 Verbose (-v) added
           flutter build linux --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
@@ -221,7 +219,6 @@ jobs:
           find ~/.pub-cache/hosted -name "SwiftVibratePlugin.swift" -exec sed -i '' 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' {} + || true
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
-          # 🔥 Verbose (-v) added
           flutter build ios --release --no-codesign -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
@@ -275,7 +272,6 @@ jobs:
           find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
-          # 🔥 Verbose (-v) added
           flutter build macos --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
@@ -310,7 +306,6 @@ jobs:
         with:
           channel: 'stable'
           
-      # 🔥 THE MASTER RADAR: DART SCANNER 🔥
       - name: 🕵️ DART ERROR SCANNER (Deep Search)
         shell: bash
         run: |
@@ -330,7 +325,6 @@ jobs:
           flutter clean
           flutter pub get
           
-          # 🔥 Verbose Flag (-v) Added: Exact error line milegi!
           flutter build web --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
             --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
