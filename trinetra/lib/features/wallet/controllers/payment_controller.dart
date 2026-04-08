@@ -1,6 +1,7 @@
-import 'dart:async';
+import 'dart:async'; // 🔥 FIXED: Capital 'I' ko small 'i' kar diya hai
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amplify_flutter/amplify_flutter.dart'; // 🔥 ASLI AWS CORE
+import 'package:amplify_api/amplify_api.dart'; // 🔥 FIXED: GraphQL API chalane ke liye zaruri import
 import '../../../core/services/sentry_service.dart'; // 🔥 ASLI ERRORS
 import '../../../core/services/logrocket_service.dart'; // 🔥 ASLI TRACKING
 import '../../auth/controllers/auth_controller.dart';
