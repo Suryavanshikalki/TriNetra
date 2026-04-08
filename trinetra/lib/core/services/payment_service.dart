@@ -1,15 +1,16 @@
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // 🔥 FIXED: Riverpod Import Added
+import 'dart:convert'; // 🔥 FIXED: 'I' को छोटा (small) कर दिया है
+import 'package:flutter/foundation.dart'; // 🔥 FIXED: Web/Desktop चेक के लिए
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // 🔥 ASLI MASTER VAULT
-import 'package:sentry_flutter/sentry_flutter.dart'; // 🔥 100% CRASH TRACKING
+import 'package:flutter_dotenv/flutter_dotenv.dart'; 
+import 'package:sentry_flutter/sentry_flutter.dart'; 
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:amplify_api/amplify_api.dart'; // 🔥 FIXED: AWS API Import Added
+import 'package:amplify_api/amplify_api.dart'; 
 
-// 🔥 ASLI PAYMENT NATIVE SDKs (From your pubspec.yaml)
+// 🔥 ASLI PAYMENT NATIVE SDKs
 import 'package:flutter_braintree/flutter_braintree.dart';
-import 'package:payu_checkoutpro/payu_checkoutpro.dart';
+// 🔥 THE REAL FIX: PayU का असली इम्पोर्ट पैकेज यही है!
+import 'package:payu_checkoutpro_flutter/payu_checkoutpro_flutter.dart';
 
 // ==============================================================
 // 👁️🔥 TRINETRA MASTER PAYMENT ENGINE (Facebook 2026 Standard)
@@ -72,6 +73,12 @@ class PaymentService implements PayUCheckoutProProtocol {
     required void Function(String paymentId) onSuccess,
     required void Function(String error) onError,
   }) async {
+    // 🔥 FIXED: PayU Native SDK Web/Windows पर क्रैश न करे, इसलिए इसे रोका है
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.macOS || defaultTargetPlatform == TargetPlatform.linux) {
+       onError('PayU Checkout is only available on Android and iOS devices. Please use PayPal or Paddle on Web/Desktop.');
+       return;
+    }
+
     try {
       _onPayUSuccess = onSuccess;
       _onPayUError = onError;
@@ -114,7 +121,7 @@ class PaymentService implements PayUCheckoutProProtocol {
     }
   }
 
-  // ─── PAYU SDK PROTOCOL CALLBACKS (🔥 FIXED OVERRIDES) ───
+  // ─── PAYU SDK PROTOCOL CALLBACKS ───
   @override
   void onPaymentSuccess(dynamic response) {
     _onPayUSuccess?.call(response['payuResponse']['mihpayid'] ?? 'SUCCESS');
@@ -140,6 +147,12 @@ class PaymentService implements PayUCheckoutProProtocol {
     required void Function(String transactionId) onSuccess,
     required void Function(String error) onError,
   }) async {
+    // 🔥 FIXED: Braintree Native SDK Web/Windows पर क्रैश न करे
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.macOS || defaultTargetPlatform == TargetPlatform.linux) {
+       onError('Braintree is optimized for Mobile. Please use Paddle on Web/Desktop.');
+       return;
+    }
+
     try {
       final response = await _callAwsPaymentApi('get_braintree_token', {});
       final clientToken = response['client_token'];
@@ -202,7 +215,7 @@ class PaymentService implements PayUCheckoutProProtocol {
       // Logic expects actual adyen_checkout SDK bridge implementation.
       // Fetching secure session from AWS
       final response = await _callAwsPaymentApi('init_adyen_session', {'amount': amount, 'api_key': _adyenKey});
-      final sessionData = response['session_data']; // Ignore unused warning, used by native side
+      final sessionData = response['session_data']; 
       
       // Native Adyen SDK logic will be injected here when Drop-in is triggered
       onSuccess(response['transaction_id']); 
@@ -267,12 +280,11 @@ class PaymentService implements PayUCheckoutProProtocol {
     }
   }
 
-  // ─── AWS SECURE API CALLER (🔥 FIXED: New 2026 Amplify Syntax) ────────────────
+  // ─── AWS SECURE API CALLER (🔥 New 2026 Amplify Syntax) ────────────────
   Future<Map<String, dynamic>> _callAwsPaymentApi(String action, Map<String, dynamic> payload) async {
     try {
-      // 2026 Standard: Amplify.API.post now requires RestOperation via HttpPayload
       final restOperation = Amplify.API.post(
-        action, // Path maps directly to AWS API Gateway endpoint
+        action, 
         body: HttpPayload.json(payload), 
       );
       
