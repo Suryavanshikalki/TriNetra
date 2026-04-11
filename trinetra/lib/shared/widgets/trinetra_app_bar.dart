@@ -12,7 +12,7 @@ import '../../features/ai_assistant/screens/ai_chat_screen.dart';
 // 100% REAL: Facebook Style, Haptics, LogRocket, AWS Ready Badges
 // ==============================================================
 
-/// TriNetra Top App Bar — Facebook-style with AI Search, Messenger, Notifications
+/// TriNetra Top App Bar -- Facebook-style with AI Search, Messenger, Notifications
 class TriNetraAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const TriNetraAppBar({super.key});
 
