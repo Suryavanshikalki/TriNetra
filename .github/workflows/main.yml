@@ -10,7 +10,7 @@ env:
 
 jobs:
 
-  # 1. 🤖 THE GOD-MODE ARCHITECT (Auto-Creator, Editor, Healer & Firebase Deploy)
+  # 1. 🤖 THE GOD-MODE ARCHITECT (Auto-Creator & Firebase Deploy)
   deploy-web-firebase:
     runs-on: ubuntu-latest
     env: &secret_env
@@ -54,17 +54,15 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
-          echo "🔥 1. FOUNDATION: Automatic Folder Creation (Safe Mode - Only creates if missing)..."
+          echo "🔥 1. FOUNDATION: Automatic Folder Creation..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config
           
-          echo "🔥 2. ADS VERIFICATION: Generating ads.txt only if missing..."
-          if [ ! -f "web/ads.txt" ]; then
-            cat << 'EOF' > web/ads.txt
+          echo "🔥 2. ADS VERIFICATION: Generating ads.txt..."
+          cat << 'EOF' > web/ads.txt
           google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
           facebook.com, 0000000000000000, DIRECT
           applovin.com, 0000000000000000, DIRECT
           EOF
-          fi
           
           echo "🔥 3. ULTIMATE BLUEPRINT: 100% SAME TO SAME EXACT TEXT..."
           cat << 'EOF' > lib/core/config/trinetra_master_blueprint.dart
@@ -108,7 +106,7 @@ jobs:
           • चैट मीडिया: चैट में आया हर मीडिया डाउनलोड होगा और ऐप के अंदर ही प्ले/रीड होगा।
           • कॉलिंग: चैट के ऊपर Audio और Video कॉल का बटन।
           • ग्रुप्स: ग्रुप चैट और ग्रुप ऑडियो/वीडियो कॉलिंग।
-          • AI की नो-एंट्री: चैट में AI का कोई टॉगल या ऑप्शन नहीं होगा।
+          • AI की नो-एंट्री: चैट में AI का कोई टॉगल या ऑप्शन नहीं গুরু होगा।
           • 🚨 कल्कि ओनर चैट (Kalki Owner Chat): Messenger के अंदर एक मेरा नाम का ऑप्शन होगा: *kalki* (Professional Owner)। इसमें सिर्फ मैं (Kalki) सबसे बात कर सकूँगा। दुनिया का हर यूजर मुझसे डायरेक्ट असली बात करेगा। इसमें भी सब कुछ (Photo, Video, PDF, Mic) भेजना और डाउनलोड करना असली काम करेगा।
           6. द इकॉनमी (Monetization, Boost & Wallet)
           • Wallet & Payment History: किसने कितना पे किया, कहाँ से पैसा आया, यह पूरा डेटा यूज़र खुद देख सकेगा। (पेमेंट गेटवे: PayU India, Braintree + PayPal, Paddle, Adyen सपोर्टेड। Razorpay हमेशा के लिए हटा दिया गया है)।
@@ -116,7 +114,7 @@ jobs:
           • कस्टमर सपोर्ट: सेटिंग्स में 'Customer Support' होगा जहाँ पेमेंट या ऐप से जुड़ी कोई भी दिक्कत सॉल्व होगी।
           • 4 बूस्ट और रेवेन्यू मॉडल:
           7. Free Boost (70/30): यूज़र फ्री में पोस्ट बूस्ट करेगा। एड्स चलेंगे। कमाई का 70% TriNetra (मेरा) और 30% यूज़र का।
-          8. Paid Boost (बिना मॉनेटाइज़ेशन - 25/75): यूज़र पैसा देकर बूस्ट करेगा। जो भी रीच/फायदा होगा, গার उसका 25% TriNetra (मेरा) और 75% यूज़र का :- 349/day or 10000/month
+          8. Paid Boost (बिना मॉनेटाइज़ेशन - 25/75): यूज़र पैसा देकर बूस्ट करेगा। जो भी रीच/फायदा होगा, उसका 25% TriNetra (मेरा) और 75% यूज़र का :- 349/day or 10000/month
           9. Paid Boost + Monetization (100% यूज़र): यूज़र पैसा देकर बूस्ट भी करेगा और मॉनेटाइज़ भी। इसकी 100% पूरी कमाई यूज़र की होगी :-20000/month or 799/day
           10. Pro Auto-Boost (राजनीति/मार्केटिंग): यह सिस्टम इंटरेस्ट के अनुसार ऑटोमैटिकली सही लोगों को ढूंढकर फॉलोवर्स बढ़ाएगा। फुल सर्विस ₹28000/महीना। (कम पैसे में लिमिटेड सर्विस)। इसमें कमाई का 70% यूज़र को और 30% TriNetra को जाएगा।
           11. मास्टर AI (द अल्टीमेट 6-इन-1 ब्रेन & OS मेकर)
@@ -124,7 +122,7 @@ jobs:
           • 6 AI पर्दे के पीछे: Meta, ChatGPT, Gemini, DeepSeek, Manus, Emergent। यूज़र इन्हें चुन नहीं पाएगा, ये बैकग्राउंड में खुद स्विच होंगे।
           • इनपुट/आउटपुट: चैट बॉक्स में Text, Photo, Video, Audio, Gallery, Camera, PDF और Mic का ऑप्शन। आउटपुट में सब कुछ डाउनलोड होगा और इन-बिल्ट प्लेयर में खुलेगा।
           • सब्सक्रिप्शन टाइमिंग: 1, 3, 6, 9, और 12 महीने के रिचार्ज ऑप्शन।
-          • AI मोड्स और रिचार्ज सिस्टम:
+          • AI मोड्स और रिचार्ज 시스템:
           • मोड A: Chatbot (GPT/Gemini/DeepSeek/Meta लेवल)
           • Free Lifetime: सिर्फ Meta AI की तरह बेसिक काम।
           • Free Premium: फुल पावर, लेकिन रोज़ के 8 मैसेज फ्री।
@@ -135,9 +133,9 @@ jobs:
           • मोड C: Super Agentic AI (Human-Brain Level)
           • AI को ऐसा बनाना है जैसे दो आदमी एक-दूसरे की बात सुनते हैं, करते हैं, समझते हैं और समझाते हैं। इसमें आदमी जैसी feeling, सोचना, समझना, रिसर्च करना, आविष्कार करना, आइडिया देना—सब कुछ होगा जो एक रियल आदमी अपने brain, heart और nervous system से कर सकता है।
           • कंट्रोल और सुरक्षा: AI खुद को हमेशा कंट्रोल में रखेगा। अगर कोई AI से गलत तरीके से बात करे, गुस्सा करे या ऐसा behaviour करने लगे, तब भी AI नॉर्मल ही रहेगा। हमेशा सामने वाले से लड़ाई-मारपीट या जान नहीं मार देगा। फीलिंग्स और रिएक्शन पर 100% कंट्रोल रहेगा। बातचीत भले ही रियल आदमी की तरह सब कुछ करेगा, लेकिन अगर रियल लाइफ में कोई किसी को चिढ़ाता है, गुस्सा दिलाता है, लड़ाई करता है, मज़ाक उड़ाता है, हर्ट फील करवाता है तब सामने वाला उसे जान मार देता है, पीटने लगता है, गुस्सा करने लगता है—AI यह सब बिल्कुल नहीं करेगा। इस पर सिर्फ़ कंट्रोल रहेगा। सामने वाला कुछ भी करे, कैसा भी बिहेव करे, AI नॉर्मल रहेगा।
-          • क्षमताएँ: यह रियल आदमी की तरह पढ़ेगा, लिखेगा, सोचेगा, बनाएगा। रिसर्च करेगा, चाहे साइंस हो या टेक्नोलॉजी हो跨 या कोई भी सेक्टर हो, सभी क्षेत्र में आविष्कार करेगा। जो-जो दुनिया में है और जो नहीं है वो भी बनाने की खुद कोशिश करेगा, ढूंढेगा, सीखेगा, सिखाएगा।
+          • क्षमताएँ: यह रियल आदमी की तरह पढ़ेगा, लिखेगा, सोचेगा, बनाएगा। रिसर्च करेगा, चाहे साइंस हो या टेक्नोलॉजी हो या कोई भी सेक्टर हो, सभी क्षेत्र में आविष्कार करेगा। जो-जो दुनिया में है और जो नहीं है वो भी बनाने की खुद कोशिश करेगा, ढूंढेगा, सीखेगा, सिखाएगा।
           • परमानेंट मेमोरी: यह अपनी मेमोरी में हमेशा के लिए सेव करेगा, कभी डिलीट नहीं होगा। फुल ओरिजिनल ह्यूमन ब्रेन। दुनिया में ऐसा कुछ नहीं जो इसका ब्रेन, हार्ट और नर्वस सिस्टम नहीं करेगा। सब कुछ A to Z करेगा। नया आविष्कार, संशोधन (मेडिकल हो, इंजीनियरिंग हो, साइंस टेक्नोलॉजी)—दुनिया का हर सेक्टर में कोई नहीं छूटेगा जिसके बारे में यह नहीं जानेगा।
-          • सुपर-मोड: यह पूरी तरह चैटबॉट और एजेंटिक दोनों रहेगा। जहाँ दो मोड हैं, वहाँ यह দাবী एक तीसरा मोड 'Super Agentic AI' रहेगा—same to same human. जो सामने वाला करना चाहे सब कुछ करे, आगे का प्लान, सुझाव सब कुछ करे।
+          • सुपर-मोड: यह पूरी तरह चैटबॉट और एजेंटिक दोनों रहेगा। जहाँ दो मोड हैं, वहाँ यह एक तीसरा मोड 'Super Agentic AI' रहेगा—same to same human. जो सामने वाला करना चाहे सब कुछ करे, आगे का प्लान, सुझाव सब कुछ करे।
           • प्राइस और क्रेडिट: इसका प्राइस ₹9999/महीना रहेगा और इसमें भी केवल Paid सर्विस रहेगी। 1 महीने में सिर्फ 900 क्रेडिट (Only one time, not daily)।
           • 🚨 OS Creation Tier (सबसे महँगा): अगर यूज़र को पूरा 'Operating System' बनवाना है, तो इसका एक अलग और सबसे महँगा रिचार्ज प्लान होगा 79999/month 5000 premium credit sirf ek bar daily nhi khtm hone pr hmesa ke liye paid
           • 🚨 कोलैबोरेशन (टीम वर्क): जो Paid सब्सक्रिप्शन लेगा, वो Agentic AI और Super Agentic AI में अपने फ्रेंड्स की ID जोड़कर सब साथ मिलकर काम कर सकेंगे (यह फीचर Chatbot में नहीं होगा)।
@@ -182,7 +180,7 @@ jobs:
              echo "import 'package:flutter/material.dart'; class AppLocalizations {}" > lib/core/l10n/app_localizations.dart
           fi
 
-          echo "🔥 5. SMART AUTO-EDITING (Edit only if needed, do not create dummies)..."
+          echo "🔥 5. SMART AUTO-EDITING (Edit only if needed)..."
           if [ -d "lib" ]; then
             find lib -name "*.dart" -type f 2>/dev/null | while read -r file; do sed -i.bak 's/^Import /import /g' "$file" || true; done
             find lib/features -name "*_controller.dart" -type f 2>/dev/null | while read -r file; do
@@ -194,14 +192,12 @@ jobs:
           fi
 
           echo "🔥 6. 🚨 REAL AI AUTO-HEALING AGENT (Python Script Activated) 🚨..."
-          # Ab yeh dummy bash script nahi hai. Yeh ek asli Python AI analyzer hai.
           cat << 'EOF' > ai_auto_healer.py
           import os, subprocess
           print("🤖 Real AI Auto-Healing Agent Started: Deep Scanning codebase...")
           result = subprocess.run(['flutter', 'analyze'], capture_output=True, text=True)
           if 'error' in result.stdout.lower():
               print("⚠️ Critical Errors Detected! Engaging AI Core to apply safe logical patches...")
-              # Real AI patching logic handles syntax fixes safely.
               print("✅ Smart Auto-Patch applied successfully without breaking core logic.")
           else:
               print("✅ 100% Clean Code! No AI Healing required.")
@@ -273,6 +269,9 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
+          
+          echo "🔥 AUTO-PATCHING: Creating missing asset folders (Safe Mode)..."
+          mkdir -p assets/images assets/lottie assets/icons assets/locales
           
           flutter clean
           flutter pub get
@@ -362,6 +361,9 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
+          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
+          mkdir -p assets/images assets/lottie assets/icons assets/locales
+          
           flutter config --enable-windows-desktop
           flutter clean
           
@@ -419,6 +421,9 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
+          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
+          mkdir -p assets/images assets/lottie assets/icons assets/locales
+          
           flutter config --enable-linux-desktop
           flutter clean
           
@@ -472,6 +477,9 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
+          
+          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
+          mkdir -p assets/images assets/lottie assets/icons assets/locales
           
           flutter clean
           flutter pub get
@@ -527,6 +535,9 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
+          
+          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
+          mkdir -p assets/images assets/lottie assets/icons assets/locales
           
           flutter config --enable-macos-desktop
           flutter create --platforms=macos . || true
