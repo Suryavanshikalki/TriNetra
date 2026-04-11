@@ -110,7 +110,9 @@ class _CircleIconButton extends StatelessWidget {
   final int? badge;
   final Color? iconColor; // Added to allow specific color (like for AI)
 
+  // 🔥 YAHAN MAIN DEEP FIX KIYA HAI (Added super.key & ensured this.badge is mapped)
   const _CircleIconButton({
+    super.key,
     required this.icon,
     required this.onTap,
     required this.isDark,
