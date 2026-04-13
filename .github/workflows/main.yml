@@ -61,7 +61,6 @@ jobs:
           SAFE_MONGO=$(echo "$S_MONGO" | tr -d '\n' | tr -d '\r')
 
           echo "🔥 2. [SHURU ME HI] UNIVERSAL FILE GENERATOR: Auto-creating ALL missing structural files..."
-          # Creating all core and platform-specific foundational directories automatically
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config android/app/src/main/res/values ios/Runner macos/Runner windows/runner linux/flutter
           
           if [ ! -f "firebase.json" ]; then
@@ -78,12 +77,10 @@ jobs:
           fi
           
           if [ ! -f "android/app/google-services.json" ]; then
-            echo "Creating dummy google-services.json to prevent Android build crash..."
             echo "{}" > android/app/google-services.json
           fi
           
           if [ ! -f "ios/Runner/GoogleService-Info.plist" ]; then
-            echo "Creating dummy GoogleService-Info.plist to prevent iOS build crash..."
             echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict></dict></plist>' > ios/Runner/GoogleService-Info.plist
           fi
 
@@ -98,12 +95,10 @@ jobs:
                       with open(filepath, 'r') as f:
                           content = f.read()
                       original_content = content
-                      # Auto-Healing logic: Fix syntax errors, imports, and typos without deleting logic
                       if 'Import ' in content:
                           content = content.replace('Import ', 'import ')
                       if 'super.Key' in content:
                           content = content.replace('super.Key', 'super.key')
-                      
                       if content != original_content:
                           with open(filepath, 'w') as f:
                               f.write(content)
@@ -171,7 +166,7 @@ jobs:
           • 🚨 कल्कि ओनर चैट (Kalki Owner Chat): Messenger के अंदर एक मेरा नाम का ऑप्शन होगा: *kalki* (Professional Owner)। इसमें सिर्फ मैं (Kalki) सबसे बात कर सकूँगा। दुनिया का हर यूजर मुझसे डायरेक्ट असली बात करेगा। इसमें भी सब कुछ (Photo, Video, PDF, Mic) भेजना और डाउनलोड करना असली काम करेगा।
           6. द इकॉनमी (Monetization, Boost & Wallet)
           • Wallet & Payment History: किसने कितना पे किया, कहाँ से पैसा आया, यह पूरा डेटा यूज़र खुद देख सकेगा। (पेमेंट गेटवे: PayU India, Braintree + PayPal, Paddle, Adyen सपोर्टेड। Razorpay हमेशा के लिए हटा दिया गया है)।
-          • पैसों का फ्लो: AI का रिचार्ज, আসতে बूस्ट या मॉनेटाइज़ेशन के लिए जो पैसा यूज़र पे करेगा, वो सीधे मेरे (TriNetra के) बैंक अकाउंट में आएगा। यूज़र अपनी कमाई (Wallet) से अपने बैंक में खुद ट्रांसफर कर सकेगा।
+          • पैसों का फ्लो: AI का रिचार्ज, पोस्ट बूस्ट या मॉनेटाइज़ेशन के लिए जो पैसा यूज़र पे करेगा, वो सीधे मेरे (TriNetra के) बैंक अकाउंट में आएगा। यूज़र अपनी कमाई (Wallet) से अपने बैंक में खुद ट्रांसफर कर सकेगा।
           • कस्टमर सपोर्ट: सेटिंग्स में 'Customer Support' होगा जहाँ पेमेंट या ऐप से जुड़ी कोई भी दिक्कत सॉल्व होगी।
           • 4 बूस्ट और रेवेन्यू मॉडल:
           7. Free Boost (70/30): यूज़र फ्री में पोस्ट बूस्ट करेगा। एड्स चलेंगे। कमाई का 70% TriNetra (मेरा) और 30% यूज़र का।
@@ -241,7 +236,7 @@ jobs:
              echo "import 'package:flutter/material.dart'; class AppLocalizations {}" > lib/core/l10n/app_localizations.dart
           fi
 
-          echo "🔥 7. SMART AUTO-EDITING & RIVERPOD/AMPLIFY INJECTION..."
+          echo "🔥 7. SMART AUTO-EDITING..."
           if [ -d "lib" ]; then
             find lib -name "*.dart" -type f 2>/dev/null | while read -r file; do sed -i.bak 's/^Import /import /g' "$file" || true; done
             find lib/features -name "*_controller.dart" -type f 2>/dev/null | while read -r file; do
@@ -254,6 +249,16 @@ jobs:
           
           flutter clean
           flutter pub get
+          
+          echo "🔥 8. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego Express SDK Missing Files..."
+          find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
+            mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
+            echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/linux/libs/release/VERSION.txt" || true
+            mkdir -p "$zego_dir/windows/libs/debug" "$zego_dir/windows/libs/release"
+            echo "3.23.0" > "$zego_dir/windows/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/windows/libs/release/VERSION.txt" || true
+          done
 
       - name: Build Web PWA
         shell: bash
@@ -359,6 +364,16 @@ jobs:
           
           flutter clean
           flutter pub get
+          
+          echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego Express SDK Missing Files..."
+          find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
+            mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
+            echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/linux/libs/release/VERSION.txt" || true
+            mkdir -p "$zego_dir/windows/libs/debug" "$zego_dir/windows/libs/release"
+            echo "3.23.0" > "$zego_dir/windows/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/windows/libs/release/VERSION.txt" || true
+          done
           
           echo "🔥 AUTO-PATCHING: Injecting Namespace for Facebook Audience Network..."
           FAN_DIR=$(find ~/.pub-cache/hosted -name "facebook_audience_network*" -type d | head -n 1)
@@ -475,10 +490,20 @@ jobs:
           
           flutter config --enable-windows-desktop
           flutter clean
+          flutter pub get
+          
+          echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego Express SDK Missing Files..."
+          find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
+            mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
+            echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/linux/libs/release/VERSION.txt" || true
+            mkdir -p "$zego_dir/windows/libs/debug" "$zego_dir/windows/libs/release"
+            echo "3.23.0" > "$zego_dir/windows/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/windows/libs/release/VERSION.txt" || true
+          done
           
           echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
           sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
-          flutter pub get
           
           flutter build windows --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
@@ -560,10 +585,20 @@ jobs:
           
           flutter config --enable-linux-desktop
           flutter clean
+          flutter pub get
+          
+          echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego Express SDK Missing Files..."
+          find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
+            mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
+            echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/linux/libs/release/VERSION.txt" || true
+            mkdir -p "$zego_dir/windows/libs/debug" "$zego_dir/windows/libs/release"
+            echo "3.23.0" > "$zego_dir/windows/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/windows/libs/release/VERSION.txt" || true
+          done
           
           echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
           sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
-          flutter pub get
           
           flutter build linux --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
@@ -646,6 +681,16 @@ jobs:
           
           flutter clean
           flutter pub get
+          
+          echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego Express SDK Missing Files..."
+          find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
+            mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
+            echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/linux/libs/release/VERSION.txt" || true
+            mkdir -p "$zego_dir/windows/libs/debug" "$zego_dir/windows/libs/release"
+            echo "3.23.0" > "$zego_dir/windows/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/windows/libs/release/VERSION.txt" || true
+          done
           
           echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate iOS Simulator Bug..."
           find ~/.pub-cache/hosted -type f -name "SwiftVibratePlugin.swift" 2>/dev/null | while read -r file; do sed -i.bak 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' "$file" || true; done
@@ -735,6 +780,16 @@ jobs:
           flutter create --platforms=macos . || true
           flutter clean
           flutter pub get
+          
+          echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego Express SDK Missing Files..."
+          find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
+            mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
+            echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/linux/libs/release/VERSION.txt" || true
+            mkdir -p "$zego_dir/windows/libs/debug" "$zego_dir/windows/libs/release"
+            echo "3.23.0" > "$zego_dir/windows/libs/debug/VERSION.txt" || true
+            echo "3.23.0" > "$zego_dir/windows/libs/release/VERSION.txt" || true
+          done
           
           echo "🔥 AUTO-PATCHING: Safe macOS Deployment Target..."
           if [ -d "macos" ]; then
