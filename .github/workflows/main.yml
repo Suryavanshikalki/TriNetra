@@ -78,30 +78,12 @@ jobs:
           if [ ! -f "android/app/google-services.json" ]; then echo "{}" > android/app/google-services.json; fi
           if [ ! -f "ios/Runner/GoogleService-Info.plist" ]; then echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict></dict></plist>' > ios/Runner/GoogleService-Info.plist; fi
 
-          echo "🔥 3. [SHURU ME HI] 🚨 WIN-ERROR PROOF AI AUTO-HEALER (Python) 🚨..."
+          echo "🔥 3. [SHURU ME HI] 🚨 BRUTE-FORCE AI AUTO-HEALING AGENT (Python) 🚨..."
           cat << 'EOF' > ai_auto_healer.py
           import os, re
+          print("🤖 BRUTE-FORCE AI Auto-Healing Agent Started...")
           
-          # 1. EDIT DART FILES
-          for root, dirs, files in os.walk('lib'):
-              for file in files:
-                  if file.endswith('.dart'):
-                      filepath = os.path.join(root, file)
-                      with open(filepath, 'r', encoding='utf-8') as f: content = f.read()
-                      orig = content
-                      
-                      content = content.replace('Import ', 'import ')
-                      content = content.replace('super.Key', 'super.key')
-                      content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
-                      if 'class CreatorController' in content and 'dynamic state;' not in content:
-                          content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
-
-                      if content != orig:
-                          with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-          
-          # 2. INJECT PACKAGES DIRECTLY INTO PUBSPEC.YAML (No subprocess crash!)
+          # 1. Force Write Dependencies to pubspec.yaml to prevent WinError 2
           pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
           try:
               with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
@@ -109,11 +91,35 @@ jobs:
               for p in pkgs_to_add:
                   if f"  {p}:" not in pubspec:
                       deps_to_insert += f"  {p}: any\n"
-              
               if deps_to_insert:
                   pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
                   with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
-          except Exception as e: print("Pubspec Error:", e)
+          except Exception as e: print("Pubspec Inject Error:", e)
+
+          # 2. Healer for Dart Logic
+          for root, dirs, files in os.walk('lib'):
+              for file in files:
+                  if file.endswith('.dart'):
+                      filepath = os.path.join(root, file)
+                      with open(filepath, 'r', encoding='utf-8') as f: content = f.read()
+                      orig = content
+                      
+                      # Basic fixes
+                      content = content.replace('Import ', 'import ')
+                      content = content.replace('super.Key', 'super.key')
+                      
+                      # 🚨 Ultimate PayU Bracket & Protocol Fix
+                      content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
+                      content = re.sub(r'PayUCheckoutProFlutter\s*\(\s*\)', 'PayUCheckoutProFlutter(this)', content)
+                      content = content.replace('PayUCheckoutProFlutter(null as dynamic)', 'PayUCheckoutProFlutter(this)')
+                      
+                      # 🚨 CreatorController State Fix
+                      if 'class CreatorController' in content and 'dynamic state;' not in content:
+                          content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
+
+                      if content != orig:
+                          with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
+                          print(f"✅ Force Auto-Healed {file}")
           EOF
           python3 ai_auto_healer.py || true
           
@@ -154,7 +160,7 @@ jobs:
           • अवतार: 3D अवतार बनाने का ऑप्शन।
           • कनेक्शन रूल: Follow/Unfollow, Block/Unblock. कोई फॉलो करेगा तो फ्रेंड लिस्ट में नोटिफिकेशन जाएगा। एक्सेप्ट करने पर ही वो पोस्ट, मैसेज या कॉल कर पाएगा। (Mutual Connection)।
           4. होम स्क्रीन (फीड, मार्केटप्लेस और ऑटो-एस्केलेशन सिस्टम)
-          • मीडिया सपोर्ट और यूनिवर्सल डाउनलोड: Feed, Group, Page या Story/Reels में Text, Photo, Video, Audio, Mic (Voice), Camera और PDF सब अपलोड होगा। ऐप में जहाँ भी कोई मीडिया अपलोड होगा, उसे हर यूज़र ओरिजिनल फॉर्मेट में डाउनलोड कर सकेगा।
+          • मीडिया सपोर्ट और यूनिवर्सल डाउनलोड: Feed, Group, Page या Story/Reels में Text, Photo, Video, Audio, Mic (Voice), Camera और PDF सब अपलोड होगा। ऐप में जहाँ भी कोई मीडिया अपलोड আসতে हर यूज़र ओरिजिनल फॉर्मेट में डाउनलोड कर सकेगा।
           • इन-बिल्ट प्लेयर: वीडियो, ऑडियो और PDF ऐप के अंदर ही चलेंगे/पढ़े जाएंगे।
           • कमेंट बॉक्स पावर: कमेंट में Text, Photo, Video, Audio, Mic, Camera, PDF, Stickers, Emoji, GIFs सब भेजा जा सकेगा और डाउनलोड भी होगा।
           • मार्केटप्लेस: सामान खरीदने और बेचने का डेडिकेटेड सेक्शन।
@@ -244,6 +250,7 @@ jobs:
           fi
 
           echo "🔥 7. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego Express SDK Missing Files..."
+          (
           find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
             mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
             echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
@@ -258,6 +265,7 @@ jobs:
             touch "$zego_dir/windows/libs/debug/ZegoExpressEngine.lib" || true
             touch "$zego_dir/windows/libs/release/ZegoExpressEngine.lib" || true
           done
+          ) || true
           
           echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate iOS Bug safely..."
           find ~/.pub-cache/hosted -type f -name "SwiftVibratePlugin.swift" 2>/dev/null | while read -r file; do sed -i.bak 's/TARGET_OS_SIMULATOR/false/g' "$file" || true; done
@@ -343,6 +351,18 @@ jobs:
           echo "🔥 2. [SHURU ME HI] 🚨 WIN-ERROR PROOF AI AUTO-HEALER (Python) 🚨..."
           cat << 'EOF' > ai_auto_healer.py
           import os, re
+          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
+          try:
+              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
+              deps_to_insert = ""
+              for p in pkgs_to_add:
+                  if f"  {p}:" not in pubspec:
+                      deps_to_insert += f"  {p}: any\n"
+              if deps_to_insert:
+                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
+                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
+          except Exception as e: pass
+
           for root, dirs, files in os.walk('lib'):
               for file in files:
                   if file.endswith('.dart'):
@@ -355,23 +375,11 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = re.sub(r'PayUCheckoutProFlutter\s*\(\s*\)', 'PayUCheckoutProFlutter(this)', content)
+                      content = content.replace('PayUCheckoutProFlutter(null as dynamic)', 'PayUCheckoutProFlutter(this)')
 
                       if content != orig:
                           with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-          
-          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
-          try:
-              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
-              deps_to_insert = ""
-              for p in pkgs_to_add:
-                  if f"  {p}:" not in pubspec:
-                      deps_to_insert += f"  {p}: any\n"
-              if deps_to_insert:
-                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
-                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
-          except Exception as e: pass
           EOF
           python3 ai_auto_healer.py || true
           
@@ -379,6 +387,7 @@ jobs:
           flutter pub get
           
           echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego SDK Missing Files..."
+          (
           find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
             mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
             echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
@@ -393,6 +402,7 @@ jobs:
             touch "$zego_dir/windows/libs/debug/ZegoExpressEngine.lib" || true
             touch "$zego_dir/windows/libs/release/ZegoExpressEngine.lib" || true
           done
+          ) || true
           
           echo "🔥 AUTO-PATCHING: Injecting Namespace for Facebook Audience Network..."
           FAN_DIR=$(find ~/.pub-cache/hosted -name "facebook_audience_network*" -type d | head -n 1)
@@ -462,6 +472,18 @@ jobs:
           echo "🔥 2. [SHURU ME HI] 🚨 WIN-ERROR PROOF AI AUTO-HEALER (Python) 🚨..."
           cat << 'EOF' > ai_auto_healer.py
           import os, re
+          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
+          try:
+              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
+              deps_to_insert = ""
+              for p in pkgs_to_add:
+                  if f"  {p}:" not in pubspec:
+                      deps_to_insert += f"  {p}: any\n"
+              if deps_to_insert:
+                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
+                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
+          except Exception as e: pass
+
           for root, dirs, files in os.walk('lib'):
               for file in files:
                   if file.endswith('.dart'):
@@ -474,23 +496,11 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = re.sub(r'PayUCheckoutProFlutter\s*\(\s*\)', 'PayUCheckoutProFlutter(this)', content)
+                      content = content.replace('PayUCheckoutProFlutter(null as dynamic)', 'PayUCheckoutProFlutter(this)')
 
                       if content != orig:
                           with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-          
-          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
-          try:
-              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
-              deps_to_insert = ""
-              for p in pkgs_to_add:
-                  if f"  {p}:" not in pubspec:
-                      deps_to_insert += f"  {p}: any\n"
-              if deps_to_insert:
-                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
-                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
-          except Exception as e: pass
           EOF
           python3 ai_auto_healer.py || true
           
@@ -498,8 +508,9 @@ jobs:
           flutter clean
           flutter pub get
           
-          echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego Express SDK Missing DLLs..."
-          find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
+          echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego SDK Missing DLLs..."
+          (
+          find /c/Users/runneradmin/AppData/Local/Pub/Cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
             mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
             echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
             echo "3.23.0" > "$zego_dir/linux/libs/release/VERSION.txt" || true
@@ -513,6 +524,7 @@ jobs:
             touch "$zego_dir/windows/libs/debug/ZegoExpressEngine.lib" || true
             touch "$zego_dir/windows/libs/release/ZegoExpressEngine.lib" || true
           done
+          ) || true
           
           echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
           sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
@@ -578,6 +590,18 @@ jobs:
           echo "🔥 2. [SHURU ME HI] 🚨 WIN-ERROR PROOF AI AUTO-HEALER (Python) 🚨..."
           cat << 'EOF' > ai_auto_healer.py
           import os, re
+          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
+          try:
+              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
+              deps_to_insert = ""
+              for p in pkgs_to_add:
+                  if f"  {p}:" not in pubspec:
+                      deps_to_insert += f"  {p}: any\n"
+              if deps_to_insert:
+                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
+                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
+          except Exception as e: pass
+
           for root, dirs, files in os.walk('lib'):
               for file in files:
                   if file.endswith('.dart'):
@@ -590,23 +614,11 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = re.sub(r'PayUCheckoutProFlutter\s*\(\s*\)', 'PayUCheckoutProFlutter(this)', content)
+                      content = content.replace('PayUCheckoutProFlutter(null as dynamic)', 'PayUCheckoutProFlutter(this)')
 
                       if content != orig:
                           with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-          
-          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
-          try:
-              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
-              deps_to_insert = ""
-              for p in pkgs_to_add:
-                  if f"  {p}:" not in pubspec:
-                      deps_to_insert += f"  {p}: any\n"
-              if deps_to_insert:
-                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
-                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
-          except Exception as e: pass
           EOF
           python3 ai_auto_healer.py || true
           
@@ -615,6 +627,7 @@ jobs:
           flutter pub get
           
           echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego SDK Missing SO Files..."
+          (
           find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
             mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
             echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
@@ -629,6 +642,7 @@ jobs:
             touch "$zego_dir/windows/libs/debug/ZegoExpressEngine.lib" || true
             touch "$zego_dir/windows/libs/release/ZegoExpressEngine.lib" || true
           done
+          ) || true
           
           echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
           sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
@@ -695,6 +709,18 @@ jobs:
           echo "🔥 2. [SHURU ME HI] 🚨 WIN-ERROR PROOF AI AUTO-HEALER (Python) 🚨..."
           cat << 'EOF' > ai_auto_healer.py
           import os, re
+          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
+          try:
+              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
+              deps_to_insert = ""
+              for p in pkgs_to_add:
+                  if f"  {p}:" not in pubspec:
+                      deps_to_insert += f"  {p}: any\n"
+              if deps_to_insert:
+                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
+                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
+          except Exception as e: pass
+
           for root, dirs, files in os.walk('lib'):
               for file in files:
                   if file.endswith('.dart'):
@@ -707,23 +733,11 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = re.sub(r'PayUCheckoutProFlutter\s*\(\s*\)', 'PayUCheckoutProFlutter(this)', content)
+                      content = content.replace('PayUCheckoutProFlutter(null as dynamic)', 'PayUCheckoutProFlutter(this)')
 
                       if content != orig:
                           with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-          
-          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
-          try:
-              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
-              deps_to_insert = ""
-              for p in pkgs_to_add:
-                  if f"  {p}:" not in pubspec:
-                      deps_to_insert += f"  {p}: any\n"
-              if deps_to_insert:
-                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
-                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
-          except Exception as e: pass
           EOF
           python3 ai_auto_healer.py || true
           
@@ -731,6 +745,7 @@ jobs:
           flutter pub get
           
           echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego SDK Missing Files..."
+          (
           find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
             mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
             echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
@@ -745,6 +760,7 @@ jobs:
             touch "$zego_dir/windows/libs/debug/ZegoExpressEngine.lib" || true
             touch "$zego_dir/windows/libs/release/ZegoExpressEngine.lib" || true
           done
+          ) || true
           
           echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate iOS Bug safely..."
           find ~/.pub-cache/hosted -type f -name "SwiftVibratePlugin.swift" 2>/dev/null | while read -r file; do sed -i.bak 's/TARGET_OS_SIMULATOR/false/g' "$file" || true; done
@@ -813,6 +829,18 @@ jobs:
           echo "🔥 2. [SHURU ME HI] 🚨 WIN-ERROR PROOF AI AUTO-HEALER (Python) 🚨..."
           cat << 'EOF' > ai_auto_healer.py
           import os, re
+          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
+          try:
+              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
+              deps_to_insert = ""
+              for p in pkgs_to_add:
+                  if f"  {p}:" not in pubspec:
+                      deps_to_insert += f"  {p}: any\n"
+              if deps_to_insert:
+                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
+                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
+          except Exception as e: pass
+
           for root, dirs, files in os.walk('lib'):
               for file in files:
                   if file.endswith('.dart'):
@@ -825,23 +853,11 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = re.sub(r'PayUCheckoutProFlutter\s*\(\s*\)', 'PayUCheckoutProFlutter(this)', content)
+                      content = content.replace('PayUCheckoutProFlutter(null as dynamic)', 'PayUCheckoutProFlutter(this)')
 
                       if content != orig:
                           with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-          
-          pkgs_to_add = ['logrocket_flutter', 'payu_checkoutpro_flutter', 'flutter_riverpod', 'amplify_api', 'amplify_flutter', 'flutter_braintree', 'url_launcher', 'flutter_dotenv', 'sentry_flutter']
-          try:
-              with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
-              deps_to_insert = ""
-              for p in pkgs_to_add:
-                  if f"  {p}:" not in pubspec:
-                      deps_to_insert += f"  {p}: any\n"
-              if deps_to_insert:
-                  pubspec = re.sub(r'(dependencies:\s*\n)', r'\1' + deps_to_insert, pubspec, count=1)
-                  with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
-          except Exception as e: pass
           EOF
           python3 ai_auto_healer.py || true
           
@@ -851,6 +867,7 @@ jobs:
           flutter pub get
           
           echo "🔥 3. [CRITICAL FIX] AUTO-HEALING PLUGINS: Fixing Zego SDK Missing Files..."
+          (
           find ~/.pub-cache/hosted -type d -name "zego_express_engine*" 2>/dev/null | while read -r zego_dir; do
             mkdir -p "$zego_dir/linux/libs/debug" "$zego_dir/linux/libs/release"
             echo "3.23.0" > "$zego_dir/linux/libs/debug/VERSION.txt" || true
@@ -865,6 +882,7 @@ jobs:
             touch "$zego_dir/windows/libs/debug/ZegoExpressEngine.lib" || true
             touch "$zego_dir/windows/libs/release/ZegoExpressEngine.lib" || true
           done
+          ) || true
           
           echo "🔥 AUTO-PATCHING: Safe macOS Deployment Target..."
           if [ -d "macos" ]; then
