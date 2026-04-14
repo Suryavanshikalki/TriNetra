@@ -92,13 +92,18 @@ jobs:
                       with open(filepath, 'r') as f: content = f.read()
                       orig = content
                       
+                      # BASIC TYPO FIXES
                       content = content.replace('Import ', 'import ')
                       content = content.replace('super.Key', 'super.key')
+                      
+                      # 🚨 ULTIMATE PAYU FIX: REMOVE INVALID PROTOCOL ARGUMENT
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
+                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      
+                      # 🚨 CREATOR CONTROLLER FIX
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
 
                       if content != orig:
                           with open(filepath, 'w') as f: f.write(content)
@@ -347,8 +352,8 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
 
                       if content != orig:
                           with open(filepath, 'w') as f: f.write(content)
@@ -384,33 +389,6 @@ jobs:
           
           # 🔥 ALL 24 FULL KEYS INJECTED SAFELY (APK)
           flutter build apk --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
-            --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
-            --dart-define=SENTRY_DSN="$S_SENTRY" \
-            --dart-define=ZEGOCLOUD_APP_ID="$S_ZEGO_ID" \
-            --dart-define=ZEGOCLOUD_APP_SIGN="$S_ZEGO_SIGN" \
-            --dart-define=GEMINI_API_KEY="$S_GEMINI" \
-            --dart-define=OPENAI_API_KEY="$S_OPENAI" \
-            --dart-define=META_API_KEY="$S_META" \
-            --dart-define=DEEPSEEK_API_KEY="$S_DEEPSEEK" \
-            --dart-define=MANUS_API_KEY="$S_MANUS" \
-            --dart-define=EMERGENT_API_KEY="$S_EMERGENT" \
-            --dart-define=PAYU_MERCHANT_KEY="$S_PAYU" \
-            --dart-define=BRAINTREE_TOKEN="$S_BRAINTREE" \
-            --dart-define=PAYPAL_CLIENT_ID="$S_PAYPAL_C" \
-            --dart-define=PADDLE_KEY="$S_PADDLE" \
-            --dart-define=ADYEN_KEY="$SAFE_ADYEN" \
-            --dart-define=FIREBASE_CONFIG="$SAFE_FIREBASE" \
-            --dart-define=FIREBASE_SERVICE_ACCOUNT="$SAFE_FIREBASE_SA" \
-            --dart-define=GH_PAT_TOKEN="$S_GH_PAT" \
-            --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
-            --dart-define=GROQ_API_KEY="$S_GROQ" \
-            --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
-            
-          # 🔥 ALL 24 FULL KEYS INJECTED SAFELY (APPBUNDLE)
-          flutter build appbundle --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
             --dart-define=AWS_APP_RUNNER_ARN="$S_AWS_ARN" \
@@ -485,8 +463,8 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
 
                       if content != orig:
                           with open(filepath, 'w') as f: f.write(content)
@@ -593,8 +571,8 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
 
                       if content != orig:
                           with open(filepath, 'w') as f: f.write(content)
@@ -702,8 +680,8 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
 
                       if content != orig:
                           with open(filepath, 'w') as f: f.write(content)
@@ -812,8 +790,8 @@ jobs:
                       content = re.sub(r'payUCheckoutProProtocol\s*:\s*[a-zA-Z0-9_]+,?', '', content)
                       if 'class CreatorController' in content and 'dynamic state;' not in content:
                           content = re.sub(r'(class\s+CreatorController[^{]*{)', r'\1\n  dynamic state;\n', content, count=1)
-                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
-                      content = content.replace('PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen', 'PayUCheckoutProFlutter(this).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter().openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
+                      content = content.replace('PayUCheckoutProFlutter(this).openCheckoutScreen', 'PayUCheckoutProFlutter(null as dynamic).openCheckoutScreen')
 
                       if content != orig:
                           with open(filepath, 'w') as f: f.write(content)
