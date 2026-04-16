@@ -63,6 +63,18 @@ jobs:
           echo "🔥 2. [SHURU ME HI] UNIVERSAL FILE GENERATOR: Auto-creating ALL missing structural folders..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config android/app/src/main/res/values ios/Runner macos/Runner windows/runner linux/flutter
           
+          if [ ! -f "firebase.json" ]; then
+            cat << 'EOF' > firebase.json
+            {
+              "hosting": {
+                "public": "build/web",
+                "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+                "rewrites": [{"source": "**", "destination": "/index.html"}]
+              }
+            }
+          EOF
+          fi
+          
           if [ ! -f "android/app/google-services.json" ]; then echo "{}" > android/app/google-services.json; fi
           if [ ! -f "ios/Runner/GoogleService-Info.plist" ]; then echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict></dict></plist>' > ios/Runner/GoogleService-Info.plist; fi
 
@@ -119,7 +131,7 @@ jobs:
                   if os_type == 'macos':
                       pbx = re.sub(r'MACOSX_DEPLOYMENT_TARGET = 10\.\d+', f'MACOSX_DEPLOYMENT_TARGET = {target}', pbx)
                   else:
-                      pbx = re.sub(r'IPHONEOS_DEPLOYMENT_TARGET = 1\d\.\d+', f'IPHONEOS_DEPLOYMENT_TARGET = {target}', pbx)
+                      pbx = re.sub(r'IPHONEOS_DEPLOYMENT_TARGET = 1\d\.\d', f'IPHONEOS_DEPLOYMENT_TARGET = {target}', pbx)
                   with open(path, 'w', encoding='utf-8') as f: f.write(pbx)
           
           def heal_podfile(path, target):
@@ -222,7 +234,7 @@ jobs:
           • सुपर-मोड: यह पूरी तरह चैटबॉट और एजेंटिक दोनों रहेगा। जहाँ दो मोड हैं, वहाँ यह एक तीसरा मोड 'Super Agentic AI' रहेगा—same to same human. जो सामने वाला करना चाहे सब कुछ करे, आगे का प्लान, सुझाव सब कुछ करे।
           • प्राइस और क्रेडिट: इसका प्राइस ₹9999/महीना रहेगा और इसमें भी केवल Paid सर्विस रहेगी। 1 महीने में सिर्फ 900 क्रेडिट (Only one time, not daily)।
           • 🚨 OS Creation Tier (सबसे महँगा): अगर यूज़र को पूरा 'Operating System' बनवाना है, तो इसका एक अलग और सबसे महँगा रिचार्ज प्लान होगा 79999/month 5000 premium credit sirf ek bar daily nhi khtm hone pr hmesa ke liye paid
-          • 🚨 कोलैबोरेशन (टीम वर्क): जो Paid सब्सक्रिप्शन लेगा, वो Agentic AI और Super Agentic AI में अपने फ्रेंड्स की ID जोड़कर सब साथ मिलकर काम कर सकेंगे (यह फीचर Chatbot में नहीं होगा)।
+          • 🚨 कोलैबोरेशन (Team work): जो Paid सब्सक्रिप्शन लेगा, वो Agentic AI और Super Agentic AI में अपने फ्रेंड्स की ID जोड़कर सब साथ मिलकर काम कर सकेंगे (यह फीचर Chatbot में नहीं होगा)।
           • 🚨 ओनर (Kalki) फ्री पास: जितना भी paid service है boost monetize ai ka subscription mai sirf onwer free me use karunga a to z ai chatbot agentic super agentic aur jo jo h sirf owner ke liye free rhega sab kuchh app me mere liye kuchh bhi paid nahi rhega.
           12. द स्क्रीनशॉट डीप डाइव (Settings, Privacy, Dashboard & Menu)
           (यहाँ आपके सभी 6 स्क्रीनशॉट्स की एक-एक डिटेल है, जो पिछले टेक्स्ट में छूट गई थी। यह मेन्यू 100% ऐप में ऐसा ही दिखेगा और काम करेगा):
@@ -232,28 +244,33 @@ jobs:
           • Help and support (Customer Support).
           • Settings and privacy.
           • Professional access (Creators के लिए).
-          • C. Settings & Privacy ➡️ Your Account:
-          • Accounts Centre: Password, security, personal details, connected experiences, ad preferences, verification.
-          • D. Settings & Privacy ➡️ Tools and resources:
-          • Privacy Checkup.
-          • Family Centre.
-          • Default audience settings.
-          • E. Settings & Privacy ➡️ Preferences:
-          • Content preferences, Reaction preferences, Notifications, Accessibility, Tab bar, Language and region.
-          • Media, Time management, Browser, Dark mode.
-          • F. Settings & Privacy ➡️ Audience and visibility (कंट्रोल):
-          • Profile details, Professional mode, How people can find and contact you.
-          • Posts, Stories, Pages, Reels.
-          • G. Settings & Privacy ➡️ Permissions / Safety:
-          • Camera roll sharing suggestions.
-          • Ads in content that you've created.
-          • Avatars, Followers and public content, Profile and tagging, Blocking, Active Status.
-          • H. Settings & Privacy ➡️ Payments & Activity:
-          • Payments: Ads payments, Payouts (यहीं से यूज़र अपना वॉलेट और कमाई देखेगा)।
-          • Your activity: Activity log, Device permissions, Apps and websites, Business integrations, Learn how to manage your information, WhatsApp (WhatsApp इंटीग्रेशन)।
-          • Community Standards and legal policies: Terms of Service, Privacy Policy, Cookies Policy, Community Standards
+          • C. Settings & Privacy ➡️ Your Account: Password, security, personal details, connected experiences, ad preferences, verification.
+          • D. Settings & Privacy ➡️ Tools and resources: Privacy Checkup, Family Centre, Default audience settings.
+          • E. Settings & Privacy ➡️ Preferences: Content preferences, Reaction preferences, Notifications, Accessibility, Tab bar, Language and region, Media, Time management, Browser, Dark mode.
+          • F. Settings & Privacy ➡️ Audience and visibility (कंट्रोल): Profile details, Professional mode, How people can find and contact you, Posts, Stories, Pages, Reels.
+          • G. Settings & Privacy ➡️ Permissions / Safety: Camera roll sharing suggestions, Ads in content that you've created, Avatars, Followers and public content, Profile and tagging, Blocking, Active Status.
+          • H. Settings & Privacy ➡️ Payments & Activity: Payments: Ads payments, Payouts (यहीं से यूज़र अपना वॉलेट और कमाई देखेगा). Your activity: Activity log, Device permissions, Apps and websites, Business integrations, Learn how to manage your information, WhatsApp (WhatsApp इंटीग्रेशन)। Community Standards and legal policies: Terms of Service, Privacy Policy, Cookies Policy, Community Standards
           :-: mutilanguage for app language settings and post coment message me translate ho har language me also in ai
           Aur jo 4 key jodenge tab bad me jodenge vo bhi PayU India, Braintree + PayPal,paddle,Adyen sabhi
+
+          --- 🚨 DO NAYE OPTION YAHAN SE ADD HUE HAIN 🚨 ---
+          [DO NAYE OPTION]:
+          1. Edit and Music Post: Jo bhi Post, Reels, Story ya kuchh bhi post krega, usko Edit aur usme Music set kr skta h.
+          2. Location/Event and Live: Location, Event tag bhi kar skta hai aur Live hone ka bhi option ho. Live me sab ek dusre friend ko add kar skte h, jisko man hoga nahi to reject kr skte h.
+
+          [HIGH QUALITY RULE]:
+          Sara media (Video, Photo) high quality me rhega. Default High Quality rhega. Auto aur Manual set karne vala kitna quality rhega (Upload and Download karne ka, Har Jagah). Ye set krne ka option Settings me rhega.
+
+          [CHAT POWERS]:
+          Chat box me Read, Play, Download, Upload sab kuchh asli kam karega (Photo, Video, PDF, Voice).
+
+          [UNIVERSAL TRANSLATOR]:
+          Multi languages me jisko jo bhasha me samjh aayega, vo Translate aur Convert kar skega (App ke andar har text, post, comment).
+
+          [UNIVERSAL CASTING & MULTI-DEVICE SYNC]:
+          App aur Web ko kisi bhi device (Computer, Smart TV, Projector, TV, etc.) se connect kar sakte hain.
+          • Connection Types: Wi-Fi, Bluetooth, Wireless Cast (Screen Mirroring), aur Wired (USB/HDMI) sabhi support karega.
+          • Cross-Device Control: Mobile ko TV/PC ke liye keyboard/mouse ki tarah use kar sakte hain. Ya fir TV/PC ke keyboard se mobile app control kar sakte hain. Sabhi devices me seamless sync aur live view (dikhega aur chalega) asli kaam karega.
           ''';
           }
           EOF
@@ -275,6 +292,7 @@ jobs:
           SAFE_ADYEN=$(echo "$S_ADYEN" | tr -d '\n' | tr -d '\r')
           SAFE_MONGO=$(echo "$S_MONGO" | tr -d '\n' | tr -d '\r')
           
+          # NO FAKE GREEN TICKS - THIS WILL BUILD OR FAIL FOR REAL
           flutter build web --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -299,7 +317,7 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: 🚀 Deploy Frontend to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -391,7 +409,7 @@ jobs:
 
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
-          # 🔥 ALL 24 FULL KEYS INJECTED SAFELY (APK)
+          # NO FAKE GREEN TICKS
           flutter build apk --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -416,9 +434,8 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
-          # 🔥 ALL 24 FULL KEYS INJECTED SAFELY (APPBUNDLE)
           flutter build appbundle --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -443,7 +460,7 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: Save Android Artifacts
         uses: actions/upload-artifact@v4
@@ -451,6 +468,7 @@ jobs:
           name: Android-Release
           path: |
             **/build/app/outputs/flutter-apk/app-release.apk
+            **/build/app/outputs/bundle/release/app-release.aab
 
   # 3. WINDOWS BUILD 🔵
   build-windows:
@@ -520,6 +538,7 @@ jobs:
           echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
           sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
           
+          # NO FAKE GREEN TICKS
           flutter build windows --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -544,7 +563,7 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -623,6 +642,7 @@ jobs:
           echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
           sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
           
+          # NO FAKE GREEN TICKS
           flutter build linux --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -647,7 +667,7 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -746,6 +766,8 @@ jobs:
           find ~/.pub-cache/hosted -type f -name "SwiftVibratePlugin.swift" 2>/dev/null | while read -r file; do sed -i.bak 's/TARGET_OS_SIMULATOR/false/g' "$file" || true; done
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
+          
+          # NO FAKE GREEN TICKS
           flutter build ios --release --no-codesign -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -770,7 +792,7 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       
       - name: Upload iOS Artifact (Unsigned)
         uses: actions/upload-artifact@v4
@@ -868,6 +890,8 @@ jobs:
           flutter pub upgrade zego_callkit zego_express_engine || true
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
+          
+          # NO FAKE GREEN TICKS
           flutter build macos --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -892,7 +916,7 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
