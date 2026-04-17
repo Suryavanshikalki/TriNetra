@@ -54,35 +54,35 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
-          echo "🔥 1. [SHURU ME HI] DEEP SEARCH FIX: Securing Multiline JSON Keys First..."
-          SAFE_FIREBASE=$(echo "$S_FIREBASE" | tr -d '\n' | tr -d '\r')
-          SAFE_FIREBASE_SA=$(echo "$S_FIREBASE_SA" | tr -d '\n' | tr -d '\r')
-          SAFE_ADYEN=$(echo "$S_ADYEN" | tr -d '\n' | tr -d '\r')
-          SAFE_MONGO=$(echo "$S_MONGO" | tr -d '\n' | tr -d '\r')
-
-          echo "🔥 2. [SHURU ME HI] UNIVERSAL FILE GENERATOR: Auto-creating ALL missing structural folders..."
+          echo "🔥 1. UNIVERSAL FILE GENERATOR: Auto-creating ALL missing structural folders..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config android/app/src/main/res/values ios/Runner macos/Runner windows/runner linux/flutter
           
-          if [ ! -f "firebase.json" ]; then
-            cat << 'EOF' > firebase.json
-            {
-              "hosting": {
-                "public": "build/web",
-                "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-                "rewrites": [{"source": "**", "destination": "/index.html"}]
-              }
+          echo "🔥 2. GENERATING REAL FIREBASE FILES IN ROOT..."
+          # Web Firebase Hosting ke liye file ROOT me honi chahiye
+          cat << 'EOF' > ../firebase.json
+          {
+            "hosting": {
+              "public": "build/web",
+              "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+              "rewrites": [{"source": "**", "destination": "/index.html"}]
             }
+          }
           EOF
-          fi
+          cat << 'EOF' > ../.firebaserc
+          {
+            "projects": {
+              "default": "trinetra-super-app"
+            }
+          }
+          EOF
           
           if [ ! -f "android/app/google-services.json" ]; then echo "{}" > android/app/google-services.json; fi
-          if [ ! -f "ios/Runner/GoogleService-Info.plist" ]; then echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict></dict></plist>' > ios/Runner/GoogleService-Info.plist; fi
 
-          echo "🔥 3. [SHURU ME HI] 🚨 SMART AI AUTO-HEALING AGENT (Python) 🚨..."
+          echo "🔥 3. 🚨 SMART AI AUTO-HEALING AGENT (Python) 🚨..."
           cat << 'EOF' > ai_auto_healer.py
-          import os, re, platform
+          import os, re
 
-          print("🤖 SMART AI HEALER STARTED (WIDGET SAFE)...")
+          print("🤖 ULTIMATE REAL AI HEALER STARTED (NO DUMMY FILES)...")
 
           # 1. PUBSPEC INJECTOR
           try:
@@ -97,7 +97,7 @@ jobs:
                   with open('pubspec.yaml', 'w', encoding='utf-8') as f: f.write(pubspec)
           except Exception as e: print("Pubspec Error:", e)
 
-          # 2. DART LOGIC HEALER (Only touches Controllers, ignores Widgets)
+          # 2. DART LOGIC HEALER (Controllers Fix & PayU Real Fix)
           for root, dirs, files in os.walk('lib'):
               for file in files:
                   if not file.endswith('.dart'): continue
@@ -113,7 +113,7 @@ jobs:
                   content = re.sub(r'payUCheckoutProConfig\s*:\s*[a-zA-Z0-9_\s]+\s*,?', '', content)
                   content = re.sub(r'PayUCheckoutProFlutter\s*\([^)]*\)', 'PayUCheckoutProFlutter(this)', content)
                   
-                  # SMART State Fix - ONLY for classes ending with 'Controller' (Prevents Web crash)
+                  # Asli State Fix - Only in Controllers to prevent UI crash
                   if 'class ' in content and 'Controller' in content:
                       parts = re.split(r'(class\s+[A-Za-z0-9_]+Controller[^\{]*\{)', content)
                       for i in range(1, len(parts), 2):
@@ -123,29 +123,8 @@ jobs:
 
                   if content != orig:
                       with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-
-          # 3. GITHUB CI BYPASS FOR ZEGO (Needed to prevent Timeout on Github Servers)
-          def create_zego_dummy(path):
-              os.makedirs(path, exist_ok=True)
-              with open(os.path.join(path, 'VERSION.txt'), 'w') as f: f.write('3.23.0')
-              
-          pub_cache = os.path.expanduser('~/.pub-cache/hosted') if platform.system() != 'Windows' else os.path.expanduser('~\\AppData\\Local\\Pub\\Cache\\hosted')
-          if os.path.exists(pub_cache):
-              for root, dirs, files in os.walk(pub_cache):
-                  if 'zego_express_engine' in os.path.basename(root):
-                      for os_name in ['linux', 'windows']:
-                          for conf in ['debug', 'release']:
-                              d = os.path.join(root, os_name, 'libs', conf)
-                              create_zego_dummy(d)
-                              if os_name == 'linux': 
-                                  open(os.path.join(d, 'libZegoExpressEngine.so'), 'w').close()
-                              if os_name == 'windows': 
-                                  open(os.path.join(d, 'ZegoExpressEngine.dll'), 'w').close()
-                                  open(os.path.join(d, 'ZegoExpressEngine.lib'), 'w').close()
-          
-          print("✅ SMART HEALER COMPLETED")
           EOF
-          python3 ai_auto_healer.py || python ai_auto_healer.py || true
+          python3 ai_auto_healer.py || python ai_auto_healer.py
           
           flutter clean
           flutter pub get
@@ -289,6 +268,7 @@ jobs:
           SAFE_ADYEN=$(echo "$S_ADYEN" | tr -d '\n' | tr -d '\r')
           SAFE_MONGO=$(echo "$S_MONGO" | tr -d '\n' | tr -d '\r')
           
+          # NO || true - ONLY REAL BUILD
           flutter build web --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -313,11 +293,10 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: 🚀 Deploy Frontend to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
-        if: success()
         with:
           repoToken: '${{ secrets.GH_PAT_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
@@ -347,18 +326,12 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
-          echo "🔥 1. ASLI FOLDERS GENERATOR (NO DUMMIES)..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config android/app/src/main/res/values ios/Runner macos/Runner windows/runner linux/flutter
           
           if [ ! -f "android/app/google-services.json" ]; then echo "{}" > android/app/google-services.json; fi
 
-          echo "🔥 2. CLEAR GRADLE CACHE TO PREVENT OOM ERROR..."
-          rm -rf ~/.gradle/caches/
-          ./android/gradlew clean || true
-
-          echo "🔥 3. 🚨 SMART AI AUTO-HEALING AGENT (Python) 🚨..."
           cat << 'EOF' > ai_auto_healer.py
-          import os, re, platform
+          import os, re
           try:
               with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
               pkgs = ['logrocket_flutter: any', 'payu_checkoutpro_flutter: any', 'flutter_riverpod: any', 'amplify_api: any', 'amplify_flutter: any', 'flutter_braintree: any', 'url_launcher: any', 'flutter_dotenv: any', 'sentry_flutter: any']
@@ -395,13 +368,15 @@ jobs:
                   if content != orig:
                       with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
           EOF
-          python3 ai_auto_healer.py || python ai_auto_healer.py || true
+          python3 ai_auto_healer.py || python ai_auto_healer.py
+          
+          # CLEAN CACHE SO OOM ERROR DOES NOT HAPPEN
+          rm -rf ~/.gradle/caches/
           
           flutter clean
           flutter pub get
           flutter pub upgrade zego_callkit zego_express_engine || true
           
-          echo "🔥 AUTO-PATCHING: Injecting Namespace for Facebook Audience Network..."
           FAN_DIR=$(find ~/.pub-cache/hosted -name "facebook_audience_network*" -type d | head -n 1)
           if [ -n "$FAN_DIR" ]; then
             sed -i.bak 's/android {/android {\n    namespace "com.facebook.audiencenetwork"/g' "$FAN_DIR/android/build.gradle" || true
@@ -409,7 +384,7 @@ jobs:
 
           if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
           
-          # NO FAKE GREEN TICKS
+          # NO FAKE GREEN TICKS - ONLY REAL APK
           flutter build apk --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -434,8 +409,9 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
+          # NO FAKE GREEN TICKS - ONLY REAL APPBUNDLE
           flutter build appbundle --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -460,15 +436,15 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: Save Android Artifacts
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: Android-Release
           path: |
             **/build/app/outputs/flutter-apk/app-release.apk
+            **/build/app/outputs/bundle/release/app-release.aab
 
   # 3. WINDOWS BUILD 🔵
   build-windows:
@@ -485,14 +461,12 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
-          echo "🔥 1. ASLI FOLDERS GENERATOR..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config android/app/src/main/res/values ios/Runner macos/Runner windows/runner linux/flutter
           
           flutter config --enable-windows-desktop
           
-          echo "🔥 2. [SHURU ME HI] 🚨 SMART AI AUTO-HEALING AGENT 🚨..."
           cat << 'EOF' > ai_auto_healer.py
-          import os, re, platform
+          import os, re
           try:
               with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
               pkgs = ['logrocket_flutter: any', 'payu_checkoutpro_flutter: any', 'flutter_riverpod: any', 'amplify_api: any', 'amplify_flutter: any', 'flutter_braintree: any', 'url_launcher: any', 'flutter_dotenv: any', 'sentry_flutter: any']
@@ -528,29 +502,16 @@ jobs:
 
                   if content != orig:
                       with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-
-          def create_zego_dummy(path):
-              os.makedirs(path, exist_ok=True)
-              with open(os.path.join(path, 'VERSION.txt'), 'w') as f: f.write('3.23.0')
-              
-          pub_cache = os.path.expanduser('~\\AppData\\Local\\Pub\\Cache\\hosted')
-          if os.path.exists(pub_cache):
-              for root, dirs, files in os.walk(pub_cache):
-                  if 'zego_express_engine' in os.path.basename(root):
-                      d = os.path.join(root, 'windows', 'libs', 'release')
-                      create_zego_dummy(d)
-                      open(os.path.join(d, 'ZegoExpressEngine.dll'), 'w').close()
-                      open(os.path.join(d, 'ZegoExpressEngine.lib'), 'w').close()
           EOF
-          python ai_auto_healer.py || python3 ai_auto_healer.py || true
+          python ai_auto_healer.py || python3 ai_auto_healer.py
           
           flutter clean
           flutter pub get
           flutter pub upgrade zego_callkit zego_express_engine || true
           
-          echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
           sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
           
+          # NO FAKE GREEN TICKS
           flutter build windows --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -575,10 +536,9 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: Windows-Release
           path: '**/build/windows/x64/runner/Release/'
@@ -602,14 +562,12 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
-          echo "🔥 1. ASLI FOLDERS GENERATOR..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config android/app/src/main/res/values ios/Runner macos/Runner windows/runner linux/flutter
           
           flutter config --enable-linux-desktop
           
-          echo "🔥 2. [SHURU ME HI] 🚨 SMART AI AUTO-HEALING AGENT 🚨..."
           cat << 'EOF' > ai_auto_healer.py
-          import os, re, platform
+          import os, re
           try:
               with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
               pkgs = ['logrocket_flutter: any', 'payu_checkoutpro_flutter: any', 'flutter_riverpod: any', 'amplify_api: any', 'amplify_flutter: any', 'flutter_braintree: any', 'url_launcher: any', 'flutter_dotenv: any', 'sentry_flutter: any']
@@ -645,26 +603,16 @@ jobs:
 
                   if content != orig:
                       with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
-
-          def create_zego_dummy(path):
-              os.makedirs(path, exist_ok=True)
-              with open(os.path.join(path, 'VERSION.txt'), 'w') as f: f.write('3.23.0')
-              
-          # Fix for Linux CMake Find
-          try:
-              os.makedirs('linux/flutter/ephemeral/.plugin_symlinks/zego_express_engine/linux/libs/debug/', exist_ok=True)
-              with open('linux/flutter/ephemeral/.plugin_symlinks/zego_express_engine/linux/libs/debug/VERSION.txt', 'w') as f: f.write('3.23.0')
-          except: pass
           EOF
-          python ai_auto_healer.py || python3 ai_auto_healer.py || true
+          python ai_auto_healer.py || python3 ai_auto_healer.py
           
           flutter clean
           flutter pub get
           flutter pub upgrade zego_callkit zego_express_engine || true
           
-          echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
           sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
           
+          # NO FAKE GREEN TICKS
           flutter build linux --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -689,10 +637,9 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: Linux-Release
           path: '**/build/linux/x64/release/bundle/'
@@ -713,16 +660,14 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
-          echo "🔥 1. ASLI FOLDERS GENERATOR..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config android/app/src/main/res/values ios/Runner macos/Runner windows/runner linux/flutter
           
           if [ ! -f "ios/Runner/GoogleService-Info.plist" ]; then
             echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict></dict></plist>' > ios/Runner/GoogleService-Info.plist
           fi
 
-          echo "🔥 2. [SHURU ME HI] 🚨 SMART AI AUTO-HEALING AGENT 🚨..."
           cat << 'EOF' > ai_auto_healer.py
-          import os, re, platform
+          import os, re
           try:
               with open('pubspec.yaml', 'r', encoding='utf-8') as f: pubspec = f.read()
               pkgs = ['logrocket_flutter: any', 'payu_checkoutpro_flutter: any', 'flutter_riverpod: any', 'amplify_api: any', 'amplify_flutter: any', 'flutter_braintree: any', 'url_launcher: any', 'flutter_dotenv: any', 'sentry_flutter: any']
@@ -779,16 +724,17 @@ jobs:
           heal_pbxproj('ios/Runner.xcodeproj/project.pbxproj', '13.0', 'ios')
           heal_podfile('macos/Podfile', '10.15')
           EOF
-          python ai_auto_healer.py || python3 ai_auto_healer.py || true
+          python ai_auto_healer.py || python3 ai_auto_healer.py
           
           flutter clean
           flutter pub get
           flutter pub upgrade zego_callkit zego_express_engine || true
           
-          echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate iOS Bug safely..."
           find ~/.pub-cache/hosted -type f -name "SwiftVibratePlugin.swift" 2>/dev/null | while read -r file; do sed -i.bak 's/TARGET_OS_SIMULATOR/false/g' "$file" || true; done
           
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
+          
+          # NO FAKE GREEN TICKS
           flutter build ios --release --no-codesign -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -813,11 +759,10 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
       
       - name: Upload iOS Artifact (Unsigned)
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: iOS-Release-Unsigned
           path: '**/build/ios/iphoneos/Runner.app'
@@ -838,7 +783,6 @@ jobs:
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
           
-          echo "🔥 1. ASLI FOLDERS GENERATOR..."
           if [ -n "$S_FIREBASE" ]; then echo "$S_FIREBASE" > macos/Runner/GoogleService-Info.plist; fi
 
           mkdir -p assets/images assets/lottie assets/icons assets/locales assets/pdf assets/audio assets/video web lib/core/config android/app/src/main/res/values ios/Runner macos/Runner windows/runner linux/flutter
@@ -846,7 +790,6 @@ jobs:
           flutter config --enable-macos-desktop
           flutter create --platforms=macos . || true
           
-          echo "🔥 2. [SHURU ME HI] 🚨 SMART AI AUTO-HEALING AGENT 🚨..."
           cat << 'EOF' > ai_auto_healer.py
           import os, re, platform
           try:
@@ -905,13 +848,15 @@ jobs:
           heal_pbxproj('ios/Runner.xcodeproj/project.pbxproj', '13.0', 'ios')
           heal_podfile('macos/Podfile', '10.15')
           EOF
-          python ai_auto_healer.py || python3 ai_auto_healer.py || true
+          python ai_auto_healer.py || python3 ai_auto_healer.py
           
           flutter clean
           flutter pub get
           flutter pub upgrade zego_callkit zego_express_engine || true
           
           export MACOSX_DEPLOYMENT_TARGET=10.15
+          
+          # NO FAKE GREEN TICKS
           flutter build macos --release -v \
             --dart-define=AWS_ACCESS_KEY_ID="$S_AWS_ACCESS" \
             --dart-define=AWS_SECRET_ACCESS_KEY="$S_AWS_SECRET" \
@@ -936,11 +881,10 @@ jobs:
             --dart-define=GOOGLE_VERIFICATION="$S_GOOGLE" \
             --dart-define=GROQ_API_KEY="$S_GROQ" \
             --dart-define=MONGODB_URI="$SAFE_MONGO" \
-            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S" || true
+            --dart-define=PAYPAL_SECRET="$S_PAYPAL_S"
             
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: macOS-Release
           path: '**/build/macos/Build/Products/Release/*.app'
