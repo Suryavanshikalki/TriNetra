@@ -2,7 +2,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // ==============================================================
 // 👁️🔥 TRINETRA MASTER APP CONFIGURATION (Facebook 2026 Standard)
-// 100% AWS | 6-in-1 AI | WhatsApp 2.0 | 5 Payments & Economy
+// Dual-Engine: Appwrite + Cloudflare | 6-in-1 AI | WhatsApp 2.0
 // ==============================================================
 
 class AppConfig {
@@ -13,34 +13,35 @@ class AppConfig {
   static const String appPackageId = 'com.trinetra.app';
   static const String appVersion = '1.0.0';
   static const String appBuildNumber = '1';
-  // 100% AWS Web URL (No Firebase)
-  static const String appWebUrl = 'https://trinetra-master.awsapps.com';
+  
+  // Dual-Engine URLs
+  static const String appWebUrl = 'https://trinetra.pages.dev'; // Cloudflare Pages
+  static const String cloudflareWorkerUrl = String.fromEnvironment('CLOUDFLARE_WORKER_URL');
 
   // ─── 2. THE 6-IN-1 MASTER AI BRAIN (Point 11) ─────────────────
-  static String get openAiApiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
-  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
-  static String get deepSeekApiKey => dotenv.env['DEEPSEEK_API_KEY'] ?? '';
-  static String get metaAiKey => dotenv.env['META_API_KEY'] ?? '';
-  static String get groqApiKey => dotenv.env['GROQ_API_KEY'] ?? '';
+  static String get openAiApiKey => const String.fromEnvironment('OPENAI_API_KEY');
+  static String get geminiApiKey => const String.fromEnvironment('GEMINI_API_KEY');
+  static String get deepSeekApiKey => const String.fromEnvironment('DEEPSEEK_API_KEY');
+  static String get metaAiKey => const String.fromEnvironment('META_API_KEY');
+  static String get groqApiKey => const String.fromEnvironment('GROQ_API_KEY');
 
   // ─── 3. WHATSAPP 2.0 CALLING ENGINE (ZegoCloud - Point 5) ─────
-  static String get zegoAppId => dotenv.env['ZEGO_APP_ID'] ?? '';
-  static String get zegoServerSecret => dotenv.env['ZEGO_SERVER_SECRET'] ?? '';
+  static String get zegoAppId => const String.fromEnvironment('ZEGOCLOUD_APP_ID');
+  static String get zegoAppSign => const String.fromEnvironment('ZEGOCLOUD_APP_SIGN');
 
   // ─── 4. THE ECONOMY - 5 REAL GATEWAYS (Point 6) ───────────────
-  static String get paypalClientId => dotenv.env['PAYPAL_CLIENT_ID'] ?? '';
-  static String get payuMerchantKey => dotenv.env['PAYU_MERCHANT_KEY'] ?? '';
-  static String get braintreeToken => dotenv.env['BRAINTREE_TOKEN'] ?? '';
-  static String get paddleApiKey => dotenv.env['PADDLE_API_KEY'] ?? '';
-  static String get adyenApiKey => dotenv.env['ADYEN_API_KEY'] ?? '';
+  static String get paypalClientId => const String.fromEnvironment('PAYPAL_CLIENT_ID');
+  static String get payuMerchantKey => const String.fromEnvironment('PAYU_MERCHANT_KEY');
+  static String get braintreeToken => const String.fromEnvironment('BRAINTREE_TOKEN');
+  static String get paddleApiKey => const String.fromEnvironment('PADDLE_KEY');
+  static String get adyenApiKey => const String.fromEnvironment('ADYEN_KEY');
 
-  // ─── 5. SECURITY, CRASH TRACKING & AWS ────────────────────────
-  static String get sentryDsn => dotenv.env['SENTRY_DSN'] ?? '';
-  static String get logRocketAppId => dotenv.env['LOGROCKET_APP_ID'] ?? '';
+  // ─── 5. SECURITY, CRASH TRACKING & DUAL-ENGINE ────────────────
+  static String get sentryDsn => const String.fromEnvironment('SENTRY_DSN');
   
-  static String get awsAccessKey => dotenv.env['AWS_ACCESS_KEY'] ?? '';
-  static String get awsSecretKey => dotenv.env['AWS_SECRET_KEY'] ?? '';
-  static String get awsRegion => dotenv.env['AWS_REGION'] ?? 'ap-south-1';
+  // Appwrite Configuration
+  static String get appwriteEndpoint => const String.fromEnvironment('APPWRITE_ENDPOINT');
+  static String get appwriteProjectId => const String.fromEnvironment('APPWRITE_PROJECT_ID');
 
   // ─── 6. TRINETRA MASTER PRICING ENGINE (From Blueprint) ───────
   
