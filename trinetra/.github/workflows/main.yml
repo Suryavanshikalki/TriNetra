@@ -1,15 +1,14 @@
-name: TriNetra Final - All 6 Platforms & AWS Launch
+name: TriNetra Final - All 6 Platforms & Dual-Engine Launch
 
 on:
   push:
-    branches: [ main ]    # 🔥 ऑटो-रन चालू है
+    branches: [ main ]
   workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
-
   # 1. ANDROID BUILD 🟢
   build-android:
     runs-on: ubuntu-latest
@@ -31,29 +30,14 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
-          
-          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales
-          
-          # 🔥 THE MASTER HACK: Auto-Injecting Riverpod in all Controllers!
-          find lib/features -name "*_controller.dart" -exec sed -i '1s/^/import '"'"'package:flutter_riverpod\/flutter_riverpod.dart'"'"';\n/' {} + || true
-          
           flutter clean
           flutter pub get
           
-          echo "🔥 AUTO-PATCHING: Injecting Namespace for Facebook Audience Network..."
-          FAN_DIR=$(find ~/.pub-cache/hosted -name "facebook_audience_network*" -type d | head -n 1)
-          if [ -n "$FAN_DIR" ]; then
-            sed -i.bak 's/android {/android {\n    namespace "com.facebook.audiencenetwork"/g' "$FAN_DIR/android/build.gradle" || true
-          fi
-
-          if [ -f "android/gradlew" ]; then chmod +x android/gradlew; fi
-          
-          # 🔥 ALL 17 KEYS INJECTED (APK)
           flutter build apk --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=APPWRITE_ENDPOINT="${{ secrets.APPWRITE_ENDPOINT }}" \
+            --dart-define=APPWRITE_PROJECT_ID="${{ secrets.APPWRITE_PROJECT_ID }}" \
+            --dart-define=CLOUDFLARE_WORKER_URL="${{ secrets.CLOUDFLARE_WORKER_URL }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
             --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
@@ -69,11 +53,10 @@ jobs:
             --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
             --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
             
-          # 🔥 ALL 17 KEYS INJECTED (APPBUNDLE)
           flutter build appbundle --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=APPWRITE_ENDPOINT="${{ secrets.APPWRITE_ENDPOINT }}" \
+            --dart-define=APPWRITE_PROJECT_ID="${{ secrets.APPWRITE_PROJECT_ID }}" \
+            --dart-define=CLOUDFLARE_WORKER_URL="${{ secrets.CLOUDFLARE_WORKER_URL }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
             --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
@@ -110,24 +93,14 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
-          
-          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales
-          
-          # Windows me find aur sed thoda alag kaam karta hai (bash shell me hai, isliye chalega)
-          find lib/features -name "*_controller.dart" -exec sed -i '1s/^/import '"'"'package:flutter_riverpod\/flutter_riverpod.dart'"'"';\n/' {} + || true
-          
           flutter config --enable-windows-desktop
           flutter clean
-          
-          echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
-          sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
           flutter pub get
-          
           flutter build windows --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=APPWRITE_ENDPOINT="${{ secrets.APPWRITE_ENDPOINT }}" \
+            --dart-define=APPWRITE_PROJECT_ID="${{ secrets.APPWRITE_PROJECT_ID }}" \
+            --dart-define=CLOUDFLARE_WORKER_URL="${{ secrets.CLOUDFLARE_WORKER_URL }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
             --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
@@ -165,23 +138,14 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
-          
-          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales
-          
-          find lib/features -name "*_controller.dart" -exec sed -i '1s/^/import '"'"'package:flutter_riverpod\/flutter_riverpod.dart'"'"';\n/' {} + || true
-          
           flutter config --enable-linux-desktop
           flutter clean
-          
-          echo "🔥 AUTO-PATCHING: Forcing Latest Sentry for CMake 3.31 support..."
-          sed -i.bak 's/sentry_flutter: any/sentry_flutter: ^8.11.0/g' pubspec.yaml || true
           flutter pub get
-          
           flutter build linux --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=APPWRITE_ENDPOINT="${{ secrets.APPWRITE_ENDPOINT }}" \
+            --dart-define=APPWRITE_PROJECT_ID="${{ secrets.APPWRITE_PROJECT_ID }}" \
+            --dart-define=CLOUDFLARE_WORKER_URL="${{ secrets.CLOUDFLARE_WORKER_URL }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
             --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
@@ -216,23 +180,14 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
-          
-          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales
-          
-          find lib/features -name "*_controller.dart" -exec sed -i '' '1s/^/import '"'"'package:flutter_riverpod\/flutter_riverpod.dart'"'"';\n/' {} + || true
-          
           flutter clean
           flutter pub get
-          
-          echo "🔥 AUTO-PATCHING: Fixing flutter_vibrate iOS Simulator Bug..."
-          find ~/.pub-cache/hosted -name "SwiftVibratePlugin.swift" -exec sed -i '' 's/TARGET_OS_SIMULATOR/targetEnvironment(simulator)/g' {} + || true
-          
           export IPHONEOS_DEPLOYMENT_TARGET=13.0
           flutter build ios --release --no-codesign -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=APPWRITE_ENDPOINT="${{ secrets.APPWRITE_ENDPOINT }}" \
+            --dart-define=APPWRITE_PROJECT_ID="${{ secrets.APPWRITE_PROJECT_ID }}" \
+            --dart-define=CLOUDFLARE_WORKER_URL="${{ secrets.CLOUDFLARE_WORKER_URL }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
             --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
@@ -247,7 +202,6 @@ jobs:
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
             --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
             --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
-      
       - name: Upload iOS Artifact (Unsigned)
         uses: actions/upload-artifact@v4
         with:
@@ -268,26 +222,15 @@ jobs:
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
-          
-          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
           mkdir -p assets/images assets/lottie assets/icons assets/locales
-          
-          find lib/features -name "*_controller.dart" -exec sed -i '' '1s/^/import '"'"'package:flutter_riverpod\/flutter_riverpod.dart'"'"';\n/' {} + || true
-          
           flutter config --enable-macos-desktop
-          flutter create --platforms=macos . || true
           flutter clean
           flutter pub get
-          
-          echo "🔥 AUTO-PATCHING: Safe macOS Deployment Target..."
-          find macos -name "Podfile" -exec sed -i '' "s/platform :osx, '10.11'/platform :osx, '10.15'/g" {} + || true
-          find macos -name "project.pbxproj" -exec sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = [0-9\.]*/MACOSX_DEPLOYMENT_TARGET = 10.15/g' {} + || true
-          
           export MACOSX_DEPLOYMENT_TARGET=10.15
           flutter build macos --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=APPWRITE_ENDPOINT="${{ secrets.APPWRITE_ENDPOINT }}" \
+            --dart-define=APPWRITE_PROJECT_ID="${{ secrets.APPWRITE_PROJECT_ID }}" \
+            --dart-define=CLOUDFLARE_WORKER_URL="${{ secrets.CLOUDFLARE_WORKER_URL }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
             --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
@@ -302,48 +245,32 @@ jobs:
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
             --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
             --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
-            
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macOS-Release
           path: '**/build/macos/Build/Products/Release/*.app'
 
-  # 6. WEB PWA & AWS S3 DEPLOY 🟡
-  deploy-web-aws:
+  # 6. WEB PWA & DEPLOY 🟡
+  deploy-web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          
-      - name: 🕵️ DART ERROR SCANNER (Deep Search)
-        shell: bash
-        run: |
-          APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
-          cd "$APP_DIR"
-          echo "🔥 AUTO-PATCHING: Creating missing asset folders..."
-          mkdir -p assets/images assets/lottie assets/icons assets/locales
-          flutter pub get
-          echo "🔥 Scanning your code for any hidden spelling mistakes or missing files..."
-          flutter analyze --no-fatal-infos --no-fatal-warnings || true
-          
       - name: Build Web PWA
         shell: bash
         run: |
           APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
           cd "$APP_DIR"
-          
-          find lib/features -name "*_controller.dart" -exec sed -i '1s/^/import '"'"'package:flutter_riverpod\/flutter_riverpod.dart'"'"';\n/' {} + || true
-          
+          mkdir -p assets/images assets/lottie assets/icons assets/locales
           flutter clean
           flutter pub get
-          
           flutter build web --release -v \
-            --dart-define=AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --dart-define=AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --dart-define=AWS_APP_RUNNER_ARN="${{ secrets.AWS_APP_RUNNER_ARN }}" \
+            --dart-define=APPWRITE_ENDPOINT="${{ secrets.APPWRITE_ENDPOINT }}" \
+            --dart-define=APPWRITE_PROJECT_ID="${{ secrets.APPWRITE_PROJECT_ID }}" \
+            --dart-define=CLOUDFLARE_WORKER_URL="${{ secrets.CLOUDFLARE_WORKER_URL }}" \
             --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}" \
             --dart-define=ZEGOCLOUD_APP_ID="${{ secrets.ZEGOCLOUD_APP_ID }}" \
             --dart-define=ZEGOCLOUD_APP_SIGN="${{ secrets.ZEGOCLOUD_APP_SIGN }}" \
@@ -358,15 +285,8 @@ jobs:
             --dart-define=PAYPAL_CLIENT_ID="${{ secrets.PAYPAL_CLIENT_ID }}" \
             --dart-define=PADDLE_KEY="${{ secrets.PADDLE_KEY }}" \
             --dart-define=ADYEN_KEY="${{ secrets.ADYEN_KEY }}"
-            
-      - name: Deploy Frontend to AWS S3 Bucket
-        shell: bash
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-south-1
-        run: |
-          APP_DIR=$(dirname "$(find . -name "pubspec.yaml" | head -n 1)")
-          cd "$APP_DIR/build/web"
-          echo "🔥 Build Pass! AWS Sync is PAUSED to save billing."
-          # aws s3 sync . s3://trinetra-web-app --delete || true
+      - name: Upload Web Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Web-Release
+          path: '**/build/web/'
