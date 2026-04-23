@@ -5,12 +5,12 @@ version: 1.0.0+1
 
 # ==============================================================
 # 👁️🔥 TRINETRA CORE ENGINE (Point 12)
-# 100% REAL: Powered by AWS Supreme | Firebase for Domain Only
+# 100% REAL: Powered by Cloudflare + Appwrite Dual-Engine
 # ==============================================================
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
-  flutter: '>=3.24.0' # 🔥 FIX: GitHub Actions ke stable channel ko crash hone se bachane ke liye safe version
+  flutter: '>=3.24.0'
 
 dependencies:
   flutter:
@@ -19,16 +19,11 @@ dependencies:
     sdk: flutter
 
   # ─── THE MASTER KEY VAULT (17 Keys from GitHub Secrets) ─────
-  # Yahin se saari 'Asli' keys (AWS, Gemini, Payments) load hongi.
   flutter_dotenv: any
 
-  # ─── AWS SUPREME ENGINE (The 100% Backend - Zero Firebase Logic) ─────
-  # TriNetra ka pura dimaag aur data yahan se chalega.
-  amplify_flutter: any
-  amplify_auth_cognito: any      # 5+1 Strict Logins (AWS Cognito)
-  amplify_api: any               # AppSync GraphQL / REST Backend
-  amplify_storage_s3: any        # High-Speed Media Storage (Point 4)
-  amplify_analytics_pinpoint: any # User Tracking & Campaigns
+  # ─── DUAL-ENGINE (Appwrite + Cloudflare) ─────
+  appwrite: any                  # Appwrite for Auth, DB, and Realtime
+  cloudflare_workers: any        # Placeholder for Cloudflare logic if needed via HTTP
 
   # ─── STATE MANAGEMENT & NAVIGATION ──────────────────────────
   flutter_riverpod: any
@@ -49,7 +44,7 @@ dependencies:
   google_sign_in: any 
   sign_in_with_apple: any 
   flutter_facebook_auth: any 
-  github_sign_in_plus: any       # 🔥 FIX: Asli Plus package wapas laya gaya!
+  github_sign_in_plus: any
 
   # ─── MULTI-AI UNIVERSE (6-in-1 Brain - Point 11) ─────────────
   google_generative_ai: any      # Gemini Power
@@ -57,7 +52,6 @@ dependencies:
   flutter_markdown: any          # For AI Code Rendering
 
   # ─── MEDIA & DOWNLOADS (Point 4 & 5 - Universal Player) ─────
-  # Photo, Video, Audio aur PDF asli quality mein download honge.
   video_player: any
   chewie: any
   just_audio: any
@@ -65,41 +59,38 @@ dependencies:
   file_picker: any
   photo_view: any
   record: any                    # Voice Messages
-  syncfusion_flutter_pdfviewer: any # 🔥 FIX: Isko bhi 'any' kiya gaya hai
+  syncfusion_flutter_pdfviewer: any
 
-  # ─── ECONOMY & PAYMENTS (Point 6 - NO RAZORPAY/STRIPE) ──────
-  # TriNetra's Verified Payment Army
-  payu_checkoutpro_flutter: any  # 🔥 FIX: Maine yahan asli official naam edit kiya hai
-  flutter_paypal: any            # 🔥 Global Gateway
-  flutter_braintree: any         # 🔥 Advanced Adyen/Braintree Logic
-  adyen_checkout: any            # 🔥 Global Enterprise Payments
-  webview_flutter: any           # 🔥 Paddle & Web-fallback Payment Engine
-  in_app_purchase: any           # For iOS & Android Pro Subscriptions
+  # ─── ECONOMY & PAYMENTS (Point 6) ──────
+  payu_checkoutpro_flutter: any
+  flutter_paypal: any
+  flutter_braintree: any
+  adyen_checkout: any
+  webview_flutter: any
+  in_app_purchase: any
 
   # ─── MONETIZATION (Point 6 - Ads Ecosystem) ──────────────────
-  google_mobile_ads: any         # AdMob
-  applovin_max: any             # AppLovin
-  facebook_audience_network: any # Meta Ads
+  google_mobile_ads: any
+  applovin_max: any
+  facebook_audience_network: any
 
-  # ─── MONITORING & CRASH TRACKING (Point 12 - AWS Synced) ────
-  # Zero Firebase Crashlytics. Pure Sentry & AWS CloudWatch.
+  # ─── MONITORING & CRASH TRACKING (Point 12) ────
   sentry_flutter: any
 
   # ─── MESSENGER 2.0 & CALLING (Point 5 - WhatsApp Standard) ──
-  # Mutual-Only calling logic via WebRTC.
   flutter_webrtc: any
   zego_uikit_prebuilt_call: any 
   flutter_chat_ui: any 
-  emoji_picker_flutter: any         # 🔥 FIX: Yahan 'any' lagaya hai error rokne ke liye
+  emoji_picker_flutter: any
 
   # ─── MULTILANGUAGE & JUSTICE (Point 13) ──────────────────────
-  easy_localization: any         # Hindi + English Standard
-  translator: any                # AI Translation for Posts
+  easy_localization: any
+  translator: any
 
   # ─── NETWORKING & SECURE STORAGE ─────────────────────────────
   dio: any
   connectivity_plus: any
-  flutter_secure_storage: any    # Encryption for Wallet & Keys
+  flutter_secure_storage: any
   shared_preferences: any
 
   # ─── UTILS & AUTO-VERSIONING ─────────────────────────────────
@@ -109,7 +100,7 @@ dependencies:
   url_launcher: any
   intl: any
   path_provider: any
-  permission_handler: any
+  permission_handler: ^11.3.1
   package_info_plus: any
   device_info_plus: any
   web_socket_channel: any
@@ -119,9 +110,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: any
-  flutter_launcher_icons: any   # Auto-Generate 6-Platform Icons
+  flutter_launcher_icons: any
 
-# 🔥 MASTER OVERRIDE: Yeh command packages ko aapas mein ladne se rokega!
 dependency_overrides:
   github_sign_in_plus: any
   flutter_paypal: any
@@ -129,22 +119,17 @@ dependency_overrides:
   path_provider: any
   http: any
   intl: any
-  # 🔥 FIX: Yahan se flutter_localizations hata diya gaya hai taaki internet wala error na aaye
 
 flutter:
   uses-material-design: true
-  generate: true                    # For Auto-generating L10n Files
+  generate: true
 
   assets:
-    # - .env                        # 🔥 MASTER FIX: GitHub par .env file nahi hoti, isse build crash hota hai! Isey band kar diya, kyonki humne Actions me 17 keys pehle hi bhej di hain.
     - assets/images/
     - assets/lottie/
     - assets/icons/
     - assets/locales/ 
 
-# ==============================================================
-# 🔥 BRANDING ENGINE (Auto-Generated via Terminal)
-# ==============================================================
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
@@ -167,4 +152,4 @@ flutter_native_splash:
   image: "assets/images/trinetra_splash_logo.png"
   android: true
   ios: true
-  web: false # Web uses CSS for splash
+  web: false
