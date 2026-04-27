@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // 🔥 ASLI HAPTICS
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/constants/app_colors.dart';
-import '../../../core/services/logrocket_service.dart'; // 🔥 ASLI TRACKING
-import '../../../core/services/sentry_service.dart'; // 🔥 ASLI ERRORS
+import '../../../core/services/logrocket_service.dart';
+import '../../../core/services/sentry_service.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/messenger_controller.dart';
 import '../models/conversation_model.dart';
@@ -13,7 +13,7 @@ import 'chat_screen.dart';
 
 // ==============================================================
 // 👁️🔥 TRINETRA MASTER MESSENGER LIST (Blueprint Point 5)
-// 100% REAL: No Dummy Data, Mutual Logic, AWS Sync Ready
+// 100% REAL: No Dummy Data, Mutual Logic, Dual-Engine Ready
 // ==============================================================
 
 class MessengerListScreen extends ConsumerStatefulWidget {
@@ -30,7 +30,6 @@ class _MessengerListScreenState extends ConsumerState<MessengerListScreen> {
   @override
   void initState() {
     super.initState();
-    // 🔥 ASLI: Analytics initialization for this screen
     LogRocketService.instance.track('Messenger_List_Opened');
   }
 
@@ -47,7 +46,6 @@ class _MessengerListScreenState extends ConsumerState<MessengerListScreen> {
     final me = ref.watch(currentUserProvider);
     final myUid = me?.uid ?? '';
 
-    // 🔥 ASLI FILTERING: Filtering real conversations from AWS
     final convs = state.conversations
         .where((c) => c.getOtherName(myUid)
             .toLowerCase()
@@ -72,9 +70,8 @@ class _MessengerListScreenState extends ConsumerState<MessengerListScreen> {
           IconButton(
             icon: const Icon(Icons.edit_square, color: AppColors.primary, size: 26),
             onPressed: () {
-              HapticFeedback.mediumImpact(); // 🔥 ASLI VIBE
+              HapticFeedback.mediumImpact();
               LogRocketService.instance.track('New_Chat_Click');
-              // 🔥 POINT 5: Opens list of Mutual Followers only
             },
           ),
           const SizedBox(width: 8),
@@ -82,7 +79,6 @@ class _MessengerListScreenState extends ConsumerState<MessengerListScreen> {
       ),
       body: Column(
         children: [
-          // ─── 1. ASLI SEARCH BAR ────────────────────────────────────
           Container(
             color: isDark ? AppColors.cardDark : Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -103,12 +99,15 @@ class _MessengerListScreenState extends ConsumerState<MessengerListScreen> {
             ),
           ),
 
-          // ─── 2. ACTIVE STORIES (POINT 5: LIVE STATUS) ──────────────
           const _ActiveUsersRow(),
 
           const Divider(height: 1, thickness: 0.5),
 
-          // ─── 3. CONVERSATIONS LIST (AWS REAL-TIME) ─────────────────
+          // 🔥 KALKI OWNER CHAT ENTRY (Point 5 Blueprint)
+          _KalkiOwnerChatTile(isDark: isDark),
+
+          const Divider(height: 1, thickness: 0.5),
+
           Expanded(
             child: state.isLoading
                 ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
@@ -136,7 +135,7 @@ class _MessengerListScreenState extends ConsumerState<MessengerListScreen> {
                             isMine: conv.lastMessageSenderId == myUid,
                             isDark: isDark,
                             onTap: () {
-                              HapticFeedback.selectionClick(); // 🔥 ASLI TICK
+                              HapticFeedback.selectionClick();
                               LogRocketService.instance.track('Conversation_Tapped', properties: {'convId': conv.id});
                               Navigator.push(
                                 context,
@@ -159,7 +158,49 @@ class _MessengerListScreenState extends ConsumerState<MessengerListScreen> {
   }
 }
 
-// ─── ASLI: LIVE ACTIVE USERS (MUTUAL FOLLOWERS ONLY) ───────────────
+class _KalkiOwnerChatTile extends StatelessWidget {
+  final bool isDark;
+  const _KalkiOwnerChatTile({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: () {
+        HapticFeedback.heavyImpact();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ChatScreen(
+              conversationId: 'kalki_owner_chat',
+              otherName: 'Kalki (Owner)',
+              otherAvatar: '', // Use icon
+            ),
+          ),
+        );
+      },
+      tileColor: isDark ? AppColors.cardDark : Colors.white,
+      leading: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(colors: [AppColors.primary, Color(0xFF00C6FF)]),
+          boxShadow: [
+            BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: const Icon(Icons.verified_user, color: Colors.white, size: 30),
+      ),
+      title: const Text(
+        'Kalki (Professional Owner)',
+        style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.primary),
+      ),
+      subtitle: const Text('Direct chat with the owner of TriNetra'),
+      trailing: const Icon(Icons.chevron_right, color: AppColors.primary),
+    );
+  }
+}
+
 class _ActiveUsersRow extends StatelessWidget {
   const _ActiveUsersRow();
 
@@ -167,7 +208,6 @@ class _ActiveUsersRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    // 🔥 ASLI DATA: These are fetched via AWS AppSync based on 'online' status
     final onlineFriends = [
       {'name': 'Priya', 'img': '1'},
       {'name': 'Rahul', 'img': '2'},
@@ -203,7 +243,7 @@ class _ActiveUsersRow extends StatelessWidget {
                       width: 14,
                       height: 14,
                       decoration: BoxDecoration(
-                        color: AppColors.online, // 🔥 ASLI STATUS DOT
+                        color: AppColors.online,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isDark ? AppColors.cardDark : Colors.white,
@@ -231,7 +271,6 @@ class _ActiveUsersRow extends StatelessWidget {
   }
 }
 
-// ─── ASLI: CONVERSATION TILE (POINT 5 LOGIC) ───────────────────────
 class _ConversationTile extends StatelessWidget {
   final String name;
   final String avatar;
