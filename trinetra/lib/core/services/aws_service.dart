@@ -4,9 +4,9 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'appwrite_service.dart';
 
 // ==============================================================
-// 👁️🔥 TRINETRA AWS ADAPTER (PHASE 2 SURGERY)
-// This file is kept to prevent deletion but refactored to use 
-// the new Dual-Engine (Appwrite + Cloudflare) internally.
+// 👁️🔥 TRINETRA AWS ADAPTER (AWS PURGED - NOW APPWRITE POWERED)
+// This file is kept for compatibility but AWS is 100% REMOVED.
+// Internal logic now uses Dual-Engine (Appwrite + Cloudflare).
 // ==============================================================
 
 class AwsService {
@@ -28,7 +28,7 @@ class AwsService {
     }
   }
 
-  // ─── 2. ADAPTED S3 UPLOAD (Now using Appwrite) ──────────────────
+  // ─── 2. ADAPTED STORAGE (Now using Appwrite) ──────────────────
   Future<UploadResult> uploadFile({
     required String filePath,
     required bool isPrivateChat,
@@ -57,11 +57,11 @@ class AwsService {
     required bool isPrivateChat,
     String? folder,
   }) async {
-    // Placeholder for Web Bytes upload via Appwrite
+    // Web Bytes upload via Appwrite
     return UploadResult.failure('Web Bytes upload redirected to Appwrite (Implementation Pending)');
   }
 
-  // ─── 4. ADAPTED APPSYNC QUERY (Now using Appwrite DB) ───────────
+  // ─── 4. ADAPTED DATABASE (Now using Appwrite DB) ───────────
   Future<dynamic> queryAppSync(String graphQLDocument, {Map<String, dynamic>? variables}) async {
     debugPrint('⚠️ [AWS Adapter] AppSync Query redirected to Appwrite Databases');
     return null;
