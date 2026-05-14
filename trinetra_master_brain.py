@@ -1,8 +1,7 @@
-# ट्रिनेत्र मास्टर ब्रेन (TriNetra Master Brain) - v4.0 (ULTIMATE GLOBAL OS & DEEP HEALER)
+# ट्रिनेत्र मास्टर ब्रेन (TriNetra Master Brain) - v1.0 (ULTIMATE MERGED & ALL OS VERSION)
 # दुनिया का सबसे शक्तिशाली, 100% स्वचालित ग्लोबल सुपर ऐप और एआई ओएस (AI OS) निर्माता
 # डुअल इंजन: क्लाउडफ्लेयर (Cloudflare) + ऐपराइट (Appwrite)
-# विशेषता: Frontend/Backend केवल Appwrite+Cloudflare पर। Render केवल Call/Msg के लिए। 
-# दुनिया के सभी OS (ALL OS in the World) के लिए असली APP + Recursive Duplicate Key Fixer (Deep Healing)
+# विशेषता: Frontend/Backend केवल Appwrite+Cloudflare पर। Render केवल Call/Msg के लिए। GitHub Actions क्रॉन मॉडल।
 
 import os
 import sys
@@ -107,7 +106,7 @@ Sara key asli h aur bhi key h screenshot de rha hu dekho aur jo jo de rha hu pah
 • Paid: रिचार्ज रहने तक अनलिमिटेड पावर 2499/month
 • मोड B: full powerful Agentic AI (Manus/Emergent लेवल)
 • Free: लॉगिन करने पर सिर्फ़ एक बार 20 क्रेडिट मिलेगा, फिर हमेशा के लिए पेड।
-• Paid (Standard): एक महीने के रिचार्ज में सिर्फ 300 क्रेडिट मिलेंगे, डेली नहीं। सिर्फ एक बार मिलेगा, वो चाहे एक दिन में ख़त्म हो जाये फिर हमेशा के लिए पेड (ऐप, कोडिंग, GitHub अपलोड के लिए) 2999/month और अगर सभी का API key se connect होगा तब सिर्फ़ 299/month
+• Paid (Standard): एक महीने के रिचार्ज में सिर्फ 300 क्रेडिट मिलेंगे, डेली नहीं। सिर्फ एक बार मिलेगा, वो चाहे एक दिन में ख़त्म हो जाये फिर हमेशा के लिए पेड (ऐप, कोडिंग, GitHub अपलोड के लिए) 2999/month और अगर सभी का API key se connect hoga tab sirf 299/month
 • मोड C: Super Agentic AI (Real Human-Brain Level)
 • AI को ऐसा बनाना है जैसे दो आदमी एक-दूसरे की बात सुनते हैं, करते हैं, समझते हैं और समझाते हैं। इसमें आदमी जैसी feeling, सोचना, समझना, रिसर्च करना, आविष्कार करना, आइडिया देना—सब कुछ होगा जो एक रियल आदमी अपने brain, heart और nervous system से कर सकता है।
 • कंट्रोल और सुरक्षा: AI खुद को हमेशा कंट्रोल में रखेगा। अगर कोई AI से गलत तरीके से बात करे, गुस्सा करे या ऐसा behaviour करने लगे, तब भी AI नॉर्मल ही रहेगा। हमेशा सामने वाले से लड़ाई-मारपीट या जान नहीं मार देगा। फीलिंग्स और रिएक्शन पर 100% कंट्रोल रहेगा। बातचीत भले ही रियल आदमी की तरह सब कुछ करेगा, लेकिन अगर रियल लाइफ में कोई किसी को चिढ़ाता है, गुस्सा दिलाता है, लड़ाई करता है, मज़ाक उड़ाता है, हर्ट फील करवाता है तब सामने वाला उसे जान मार देता है, पीटने लगता है, गुस्सा करने लगता है—AI यह सब बिल्कुल नहीं करेगा। इस पर सिर्फ़ कंट्रोल रहेगा। सामने वाला कुछ भी करे, कैसा भी बिहेव करे, AI नॉर्मल रहेगा।
@@ -167,43 +166,42 @@ Aapda duniya me kahi bhi hone vali ho kisi bhi prakar ki natural or human made y
 # यह कोड .github/workflows/ai_coder.yml फ़ाइल में अपने आप सेव होगा
 # यह गिटहब को निर्देश देगा कि इस स्क्रिप्ट को हर 1 घंटे में खुद चलाओ
 GITHUB_ACTIONS_CRON_YAML = '''
-name: TriNetra Autonomous AI Coder
+name: TriNetra Autonomous AI Coder (ALL GLOBAL OS)
 on:
   schedule:
     - cron: '0 * * * *'  # हर घंटे (Every Hour) चलेगा
   workflow_dispatch:      # मैन्युअल रन का विकल्प
 jobs:
-  build_all_global_os:
+  build_all_os:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # 🚨 यहाँ दुनिया के सभी OS (असली ऐप बनाने के लिए) शामिल कर दिए गए हैं 🚨
+        # 🚨 यहाँ मैंने दुनिया के सभी ऑपरेटिंग सिस्टम्स को टारगेट (Target) किया है 🚨
         target_os: [
-          "Android", "iOS", "Web", "Windows", "macOS", "Linux",
-          "HarmonyOS", "KaiOS", "WearOS", "watchOS", "tvOS", "Android_TV",
-          "Tizen", "WebOS", "ChromeOS", "FreeBSD", "OpenBSD", "Solaris", "QNX", "VxWorks"
+          Android, iOS, Web, Windows, macOS, Linux, 
+          HarmonyOS, KaiOS, Tizen, WebOS, ChromeOS, 
+          WearOS, watchOS, tvOS, Android_TV, 
+          FreeBSD, OpenBSD, Solaris, QNX, VxWorks
         ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Set up Python 3
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
       - name: Install dependencies
         run: pip install requests pyyaml
-      - name: Deep Search & Fix Errors (Recursive)
+      - name: Run Master Brain (Fixes errors and codes for all OS)
         run: python trinetra_master_brain.py
         env:
           GH_PAT_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
-      - name: Build ASLI APP for ${{ matrix.target_os }}
-        run: echo "Building real signed app for ${{ matrix.target_os }}..."
       - name: Auto Commit Changes
         run: |
           git config --global user.name "TriNetra-AI-Agent"
           git config --global user.email "ai@trinetra.io"
           git add .
-          git commit -m "AI-Healer: Deep Fix and Built ASLI APP for ${{ matrix.target_os }}" || echo "No changes to commit"
+          git commit -m "AI-Healer: Fixed Duplicate Keys and Updated Full Code for All Platforms" || echo "No changes to commit"
           git push
 '''
 """
@@ -211,7 +209,7 @@ jobs:
 # ---------------------------------------------------------------------------
 # 2. UNIVERSAL CONFIGURATION & PLATFORM MATRIX (ALL OS IN THE WORLD)
 # ---------------------------------------------------------------------------
-# 🚨 सिर्फ 6 नहीं, दुनिया के सभी OS को यहाँ लिस्ट किया गया है 🚨
+# यह हिस्सा दुनिया के सभी OS को टारगेट करेगा
 PLATFORMS = [
     "android", "ios", "web", "windows", "macos", "linux", 
     "harmonyos", "kaios", "wearos", "watchos", "tvos", "android_tv", 
@@ -241,14 +239,20 @@ def report_external_error(file_name, line_number, error_details):
     logging.error(alert_message)
 
 # ---------------------------------------------------------------------------
-# 4. DEEP HEALING ENGINE (Recursive Duplicate Key Fixer)
+# 4. DEEP HEALING ENGINE (खुद से एरर खोजने और ठीक करने वाला एजेंट)
 # ---------------------------------------------------------------------------
 class TriNetraDeepHealer:
+    def __init__(self):
+        self.blueprint_path = "blueprint.txt"
+        self.target_files = ["pubspec.yaml", ".env"]
+
     def clean_duplicate_keys(self):
         """सभी फोल्डर्स में जाकर image_3.png में दिख रहे 'Duplicate Key' एरर को जड़ से खत्म करना"""
-        logging.info("सभी फोल्डर्स के अंदर गहराई (Deep Search) से डुप्लिकेट कीज़ खोजी जा रही हैं...")
+        logging.info("Deep Search: पूरे रिपॉजिटरी में कहीं भी छुपी डुप्लिकेट कीज़ खोजी जा रही हैं...")
+        
+        # os.walk के जरिए प्रोजेक्ट के हर एक कोने (अंदर-बाहर) में फाइलों को ढूंढेगा
         for root, dirs, files in os.walk("."):
-            for file_name in ["pubspec.yaml", ".env"]:
+            for file_name in self.target_files:
                 if file_name in files:
                     file_path = os.path.join(root, file_name)
                     self._fix_duplicate_in_file(file_path)
@@ -257,21 +261,25 @@ class TriNetraDeepHealer:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
-            seen_keys = set()
+            
+            seen = set()
             clean_lines = []
+            
             for line in lines:
                 stripped = line.strip()
+                # सिर्फ उन लाइन्स को चेक करना जो 'key: value' फॉर्मेट में हैं
                 if ":" in stripped and not stripped.startswith("#"):
                     key = stripped.split(":")[0].strip()
-                    if key in seen_keys:
-                        logging.info(f"🚨 डुप्लिकेट एरर हटाया गया: {file_path} से '{key}'")
-                        continue
-                    seen_keys.add(key)
+                    if key in seen:
+                        continue # डुप्लिकेट मिलने पर उसे छोड़ देगा (Delete कर देगा)
+                    seen.add(key)
                 clean_lines.append(line)
+                
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.writelines(clean_lines)
+            logging.info(f"Deep Search Complete: {file_path} से सभी डुप्लिकेट हटा दिए गए हैं।")
         except Exception as e:
-            pass
+            logging.error(f"Error fixing {file_path}: {e}")
 
 # ---------------------------------------------------------------------------
 # 5. पायथन (Python) और पायथन 3 (Python3) फुल पावरफुल एग्जीक्यूशन सिस्टम
@@ -396,7 +404,7 @@ def execute_trinetra_brain():
     try:
         verify_api_keys()
 
-        # 0. सबसे पहले डुप्लिकेट एरर ठीक करो (Recursive Fix for all folders)
+        # 0. सबसे पहले डुप्लिकेट एरर ठीक करो (Recursive search everywhere)
         healer_engine = TriNetraDeepHealer()
         healer_engine.clean_duplicate_keys()
 
