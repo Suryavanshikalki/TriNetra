@@ -13,10 +13,7 @@ environment:
   flutter: '>=3.24.0'
 
 dependencies:
-  flutter:
-    sdk: flutter
   flutter_localizations:
-    sdk: flutter
 
   # ─── THE MASTER KEY VAULT (17 Keys from GitHub Secrets) ─────
   flutter_dotenv: any
@@ -108,19 +105,11 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
-    sdk: flutter
   flutter_lints: any
   flutter_launcher_icons: any
 
 dependency_overrides:
-  github_sign_in_plus: any
-  flutter_paypal: any
-  syncfusion_flutter_pdfviewer: any
-  path_provider: any
-  http: any
-  intl: any
 
-flutter:
   uses-material-design: true
   generate: true
 
@@ -130,26 +119,15 @@ flutter:
     - assets/icons/
     - assets/locales/ 
 
-flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   web:
-    generate: true
     image_path: "assets/images/trinetra_master_logo.png"
     background_color: "#FFFFFF"
     theme_color: "#FFFFFF"
   windows:
-    generate: true
-    image_path: "assets/images/trinetra_master_logo.png"
     icon_size: 256
   macos:
-    generate: true
-    image_path: "assets/images/trinetra_master_logo.png"
-  image_path: "assets/images/trinetra_master_logo.png"
 
-flutter_native_splash:
   color: "#ffffff"
   image: "assets/images/trinetra_splash_logo.png"
-  android: true
-  ios: true
-  web: false
