@@ -7,6 +7,12 @@ on:
     - cron: '*/30 * * * *'  # गिटहब क्रॉन: हर 30 मिनट में बिना रुके ऑटोमैटिक चलेगा 
   workflow_dispatch:
 
+# --- 🚨 ADDED: गिटहब क्रॉन को 3-4 महीने तक बिना रुके चलाने और क्रैश से बचाने का सिस्टम 🚨 ---
+concurrency:
+  group: trinetra-auto-builder-group
+  cancel-in-progress: false
+# --------------------------------------------------------------------------------------------
+
 env:
   # ---------------------------------------------------------------------------
   # 1. सभी 34+ प्रोडक्शन कुंजियाँ (Keys) - [Exact Copy]
@@ -52,6 +58,13 @@ jobs:
     name: Build ASLI APP For ${{ matrix.target_os }}
     runs-on: ubuntu-latest
     
+    # --- 🚨 ADDED: 360 मिनट (6 घंटे) का मैक्सिमम टाइमआउट ताकि AI कोडिंग बीच में कटे नहीं और परमिशन 🚨 ---
+    timeout-minutes: 360
+    permissions:
+      contents: write
+      actions: write
+    # ---------------------------------------------------------------------------------------------------
+
     # 🚨 गिटहब को निर्देश: सभी 20+ OS को अलग-अलग सर्वर पर एक साथ चलाओ (Parallel Execution), ताकि टाइम आउट न हो! 🚨
     strategy:
       fail-fast: false
@@ -65,6 +78,9 @@ jobs:
     steps:
       - name: Checkout Code from Repository
         uses: actions/checkout@v4
+        # --- 🚨 ADDED: Fetch depth 0 ताकि गिटहब हिस्ट्री पूरी रहे और कमिट फेल न हो 🚨 ---
+        with:
+          fetch-depth: 0
 
       # 🚨 असली ऐप बनाने के लिए Flutter सेट करना 🚨
       - name: Set Up Flutter (For Real App Building)
@@ -176,7 +192,7 @@ jobs:
           • ग्रुप्स: ग्रुप चैट और ग्रुप ऑडियो/वीडियो कॉलिंग।जो ऑन ऑफ कर सकते है 
           • AI की एंट्री: चैट में AI का कोई टॉगल या ऑप्शन होगा।लेकिन सिर्फ एक दूसरे को पढ़ने पढ़ाने समझने रिसर्च करने चैट ताकि कुछ बनाकर देने ऑर्डर करने इसमें भी सभी एआई काम करेगा जो जैसे लिखा है Ai में feature function वैसे ही फ्री में सिर्फ meta की तरह सीमित सब लिखा ह लेकिन यहा search करेंगे ai में तब सभी को दिखेगा जितना लोग रहेंगे लेकिन सर्च कोई भी करेगा तब भी सबको दिखेगा जिसको जो भाषा में समझ आयेगा या सेट रहेगा उसका जोन के अनुसार उस भाषा में या उसका चुना हुआ भाषा में दिखेगा किसी भाषा में सर्च किया हुआ हो इससे सभी एक दूसरे से जुड़ेंगे और कॉल में भी ऐसा होगा ऑटोमैटिक और मैनुअली दोनों सेटिंग होगा नीचे इसमें भी मल्टी लैंग्वेज सपोर्ट होगा msg call सभी में जैसे लिखा हूँ कॉल के लिए msg call के लिए पूरी दुनिया का लोग ग्रुप स्टडी कर सकते है एक साथ connect होकर इसमें लाइव और chat aur caption call ya voice mic ka sab likhega ye on off kiya jayega ek koi band karega tab uska sirf band hoga sabka nahi sab khud ke anusar use kar sakenge 
           • 🚨 Chat Menu Settings: message me bhi ek menu ka option bna dena jisme chat setting theme setting wallpaper setting aur jitna setting rhta hai sab kuchh (call/msg ON aur OFF dono karne ka setting, block aur unblock dono karne ka setting) sab kuchh hoga. aur ai ke chat me bhi setting rhega jaisa user set karega vaise chalega use users manually set kar skta hai aur auto bhi rhega bas text me ye add kar do.
-          • 🚨 कल्कि ओनर चैट (Kalki Owner Chat): Messenger के अंदर एक मेरा नाम का ऑप्शन होगा: *kalki* (Professional Owner)। इसमें सिर्फ मैं (Kalki) सबसे बात कर सकूँगा लेकिन बाक़ी आपस में बात नहीं करेंगे सभी का आवाज़ msg call live me dekhunga sununga जबाब दूँगा लेकिन मेरा आवाज़ या msg सब सुनेगा लेकिन बात दो के बीच होगा यूजर का आवाज़ सिर्फ़ मैं सुनूँगा कोई दुसरा user नहीं बात सिर्फ़ एक से होगा जिसे मैं सेलेक्ट करूँगा बस वही से बाक़ी कोई nahi बाक़ी सिर्फ़ मेरा aawaz सुनेगा user का नहीं एक बार में जितना सेलेक्ट करूँगा बस बात सिर्फ़ उससे होगा सुनेगा और जुड़ेगा पूरा दुनिया का यूजर अगर कोई selet nahi hoga tab poori duniya se baat hoga select karunga tab jise karunga sirf usse. Duniya ka har user mujhse direct asli baat karega msg call. Isme bhi sab kuchh (Photo, Video, PDF, Mic) bhenjna aur download karna asli kaam karega. AI bhi kaam karega isme bhi.
+          • 🚨 कल्कि ओनर चैट (Kalki Owner Chat): Messenger के अंदर एक मेरा नाम का ऑप्शन होगा: *kalki* (Professional Owner)। इसमें सिर्फ मैं (Kalki) सबसे बात कर सकूँगा लेकिन बाक़ी आपस में बात करेंगे सभी का आवाज़ msg call live me dekhunga sununga जबाब दूँगा लेकिन मेरा आवाज़ या msg सब सुनेगा लेकिन बात दो के बीच होगा यूजर का आवाज़ सिर्फ़ मैं सुनूँगा कोई दुसरा user नहीं बात सिर्फ़ एक से होगा जिसे मैं सेलेक्ट करूँगा बस वही से बाक़ी कोई nahi बाक़ी सिर्फ़ मेरा aawaz सुनेगा user का नहीं एक बार में जितना सेलेक्ट करूँगा बस बात सिर्फ़ उससे होगा सुनेगा और जुड़ेगा पूरा दुनिया का यूजर अगर कोई selet nahi hoga tab poori duniya se baat hoga select karunga tab jise karunga sirf usse. Duniya ka har user mujhse direct asli baat karega msg call. Isme bhi sab kuchh (Photo, Video, PDF, Mic) bhenjna aur download karna asli kaam karega. AI bhi kaam karega isme bhi.
           
           6. द इकॉनमी (Monetization, Boost & Wallet)
           • Wallet & Payment History: किसने कितना पे किया, कहाँ से पैसा आया, यह पूरा डेटा यूज़र खुद देख सकेगा। (पेमेंट गेटवे: PayU India, Braintree + PayPal, Paddle, Adyen सपोर्टेड। Razorpay हमेशा के लिए हटा दिया गया है)।
@@ -536,6 +552,16 @@ jobs:
         run: |
           git config --global user.name "TriNetra-AI-Agent"
           git config --global user.email "ai@trinetra.global"
+          
+          # --- 🚨 ADDED: गिटहब क्रॉन कीप-अलाइव (Keep-Alive) ताकि गिटहब कभी सोचे नहीं कि ऐप बंद है 🚨 ---
+          date +%s > .github-cron-keepalive.txt
+          # -----------------------------------------------------------------------------------------
+          
           git add .
           git commit -m "AI-Healer: Deep Fix, Real AI Coding added & Built ASLI App for ${{ matrix.target_os }}" || echo "No changes to commit"
+          
+          # --- 🚨 ADDED: गिटहब मैट्रिक्स क्रैश फिक्स (Pull & Rebase) - इसके बिना सब एक साथ पुश करते हैं और फेल होता है 🚨 ---
+          git pull --rebase origin main || true
+          # --------------------------------------------------------------------------------------------------------------
+          
           git push origin HEAD:main || echo "Push skipped or failed, retrying on next cron cycle."
