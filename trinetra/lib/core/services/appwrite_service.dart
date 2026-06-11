@@ -33,7 +33,7 @@ class AppwriteService {
       client
           .setEndpoint(AppConfig.appwriteEndpoint)
           .setProject(AppConfig.appwriteProjectId)
-          .setSelfSigned(status: true); // For development/self-hosted
+          .setSelfSigned(status: false);
 
       account = Account(client);
       databases = Databases(client);

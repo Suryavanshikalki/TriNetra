@@ -20,10 +20,10 @@ app = FastAPI(title="TriNetra Master AI Engine", version="5.0.0")
 # ─── AWS & LOCAL SECURITY MIDDLEWARE ───
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Node.js backend will call this
+    allow_origins=os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(","),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # ─── REAL API KEYS VALIDATION ───
@@ -52,11 +52,7 @@ class ChatResponse(BaseModel):
 
 @app.get("/api/health")
 async def health():
-    return {
-        "status": "TriNetra AI Engine 100% Active",
-        "brain_status": "LOCKED & SYNCED",
-        "firebase_status": "DELETED 100%"
-    }
+    return {"status": "ok"}
 
 # ─── POINT 12: REAL MULTILINGUAL TRANSLATOR ───
 @app.post("/api/v1/translate", response_model=dict)

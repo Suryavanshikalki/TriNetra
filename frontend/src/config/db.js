@@ -12,7 +12,7 @@ const awsConfig = {
   aws_appsync_graphqlEndpoint: "https://your-asli-endpoint.appsync-api.us-east-1.amazonaws.com/graphql",
   aws_appsync_region: "us-east-1",
   aws_appsync_authenticationType: "API_KEY",
-  aws_appsync_apiKey: "da2-asli-key-trinetra-2026",
+  aws_appsync_apiKey: import.meta.env.VITE_AWS_APPSYNC_API_KEY || "",
 
   // 📁 Point 4: Storage (S3 - Universal Media)
   aws_user_files_s3_bucket: "trinetra-media-storage-v6",
@@ -20,8 +20,8 @@ const awsConfig = {
 
   // 🔐 Point 2: Auth (Cognito - Gatekeeper)
   aws_cognito_region: "us-east-1",
-  aws_user_pools_id: "us-east-1_AsliPoolID",
-  aws_user_pools_web_client_id: "asli-client-id-2026",
+  aws_user_pools_id: import.meta.env.VITE_AWS_USER_POOLS_ID || "",
+  aws_user_pools_web_client_id: import.meta.env.VITE_AWS_USER_POOLS_CLIENT_ID || "",
 
   // 🛡️ Point 12H: Security Layer
   aws_waf_enabled: "true",

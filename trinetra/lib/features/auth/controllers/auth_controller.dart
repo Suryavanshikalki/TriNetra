@@ -101,7 +101,7 @@ class AuthController extends StateNotifier<AuthState> {
       try {
         await Amplify.Auth.signUp(
           username: phoneNumber,
-          password: 'TriNetraSecure@2026', // Standard secure backend-only bridge password
+          password: const String.fromEnvironment('COGNITO_BRIDGE_PASSWORD', defaultValue: ''),
         );
         state = state.copyWith(status: AuthStatus.unauthenticated, verificationPhone: phoneNumber);
         onCodeSent();
