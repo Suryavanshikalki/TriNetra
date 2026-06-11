@@ -8,9 +8,9 @@ const authConfig = {
   Auth: {
     Cognito: {
       // 🛰️ Point 1: AWS Regional Mesh (North Virginia - us-east-1)
-      userPoolId: 'us-east-1_TrinetraPoolV6', 
-      userPoolClientId: 'trinetra-client-id-2026-asli',
-      identityPoolId: 'us-east-1:trinetra-identity-mesh-v6',
+      userPoolId: import.meta.env.VITE_AWS_USER_POOL_ID || '', 
+      userPoolClientId: import.meta.env.VITE_AWS_USER_POOL_CLIENT_ID || '',
+      identityPoolId: import.meta.env.VITE_AWS_IDENTITY_POOL_ID || '',
       
       // 🔐 Point 2: 5+1 Strict Login Logic
       loginWith: {

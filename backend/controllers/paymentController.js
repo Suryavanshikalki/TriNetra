@@ -150,3 +150,74 @@ export const processPaymentAndBoost = async (req, res) => {
     res.status(500).json({ success: false, message: "Economy Engine Failed. Amount Reversed if Deducted." });
   }
 };
+
+// Aliases for routes that import specific names
+export const processPayment = processPaymentAndBoost;
+export const applyBoost = processPaymentAndBoost;
+
+// ==========================================
+// GET WALLET BALANCE
+// ==========================================
+export const getWalletBalance = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    res.status(200).json({
+      success: true,
+      walletBalance: user.walletBalance || 0,
+      aiCreditsA_Free: user.aiCreditsA_Free,
+      aiCreditsB_Paid: user.aiCreditsB_Paid,
+      aiCreditsC: user.aiCreditsC,
+      aiCreditsOS: user.aiCreditsOS
+    });
+  } catch (error) {
+    console.error("[TriNetra Wallet Error]:", error);
+    res.status(500).json({ success: false, message: "Wallet fetch failed." });
+  }
+};
+
+// ==========================================
+// VERIFY PAYMENT WEBHOOK (Anti-Fraud)
+// ==========================================
+export const verifyPaymentWebhook = async (req, res) => {
+  try {
+    const signature = req.headers['x-webhook-signature'] || req.headers['x-paypal-signature'] || '';
+    const webhookSecret = process.env.PAYMENT_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      console.error("[TriNetra Webhook] PAYMENT_WEBHOOK_SECRET not configured.");
+      return res.status(500).json({ success: false, message: "Webhook not configured." });
+    }
+
+    // Verify signature using HMAC
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(req.body)
+      .digest('hex');
+
+    if (signature !== expectedSignature) {
+      console.warn("[TriNetra Webhook] Invalid signature. Possible fraud attempt.");
+      return res.status(403).json({ success: false, message: "Invalid webhook signature." });
+    }
+
+    const payload = JSON.parse(req.body);
+    console.log(`[TriNetra Webhook] Verified payment event: ${payload.event_type || 'unknown'}`);
+
+    // Process the verified webhook event
+    if (payload.transactionId) {
+      await Transaction.findOneAndUpdate(
+        { transactionId: payload.transactionId },
+        { status: payload.status || 'Verified' }
+      );
+    }
+
+    res.status(200).json({ success: true, message: "Webhook processed." });
+  } catch (error) {
+    console.error("[TriNetra Webhook Error]:", error);
+    res.status(500).json({ success: false, message: "Webhook processing failed." });
+  }
+};

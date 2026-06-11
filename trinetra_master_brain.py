@@ -351,7 +351,7 @@ def clear_old_workflows_aggressively():
                     file_path = os.path.join(workflows_dir, file)
                     try:
                         os.remove(file_path)
-                        subprocess.run(f"git rm -f {file_path}", shell=True, ignore_errors=True)
+                        subprocess.run(["git", "rm", "-f", file_path], check=False)
                     except Exception as e: pass
 
 # ---------------------------------------------------------------------------

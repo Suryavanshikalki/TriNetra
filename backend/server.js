@@ -11,6 +11,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import helmet from 'helmet'; // 🚨 AWS WAF Level Security Shield
 import * as Sentry from '@sentry/node'; // 🚨 Real Crash Analytics
+import jsonwebtoken from 'jsonwebtoken';
 
 // Routes Import (As per your structure)
 import authRoutes from './routes/authRoutes.js';
@@ -27,14 +28,17 @@ const httpServer = createServer(app);
 if (process.env.SENTRY_DSN) {
     Sentry.init({
         dsn: process.env.SENTRY_DSN,
-        tracesSampleRate: 1.0, // 100% Bugs Capture
+        tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.1'),
     });
     app.use(Sentry.Handlers.requestHandler());
 }
 
 // ─── 🚨 2. AWS SECURITY & PAYLOAD MIDDLEWARE ───
 app.use(helmet()); 
-app.use(cors({ origin: "*" })); // Web, Windows, Mac, Linux, iOS, Android (6 Platforms)
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000'];
+app.use(cors({ origin: ALLOWED_ORIGINS }));
 app.use(express.json({ limit: '50mb' })); // Original Media Upload (Video/PDF) Support
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -52,7 +56,7 @@ mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
   });
 
 // ─── 🚨 4. API ROUTES WIRING (All 12 Points) ───
-app.get("/api/health", (req, res) => res.json({ status: "TriNetra Engine + Socket 100% Active" }));
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 app.use('/api/auth', authRoutes);         // Point 2: Gatekeeper
 app.use('/api/social', postRoutes);       // Point 3 & 4: Feed & Connections
 app.use('/api/ai', aiRoutes);             // Point 11: Master AI Mode C
@@ -62,18 +66,33 @@ app.use('/api/justice', escalationRoutes);// Point 4: Justice Auto-Escalation
 // ─── 🚨 5. WHATSAPP 2.0 (REAL-TIME SOCKET LOGIC) ───
 // AWS Auto-Scaling optimized socket configurations
 const io = new Server(httpServer, {
-  cors: { origin: "*" },
+  cors: { origin: ALLOWED_ORIGINS },
   pingTimeout: 60000, // 60 seconds timeout (Facebook Standard)
   pingInterval: 25000 // Keeps connection alive on mobile networks
 });
 
+// Socket.IO authentication middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error("Authentication required for socket connection."));
+  }
+  try {
+    const decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET);
+    socket.user = decoded;
+    next();
+  } catch (err) {
+    return next(new Error("Invalid or expired token."));
+  }
+});
+
 io.on("connection", (socket) => {
-  console.log(`📡 [TriNetra Socket] New Mutual Connection Active: ${socket.id}`);
+  console.log(`📡 [TriNetra Socket] Authenticated connection: ${socket.user?.trinetraId || socket.id}`);
   
   // User joins a specific 1-to-1 or Group Chat Room
   socket.on("join_room", (roomId) => {
+      if (typeof roomId !== 'string' || roomId.length > 200) return;
       socket.join(roomId);
-      console.log(`User ${socket.id} joined room ${roomId}`);
   });
 
   // Sending real-time messages (Text, Media, Voice Notes)
