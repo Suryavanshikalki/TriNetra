@@ -14,7 +14,7 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY;
 // --- Point 12: REAL Multilingual Translator ---
 // (यह Node.js में ही रहेगा क्योंकि यह छोटा और तेज़ टास्क है)
 export const translateContent = async (text, targetLanguage) => {
-  if (!text || !targetLanguage || targetLanguage === 'en') return text;
+  if (!text || !targetLanguage || targetLanguage === 'en') return { text, translated: false };
   
   try {
     const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
@@ -25,10 +25,10 @@ export const translateContent = async (text, targetLanguage) => {
       }]
     }, { headers: { Authorization: `Bearer ${GROQ_API_KEY}` } });
     
-    return response.data.choices[0].message.content;
+    return { text: response.data.choices[0].message.content, translated: true };
   } catch (error) {
     console.error("[TriNetra Translator] Real Translation Failed:", error.message);
-    return text; 
+    return { text, translated: false, translationError: error.message };
   }
 };
 
@@ -88,13 +88,33 @@ export const processAIPrompt = async (req, res) => {
 
     } catch (apiErr) {
         console.error(`[TriNetra Link Error] Python Microservice Failed:`, apiErr.message);
-        // अगर Python सर्वर डाउन हो, तो इमरजेंसी में Groq (Meta) का इस्तेमाल करें
-        aiResponseText = "⚠️ TriNetra Master Brain is currently syncing. Please try again in 5 seconds.";
+        // Refund the credit that was deducted since the AI service failed
+        if (aiMode === 'Mode_A_FreePremium') user.aiCreditsA_Free += 1;
+        else if (aiMode === 'Mode_B_Paid') user.aiCreditsB_Paid += 1;
+        else if (aiMode === 'Mode_C') user.aiCreditsC += 1;
+        else if (aiMode === 'OS_Creation') user.aiCreditsOS += 1;
+        await user.save();
+
+        return res.status(503).json({
+          success: false,
+          message: "TriNetra Master Brain is temporarily unavailable. Your credit has been refunded.",
+          walletStatus: {
+            modeA_Free: user.aiCreditsA_Free,
+            modeC_Credits: user.aiCreditsC,
+            modeB_Credits: user.aiCreditsB_Paid,
+            os_Credits: user.aiCreditsOS
+          }
+        });
     }
 
     // ─── 4. REAL TRANSLATION (Point 12) ───
+    let translationWarning = null;
     if (targetLanguage && targetLanguage !== 'en') {
-        aiResponseText = await translateContent(aiResponseText, targetLanguage);
+        const result = await translateContent(aiResponseText, targetLanguage);
+        aiResponseText = result.text;
+        if (!result.translated) {
+            translationWarning = "Translation failed; showing original response.";
+        }
     }
 
     // ─── 5. FINAL SUCCESS RESPONSE ───
@@ -102,6 +122,7 @@ export const processAIPrompt = async (req, res) => {
       success: true, 
       brainUsed: activeBrain, 
       response: aiResponseText,
+      translationWarning: translationWarning || undefined,
       walletStatus: {
         modeA_Free: user.aiCreditsA_Free,
         modeC_Credits: user.aiCreditsC,

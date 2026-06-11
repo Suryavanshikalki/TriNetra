@@ -16,6 +16,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null); // AWS Auth Data
   const [profile, setProfile] = useState(null); // DynamoDB Profile Data (Point 3)
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   // ─── 1. FETCH FULL PROFILE (Point 3: Profile & Connections) ─────
   // 🔥 FIX: Isko upar rakha gaya hai taaki hoisting error na aaye
@@ -79,7 +80,16 @@ export const UserProvider = ({ children }) => {
       }
 
     } catch (err) {
-      console.log("🛰️ TriNetra Gatekeeper: No active AWS session. User needs to login.");
+      // Distinguish between "not authenticated" and actual errors
+      const isAuthError = err?.name === 'UserUnAuthenticatedException' ||
+                          err?.name === 'NotAuthorizedException' ||
+                          err?.message?.includes('not authenticated');
+      if (isAuthError) {
+        console.log("🛰️ TriNetra Gatekeeper: No active AWS session. User needs to login.");
+      } else {
+        console.error("❌ TriNetra Gatekeeper: Session sync failed due to unexpected error:", err);
+        setAuthError(err?.message || 'Session sync failed');
+      }
       setUser(null);
       setProfile(null);
     } finally {
@@ -102,6 +112,7 @@ export const UserProvider = ({ children }) => {
       user, 
       profile, 
       loading, 
+      authError,
       setUser, 
       setProfile, 
       refreshUserData,

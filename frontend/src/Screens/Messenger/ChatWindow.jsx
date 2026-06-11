@@ -16,6 +16,7 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
   // Real UI States
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [historyError, setHistoryError] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -40,6 +41,7 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
         setMessages(sortedMessages);
       } catch (err) {
         console.error("❌ AWS Chat DB Offline:", err);
+        setHistoryError(t("Failed to load chat history. Please check your connection."));
       } finally {
         setIsLoadingHistory(false);
       }
@@ -59,6 +61,9 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
     }).subscribe({
       next: ({ data }) => {
         setMessages((prev) => [...prev, data.onNewTriNetraMessage]);
+      },
+      error: (err) => {
+        console.error("Chat subscription error:", err);
       }
     });
 
@@ -179,6 +184,8 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
 
         {isLoadingHistory ? (
            <div className="flex justify-center items-center h-full"><Loader2 size={30} className="text-cyan-500 animate-spin" /></div>
+        ) : historyError ? (
+           <div className="p-4 text-center text-xs text-red-400 font-bold bg-red-900/20 border border-red-500/30 rounded-xl mx-4">{historyError}</div>
         ) : (
             messages.map((m, index) => {
               const isMe = m.senderId === currentUser.trinetraId;

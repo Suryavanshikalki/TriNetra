@@ -100,8 +100,13 @@ export const processPaymentAndBoost = async (req, res) => {
 
     // 2. REAL Gateway Processing
     if (finalAmount > 0) {
-      const paymentSuccess = await processRealPayment(finalAmount, gatewayName);
-      if (!paymentSuccess) return res.status(400).json({ success: false, message: "TriNetra Bank Rejected the Payment." });
+      try {
+        const paymentSuccess = await processRealPayment(finalAmount, gatewayName);
+        if (!paymentSuccess) return res.status(400).json({ success: false, message: "TriNetra Bank Rejected the Payment." });
+      } catch (gatewayErr) {
+        console.error("[TriNetra Economy] Payment gateway error:", gatewayErr.message);
+        return res.status(400).json({ success: false, message: gatewayErr.message });
+      }
     }
 
     // 3. Save to Ledger with REAL Crypto Txn ID
@@ -114,14 +119,19 @@ export const processPaymentAndBoost = async (req, res) => {
       userShare, 
       boostType: planType,
       gatewayUsed: finalAmount > 0 ? gatewayName : 'Free', 
-      status: 'Completed', 
+      status: 'Pending', 
       monthsActivated: months
     });
     await transaction.save();
 
     // 4. Update User Wallet & Credits Directly in Database
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: "User not found in TriNetra Database." });
+    if (!user) {
+      // Mark transaction as failed since user lookup failed after payment
+      transaction.status = 'Failed_UserNotFound';
+      await transaction.save();
+      return res.status(404).json({ success: false, message: "User not found in TriNetra Database. Transaction logged for manual review.", transactionId: realTxnId });
+    }
 
     if (userShare > 0) user.walletBalance = (user.walletBalance || 0) + userShare;
     if (creditsToAddC > 0) user.aiCreditsC = (user.aiCreditsC || 0) + creditsToAddC;
@@ -133,7 +143,18 @@ export const processPaymentAndBoost = async (req, res) => {
         user.escalationPlanStatus = 'ACTIVE_PRO';
     }
     
-    await user.save();
+    try {
+      await user.save();
+    } catch (saveErr) {
+      console.error("[TriNetra Economy] Failed to update user wallet/credits after payment:", saveErr.message);
+      transaction.status = 'Completed_CreditPending';
+      await transaction.save();
+      return res.status(500).json({ success: false, message: "Payment processed but credits failed to apply. Our team will resolve this.", transactionId: realTxnId });
+    }
+
+    // Mark transaction as fully completed
+    transaction.status = 'Completed';
+    await transaction.save();
 
     res.status(200).json({ 
       success: true, 

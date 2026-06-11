@@ -12,6 +12,7 @@ const clientSecret = process.env.PAYPAL_SECRET; // Screenshot me exactly yahi na
 // Gatekeeper Firewall: Agar keys missing hain to server ko alert karo
 if (!clientId || !clientSecret) {
     console.error("[TriNetra Economy Firewall] FATAL: PayPal Real Keys Missing from AWS Secrets.");
+    throw new Error("PayPal configuration failed: PAYPAL_CLIENT_ID and PAYPAL_SECRET must be set in environment variables.");
 }
 
 // 2. 🚨 DYNAMIC ENVIRONMENT & CONFIGURATION

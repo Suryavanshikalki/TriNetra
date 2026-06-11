@@ -22,6 +22,7 @@ export default function WalletAndPayouts({ currentUser, onBack, onNavigateToSupp
   const [transactions, setTransactions] = useState([]);
   const [selectedGateway, setSelectedGateway] = useState('PAYU_INDIA');
   const [isLoading, setIsLoading] = useState(true);
+  const [walletError, setWalletError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
   // 🔥 New: Receipt Preview State (Point 4: In-built Reader)
@@ -58,6 +59,7 @@ export default function WalletAndPayouts({ currentUser, onBack, onNavigateToSupp
         }
       } catch (err) {
         console.error("❌ AWS Wallet Sync Failed:", err);
+        setWalletError(t("Failed to load wallet data. Please check your connection and try again."));
       } finally {
         setIsLoading(false);
       }
@@ -111,6 +113,12 @@ export default function WalletAndPayouts({ currentUser, onBack, onNavigateToSupp
   };
 
   if (isLoading) return <div className="flex h-full items-center justify-center bg-[#0a1014]"><Loader2 size={40} className="text-cyan-500 animate-spin" /></div>;
+  if (walletError) return (
+    <div className="flex flex-col h-full items-center justify-center bg-[#0a1014] p-6">
+      <div className="p-4 text-center text-xs text-red-400 font-bold bg-red-900/20 border border-red-500/30 rounded-xl max-w-sm">{walletError}</div>
+      <button onClick={onBack} className="mt-4 text-cyan-400 text-sm underline">{t("Go Back")}</button>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-full bg-[#0a1014] text-white font-sans overflow-y-auto pb-32 animate-fade-in relative">

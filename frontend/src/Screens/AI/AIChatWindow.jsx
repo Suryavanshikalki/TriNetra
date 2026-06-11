@@ -57,6 +57,13 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
           timestamp: new Date().toISOString() 
         };
         setMessages(prev => [...prev, aiResponse]);
+      } else {
+        setMessages(prev => [...prev, {
+          role: 'ai',
+          text: data.message || t("AI request failed. Please try again."),
+          isError: true,
+          timestamp: new Date().toISOString()
+        }]);
       }
     } catch (err) {
       console.error("AWS AI Error:", err);

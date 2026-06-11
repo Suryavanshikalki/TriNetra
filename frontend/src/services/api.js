@@ -30,14 +30,19 @@ export const authService = {
 // ─── 2. FEED & MEDIA (Point 4: Universal Download) ────────────────
 export const feedService = {
   getFeed: async () => {
-    const res = await client.graphql({
-      query: `query ListPosts {
-        listTriNetraPosts(limit: 50) {
-          items { id content type mediaUrl user { name profilePic } }
-        }
-      }`
-    });
-    return res.data.listTriNetraPosts.items;
+    try {
+      const res = await client.graphql({
+        query: `query ListPosts {
+          listTriNetraPosts(limit: 50) {
+            items { id content type mediaUrl user { name profilePic } }
+          }
+        }`
+      });
+      return res.data.listTriNetraPosts.items;
+    } catch (err) {
+      Sentry.captureException(err);
+      throw new Error("Failed to load feed from TriNetra servers.");
+    }
   },
 
   // Asli Media Upload to S3 (No Multipart Dummy)
@@ -55,23 +60,32 @@ export const feedService = {
 // ─── 3. THE ECONOMY (Point 6: Wallet & Boost) ─────────────────────
 export const economyService = {
   getWallet: async (userId) => {
-    const res = await client.graphql({
-      query: `query GetWallet($id: ID!) {
-        getTriNetraWallet(userId: $id) { balance transactions { amount type status } }
-      }`,
-      variables: { id: userId }
-    });
-    return res.data.getTriNetraWallet;
+    try {
+      const res = await client.graphql({
+        query: `query GetWallet($id: ID!) {
+          getTriNetraWallet(userId: $id) { balance transactions { amount type status } }
+        }`,
+        variables: { id: userId }
+      });
+      return res.data.getTriNetraWallet;
+    } catch (err) {
+      Sentry.captureException(err);
+      throw new Error("Failed to load wallet data.");
+    }
   },
 
-  // Real Withdrawal Logic (No Dummy Razorpay)
   requestPayout: async (payoutData) => {
-    return await client.graphql({
-      query: `mutation Payout($input: PayoutInput!) {
-        createTriNetraPayout(input: $input) { status payoutId }
-      }`,
-      variables: { input: payoutData }
-    });
+    try {
+      return await client.graphql({
+        query: `mutation Payout($input: PayoutInput!) {
+          createTriNetraPayout(input: $input) { status payoutId }
+        }`,
+        variables: { input: payoutData }
+      });
+    } catch (err) {
+      Sentry.captureException(err);
+      throw new Error("Payout request failed. Please try again.");
+    }
   }
 };
 
@@ -99,14 +113,19 @@ export const aiService = {
 // ─── 5. AUTO-ESCALATION (Point 4: Chain of Command) ───────────────
 export const escalationService = {
   triggerEscalation: async (postId, category) => {
-    return await client.graphql({
-      query: `mutation Escalate($postId: ID!, $cat: String!) {
-        triggerTriNetraEscalation(postId: $postId, category: $cat) {
-          currentLevel status nextAuthority
-        }
-      }`,
-      variables: { postId, cat: category }
-    });
+    try {
+      return await client.graphql({
+        query: `mutation Escalate($postId: ID!, $cat: String!) {
+          triggerTriNetraEscalation(postId: $postId, category: $cat) {
+            currentLevel status nextAuthority
+          }
+        }`,
+        variables: { postId, cat: category }
+      });
+    } catch (err) {
+      Sentry.captureException(err);
+      throw new Error("Escalation request failed. Please try again.");
+    }
   }
 };
 
