@@ -330,6 +330,26 @@ class SuperAgenticCoder:
 class GitHubAutoController:
     def read_existing_files_and_commit(self):
         logging.info("गिटहब टोकन का उपयोग करके फाइलें पढ़ी जा रही हैं...")
+        try:
+            subprocess.run(["git", "config", "--global", "user.name", "TriNetra-AI-Agent"], check=False)
+            subprocess.run(["git", "config", "--global", "user.email", "ai@trinetra.global"], check=False)
+            subprocess.run(["git", "add", "."], check=False)
+            target_os = os.environ.get("TARGET_OS", "unknown")
+            commit_msg = f"AI-Healer: Deep Fix, Real AI Coding added & Built ASLI App for {target_os}"
+            result = subprocess.run(["git", "commit", "-m", commit_msg], check=False, capture_output=True, text=True)
+            if result.returncode == 0:
+                logging.info(f"Git commit successful: {commit_msg}")
+                # Pull with rebase to avoid conflicts from parallel matrix jobs
+                subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False)
+                push_result = subprocess.run(["git", "push", "origin", "HEAD:main"], check=False, capture_output=True, text=True)
+                if push_result.returncode == 0:
+                    logging.info("Git push successful.")
+                else:
+                    logging.warning(f"Git push failed (will retry on next cron): {push_result.stderr}")
+            else:
+                logging.info("No changes to commit.")
+        except Exception as e:
+            logging.error(f"Git operations error: {e}")
         return True
 
 # ---------------------------------------------------------------------------
@@ -351,7 +371,7 @@ def clear_old_workflows_aggressively():
                     file_path = os.path.join(workflows_dir, file)
                     try:
                         os.remove(file_path)
-                        subprocess.run(f"git rm -f {file_path}", shell=True, ignore_errors=True)
+                        subprocess.run(["git", "rm", "-f", file_path], check=False)
                     except Exception as e: pass
 
 # ---------------------------------------------------------------------------
