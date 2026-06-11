@@ -93,6 +93,30 @@ if (process.env.SENTRY_DSN) {
     app.use(Sentry.Handlers.errorHandler());
 }
 
+// ─── 🚨 6.5 GLOBAL EXPRESS ERROR HANDLER ───
+// Catches any unhandled errors from route handlers and middleware
+app.use((err, req, res, _next) => {
+  console.error(`[TriNetra Global Error] ${req.method} ${req.path}:`, err.message || err);
+  if (!res.headersSent) {
+    res.status(err.status || 500).json({
+      success: false,
+      message: process.env.NODE_ENV === 'production'
+        ? 'An unexpected error occurred. Please try again.'
+        : err.message || 'Internal Server Error'
+    });
+  }
+});
+
+// ─── 🚨 6.6 UNHANDLED REJECTION & EXCEPTION HANDLERS ───
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[TriNetra] Unhandled Promise Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[TriNetra] Uncaught Exception:', err);
+  process.exit(1);
+});
+
 // ─── 🚨 7. IGNITION ───
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {

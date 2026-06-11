@@ -82,7 +82,7 @@ export default function CallScreen({ isVideo, callerName, callerImage, roomId, c
 
       } catch (err) {
         console.error("❌ Call Initialization Failed:", err);
-        setStatusText("Connection Failed.");
+        setStatusText("Connection Failed. Tap End Call to go back.");
       }
     };
 

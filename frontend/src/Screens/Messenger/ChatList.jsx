@@ -60,6 +60,9 @@ export default function ChatList({ currentUser, onSelectChat }) {
       next: ({ data }) => {
         const update = data.onTriNetraChatUpdate;
         setFriends(prev => prev.map(f => f.trinetraId === update.trinetraId ? { ...f, ...update } : f));
+      },
+      error: (err) => {
+        console.error("Chat list subscription error:", err);
       }
     });
 

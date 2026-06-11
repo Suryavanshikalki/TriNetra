@@ -51,13 +51,14 @@ export const triggerEscalation = async (req, res) => {
     // 2. 🚨 AI SUMMARIZATION (Connecting to our GeminiService logic) 🚨
     // असली अधिकारी को पूरी चैट नहीं, बल्कि AI द्वारा तैयार की गई प्रोफेशनल समरी भेजी जाएगी
     let officialSummary = post.content;
+    let usedFallbackSummary = false;
     if (post.commentsCount > 10) {
         try {
-            // Internal call to our AI engine to summarize the debate/complaint
             const aiRes = await axios.post(`${process.env.BASE_URL}/api/ai/summarize-escalation`, { postId });
             officialSummary = aiRes.data.summary;
         } catch (e) {
-            console.log("[JUSTICE ENGINE] AI Summary fallback applied.");
+            usedFallbackSummary = true;
+            console.error("[JUSTICE ENGINE] AI Summary failed, using raw post content as fallback:", e.message);
         }
     }
 
@@ -103,22 +104,28 @@ export const triggerEscalation = async (req, res) => {
         // Example: AWS_SNS_TOPIC_LOCALAUTHORITY
     };
 
+    let notificationFailed = false;
     try {
         await sns.publish(snsMessage).promise();
         console.log(`[JUSTICE ENGINE] AWS SNS Alert dispatched to -> ${targetLevel.toUpperCase()}`);
     } catch (snsError) {
-        console.error(`[AWS SNS CRASH] Could not dispatch real alert: ${snsError.message}`);
-        // We continue saving to DB even if SNS fails, but Sentry will catch this in the background
+        notificationFailed = true;
+        console.error(`[AWS SNS CRASH] Could not dispatch real alert to ${targetLevel}:`, snsError.message);
     }
 
     // 5. 🚨 SAVE TO TRINETRA DB 🚨
     await post.save();
 
+    const warnings = [];
+    if (usedFallbackSummary) warnings.push("AI summary unavailable; raw post content was used.");
+    if (notificationFailed) warnings.push(`Official notification to ${targetLevel} failed to send. Manual follow-up required.`);
+
     res.status(200).json({ 
       success: true, 
-      message: `System Auto-Escalated issue to: ${targetLevel}. Official Notification Sent.`,
+      message: `System Auto-Escalated issue to: ${targetLevel}.${notificationFailed ? ' WARNING: Notification dispatch failed.' : ' Official Notification Sent.'}`,
       level: targetLevel,
-      officialSummaryReport: officialSummary
+      officialSummaryReport: officialSummary,
+      warnings: warnings.length > 0 ? warnings : undefined
     });
 
   } catch (error) {

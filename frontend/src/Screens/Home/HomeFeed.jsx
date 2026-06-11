@@ -18,6 +18,7 @@ export default function HomeFeed({ currentUser }) {
   const { t, i18n } = useTranslation();
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [feedError, setFeedError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedComments, setExpandedComments] = useState({});
 
@@ -31,6 +32,9 @@ export default function HomeFeed({ currentUser }) {
     }).subscribe({
       next: ({ data }) => {
         setPosts(prev => [data.onNewTriNetraPost, ...prev]);
+      },
+      error: (err) => {
+        console.error("Feed subscription error:", err);
       }
     });
 
@@ -39,6 +43,7 @@ export default function HomeFeed({ currentUser }) {
 
   const fetchFeed = async () => {
     try {
+      setFeedError('');
       const res = await client.graphql({
         query: `query ListPosts { listTriNetraPosts(limit: 50) { items { id userId text mediaUrl mediaType escalationLevel timestamp likes comments } } }`
       });
@@ -46,6 +51,7 @@ export default function HomeFeed({ currentUser }) {
       setPosts(sortedPosts);
     } catch (err) {
       console.error("❌ AWS Feed Offline:", err);
+      setFeedError(t("Failed to load feed. Please check your connection and try again."));
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +76,7 @@ export default function HomeFeed({ currentUser }) {
       window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error("❌ Direct Download Failed:", err);
+      alert(t("Download failed. Please try again."));
     }
   };
 
@@ -103,6 +110,7 @@ export default function HomeFeed({ currentUser }) {
       setPosts(posts.map(p => p.id === postId ? { ...p, translatedContent: res.data.translateText.translatedText } : p));
     } catch (err) {
       console.error("❌ Translation Failed:", err);
+      alert(t("Translation failed. Please try again."));
     }
   };
 
@@ -133,6 +141,14 @@ export default function HomeFeed({ currentUser }) {
         </div>
         <Plus className="text-cyan-400 cursor-pointer active:scale-90 hover:text-white transition-transform" />
       </header>
+
+      {/* Feed Error Banner */}
+      {feedError && (
+        <div className="p-3 text-center text-xs text-red-400 font-bold bg-red-900/20 border border-red-500/30 mx-4 mt-4 rounded-xl">
+          {feedError}
+          <button onClick={fetchFeed} className="ml-3 underline text-cyan-400">{t("Retry")}</button>
+        </div>
+      )}
 
       {/* 📝 Create Post Input */}
       <div className="max-w-2xl mx-auto w-full pt-4 px-4">

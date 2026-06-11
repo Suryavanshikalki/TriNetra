@@ -15,6 +15,7 @@ export default function UserProfile({ profileId, onNavigateToChat }) {
   const [profileData, setProfileData] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('NONE'); // NONE, PENDING, CONNECTED
   const [isLoading, setIsLoading] = useState(true);
+  const [profileError, setProfileError] = useState('');
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   const isOwnProfile = currentUser?.trinetraId === profileId;
@@ -44,6 +45,7 @@ export default function UserProfile({ profileId, onNavigateToChat }) {
         }
       } catch (err) {
         console.error("❌ AWS Profile Fetch Error:", err);
+        setProfileError(t("Failed to load profile. Please check your connection."));
       } finally {
         setIsLoading(false);
       }
@@ -91,6 +93,11 @@ export default function UserProfile({ profileId, onNavigateToChat }) {
   };
 
   if (isLoading) return <div className="flex h-full items-center justify-center bg-[#0a1014]"><Loader2 size={40} className="text-cyan-500 animate-spin" /></div>;
+  if (profileError) return (
+    <div className="flex flex-col h-full items-center justify-center bg-[#0a1014] p-6">
+      <div className="p-4 text-center text-xs text-red-400 font-bold bg-red-900/20 border border-red-500/30 rounded-xl max-w-sm">{profileError}</div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-full bg-[#0a1014] text-white overflow-y-auto pb-20 font-sans animate-fade-in">
