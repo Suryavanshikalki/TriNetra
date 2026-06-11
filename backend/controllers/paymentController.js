@@ -5,7 +5,8 @@
 // ==========================================
 import Transaction from '../models/Transaction.js';
 import User from '../models/User.js';
-import crypto from 'crypto'; // असली बैंकिंग ID के लिए
+import { generateTransactionId } from '../utils/generateId.js';
+import { sendSuccess, sendError, findUserOrFail } from '../utils/apiResponse.js';
 
 // --- IN-BUILT PAYMENT GATEWAY LOGIC (REAL VALIDATION) ---
 const processRealPayment = async (amount, gatewayName) => {
@@ -95,17 +96,17 @@ export const processPaymentAndBoost = async (req, res) => {
       userShare = 0;
 
     } else {
-      return res.status(400).json({ success: false, message: "Invalid TriNetra Plan/Boost Type." });
+      return sendError(res, 'Invalid TriNetra Plan/Boost Type.', 400);
     }
 
     // 2. REAL Gateway Processing
     if (finalAmount > 0) {
       const paymentSuccess = await processRealPayment(finalAmount, gatewayName);
-      if (!paymentSuccess) return res.status(400).json({ success: false, message: "TriNetra Bank Rejected the Payment." });
+      if (!paymentSuccess) return sendError(res, 'TriNetra Bank Rejected the Payment.', 400);
     }
 
     // 3. Save to Ledger with REAL Crypto Txn ID
-    const realTxnId = `TRN-TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+    const realTxnId = generateTransactionId();
     const transaction = new Transaction({
       userId, 
       transactionId: realTxnId,
@@ -120,8 +121,8 @@ export const processPaymentAndBoost = async (req, res) => {
     await transaction.save();
 
     // 4. Update User Wallet & Credits Directly in Database
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: "User not found in TriNetra Database." });
+    const user = await findUserOrFail(User, userId, res);
+    if (!user) return;
 
     if (userShare > 0) user.walletBalance = (user.walletBalance || 0) + userShare;
     if (creditsToAddC > 0) user.aiCreditsC = (user.aiCreditsC || 0) + creditsToAddC;
@@ -135,18 +136,16 @@ export const processPaymentAndBoost = async (req, res) => {
     
     await user.save();
 
-    res.status(200).json({ 
-      success: true, 
-      message: `TriNetra Economy: ${planType} Locked for ${months} Month(s) via ${gatewayName || 'Free Ad Network'}.`, 
+    sendSuccess(res, {
       transactionId: realTxnId,
       walletBalance: user.walletBalance,
       aiCreditsC: user.aiCreditsC,
       aiCreditsB: user.aiCreditsB,
       aiCreditsOS: user.aiCreditsOS
-    });
+    }, `TriNetra Economy: ${planType} Locked for ${months} Month(s) via ${gatewayName || 'Free Ad Network'}.`);
 
   } catch (error) {
-    console.error("[TriNetra Economy Error]:", error);
-    res.status(500).json({ success: false, message: "Economy Engine Failed. Amount Reversed if Deducted." });
+    console.error('[TriNetra Economy Error]:', error);
+    sendError(res, 'Economy Engine Failed. Amount Reversed if Deducted.');
   }
 };

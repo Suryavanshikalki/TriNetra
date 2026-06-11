@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 // 🔥 ASLI AWS IMPORTS (No console.log dummy) 🔥
 import { uploadData, getUrl } from 'aws-amplify/storage';
+import { uploadToS3 } from '../../utils/upload';
 
 export default function ChatAttachment({ currentUser, receiverId, onUploadComplete, onClose }) {
   const { t } = useTranslation();
@@ -28,20 +29,10 @@ export default function ChatAttachment({ currentUser, receiverId, onUploadComple
     setUploadText(`${t("Encrypting")} ${type}...`);
 
     try {
-      // Secure File Naming for E2E logic: protected/chat/...
-      const fileExt = file.name.split('.').pop();
-      const fileName = `chat_media/${currentUser?.trinetraId}_to_${receiverId}/${Date.now()}_secure.${fileExt}`;
-      
-      // 🔥 Direct Upload to AWS S3 (Protected Access Level)
-      await uploadData({
-        path: `protected/${fileName}`,
-        data: file,
-        options: { contentType: file.type, accessLevel: 'authenticated' }
-      }).result;
-
-      // Fetch Secure CDN URL
-      const urlResult = await getUrl({ path: `protected/${fileName}` });
-      const finalUrl = urlResult.url.toString();
+      const finalUrl = await uploadToS3(file, `chat_media/${currentUser?.trinetraId}_to_${receiverId}`, {
+        accessLevel: 'authenticated',
+        pathPrefix: 'protected'
+      });
 
       // Pass the real URL back to ChatWindow to send via AppSync
       onUploadComplete(finalUrl, type, file.name);

@@ -4,7 +4,8 @@
 // 🚨 DEEP SEARCH UPDATE: CONNECTED TO PYTHON MICROSERVICE (FastAPI) 🚨
 // ==========================================
 import User from '../models/User.js';
-import axios from 'axios'; 
+import axios from 'axios';
+import { sendSuccess, sendError, findUserOrFail } from '../utils/apiResponse.js'; 
 
 // ─── THE PYTHON AI ENGINE LINK ───
 // यह URL आपके Python वाले FastAPI सर्वर का है
@@ -40,29 +41,29 @@ export const processAIPrompt = async (req, res) => {
     const { prompt, targetLanguage, aiMode, requestedBrain } = req.body;
     
     // 1. User Authentication & Wallet Check
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: "User not found. Strict Entry Rule." });
+    const user = await findUserOrFail(User, userId, res);
+    if (!user) return;
 
     let activeBrain = requestedBrain || 'Meta';
 
     // ─── 2. THE ECONOMY & TIER LOGIC ───
     if (aiMode === 'Mode_A_FreePremium') {
-        if (user.aiCreditsA_Free <= 0) return res.status(403).json({ success: false, message: "Today's 8 free messages exhausted." });
+        if (user.aiCreditsA_Free <= 0) return sendError(res, "Today's 8 free messages exhausted.", 403);
         user.aiCreditsA_Free -= 1;
         activeBrain = 'Meta';
     } 
     else if (aiMode === 'Mode_B_Paid') {
-        if (user.aiCreditsB_Paid <= 0) return res.status(403).json({ success: false, message: "Monthly 300 Agentic Credits Exhausted." });
+        if (user.aiCreditsB_Paid <= 0) return sendError(res, 'Monthly 300 Agentic Credits Exhausted.', 403);
         user.aiCreditsB_Paid -= 1;
         activeBrain = 'Manus';
     } 
     else if (aiMode === 'Mode_C') {
-        if (user.aiCreditsC <= 0) return res.status(403).json({ success: false, message: "Mode C Credits Exhausted. Recharge ₹9999 for 900 credits." });
+        if (user.aiCreditsC <= 0) return sendError(res, 'Mode C Credits Exhausted. Recharge ₹9999 for 900 credits.', 403);
         user.aiCreditsC -= 1;
         activeBrain = 'DeepSeek';
     } 
     else if (aiMode === 'OS_Creation') {
-        if (user.aiCreditsOS <= 0) return res.status(403).json({ success: false, message: "OS Creation Credits Exhausted. Recharge ₹79999." });
+        if (user.aiCreditsOS <= 0) return sendError(res, 'OS Creation Credits Exhausted. Recharge ₹79999.', 403);
         user.aiCreditsOS -= 1;
         activeBrain = 'Emergent';
     }
@@ -98,9 +99,8 @@ export const processAIPrompt = async (req, res) => {
     }
 
     // ─── 5. FINAL SUCCESS RESPONSE ───
-    res.status(200).json({ 
-      success: true, 
-      brainUsed: activeBrain, 
+    sendSuccess(res, {
+      brainUsed: activeBrain,
       response: aiResponseText,
       walletStatus: {
         modeA_Free: user.aiCreditsA_Free,
@@ -111,7 +111,7 @@ export const processAIPrompt = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("[TriNetra Critical] Master AI Engine Error:", error);
-    res.status(500).json({ success: false, message: "TriNetra AI Engine Critical Error. Escalate to TriNetra DB." });
+    console.error('[TriNetra Critical] Master AI Engine Error:', error);
+    sendError(res, 'TriNetra AI Engine Critical Error. Escalate to TriNetra DB.');
   }
 };

@@ -10,7 +10,10 @@ import { generateClient } from 'aws-amplify/api';
 import { getUrl } from 'aws-amplify/storage';
 import { TriNetraLogo } from '../../App';
 import CreatePost from './CreatePost'; 
-import CommentSection from './CommentSection'; 
+import CommentSection from './CommentSection';
+import { downloadMedia } from '../../utils/download';
+import { triggerEscalation } from '../../utils/escalation';
+import { translateText } from '../../utils/translation'; 
 
 const client = generateClient();
 
@@ -52,57 +55,16 @@ export default function HomeFeed({ currentUser }) {
   };
 
   // ─── 2. REAL UNIVERSAL DOWNLOAD (Original S3 Quality) ────────────
-  const downloadOriginalMedia = async (url, type) => {
-    if (!url) return;
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      const ext = type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : type === 'audio' ? 'mp3' : 'pdf';
-      link.download = `TriNetra_Post_${Date.now()}.${ext}`;
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error("❌ Direct Download Failed:", err);
-    }
-  };
+  const downloadOriginalMedia = (url, type) => downloadMedia(url, type, 'TriNetra_Post');
 
   // ─── 3. THE 30,000/MONTH ESCALATION ENGINE (AWS Lambda) ──────────
-  const handleEscalate = async (postId) => {
-    const confirm = window.confirm(t("Escalate this issue to the Chain of Command (Local -> MLA -> CM -> Supreme Court)?"));
-    if (confirm) {
-      try {
-        await client.graphql({
-          query: `mutation TriggerEscalation($postId: ID!, $userId: ID!) {
-            triggerTriNetraEscalation(postId: $postId, userId: $userId) { status level }
-          }`,
-          variables: { postId, userId: currentUser?.trinetraId }
-        });
-        alert(t("Escalation Active. Case tracked by TriNetra Justice Engine."));
-      } catch (err) {
-        alert(t("Escalation server connection failed."));
-      }
-    }
-  };
+  const handleEscalate = (postId) => triggerEscalation(postId, currentUser?.trinetraId, t);
 
   // ─── 4. REAL AI TRANSLATION (Point 12 via Gemini/AWS) ────────────
   const handleTranslate = async (postId, text) => {
-    try {
-      const res = await client.graphql({
-        query: `mutation Translate($text: String!, $targetLang: String!) {
-          translateText(text: $text, targetLang: $targetLang) { translatedText }
-        }`,
-        variables: { text, targetLang: i18n.language }
-      });
-      setPosts(posts.map(p => p.id === postId ? { ...p, translatedContent: res.data.translateText.translatedText } : p));
-    } catch (err) {
-      console.error("❌ Translation Failed:", err);
+    const translated = await translateText(text, i18n.language);
+    if (translated) {
+      setPosts(posts.map(p => p.id === postId ? { ...p, translatedContent: translated } : p));
     }
   };
 

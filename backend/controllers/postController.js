@@ -5,7 +5,8 @@
 // ==========================================
 import Post from '../models/Post.js';
 import User from '../models/User.js';
-import crypto from 'crypto';
+import { generatePostId } from '../utils/generateId.js';
+import { sendSuccess, sendError, findUserOrFail } from '../utils/apiResponse.js';
 
 // ==========================================
 // 1. CREATE POST / REEL / MARKETPLACE ITEM (Point 4)
@@ -21,12 +22,12 @@ export const createPost = async (req, res) => {
         isMarketplace, price, currency, productCondition 
     } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: "TriNetra: User not found." });
+    const user = await findUserOrFail(User, userId, res);
+    if (!user) return;
 
     // असली पोस्ट/रील जनरेशन
     const newPost = new Post({ 
-        postId: `POST-${crypto.randomBytes(6).toString('hex').toUpperCase()}`,
+        postId: generatePostId(),
         userId, 
         content: content || "", 
         
@@ -54,15 +55,11 @@ export const createPost = async (req, res) => {
 
     console.log(`[TriNetra Feed] New ${isMarketplace ? 'Marketplace Item' : (isReel ? 'Reel' : 'Post')} created by ${userId}`);
 
-    res.status(201).json({ 
-        success: true, 
-        message: "Content Published to TriNetra AWS Servers successfully.",
-        post: newPost 
-    });
+    sendSuccess(res, { post: newPost }, 'Content Published to TriNetra AWS Servers successfully.', 201);
 
   } catch (error) {
-    console.error("[TriNetra Post Error]:", error);
-    res.status(500).json({ success: false, message: "TriNetra Post Engine Crash." });
+    console.error('[TriNetra Post Error]:', error);
+    sendError(res, 'TriNetra Post Engine Crash.');
   }
 };
 
@@ -73,8 +70,8 @@ export const updateProfile = async (req, res) => {
   try {
     const { userId, bio, avatar3dUrl, profilePic, coverPic } = req.body;
     
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    const user = await findUserOrFail(User, userId, res);
+    if (!user) return;
 
     if (bio !== undefined) user.bio = bio;
     if (profilePic !== undefined) user.profilePic = profilePic; // Normal Photo
@@ -83,20 +80,13 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
     
-    res.status(200).json({ 
-        success: true, 
-        message: "TriNetra Profile & 3D Avatar Synced Successfully.",
-        user: {
-            bio: user.bio,
-            profilePic: user.profilePic,
-            avatar3dUrl: user.avatar3dUrl,
-            coverPic: user.coverPic
-        }
-    });
+    sendSuccess(res, {
+        user: { bio: user.bio, profilePic: user.profilePic, avatar3dUrl: user.avatar3dUrl, coverPic: user.coverPic }
+    }, 'TriNetra Profile & 3D Avatar Synced Successfully.');
 
   } catch (error) {
-    console.error("[TriNetra Profile Error]:", error);
-    res.status(500).json({ success: false, message: "Profile Sync Error on AWS." });
+    console.error('[TriNetra Profile Error]:', error);
+    sendError(res, 'Profile Sync Error on AWS.');
   }
 };
 
@@ -108,13 +98,13 @@ export const toggleFollowUser = async (req, res) => {
     const { followerId, targetUserId } = req.body;
 
     if (followerId === targetUserId) {
-        return res.status(400).json({ success: false, message: "You cannot follow yourself." });
+        return sendError(res, 'You cannot follow yourself.', 400);
     }
 
     const follower = await User.findOne({ trinetraId: followerId });
     const targetUser = await User.findOne({ trinetraId: targetUserId });
 
-    if (!follower || !targetUser) return res.status(404).json({ success: false, message: "User not found." });
+    if (!follower || !targetUser) return sendError(res, 'User not found.', 404);
 
     const isFollowing = follower.following.includes(targetUserId);
 
@@ -137,16 +127,14 @@ export const toggleFollowUser = async (req, res) => {
     // 🚨 Point 3 & 5 Check: Mutual Connection Rule 🚨
     const isNowMutual = follower.following.includes(targetUserId) && targetUser.following.includes(followerId);
 
-    res.status(200).json({ 
-        success: true, 
-        message: isFollowing ? "Unfollowed successfully." : "Followed successfully.",
-        isMutualConnection: isNowMutual, // Frontend can use this to unlock Messenger
+    sendSuccess(res, {
+        isMutualConnection: isNowMutual,
         action: isFollowing ? 'unfollow' : 'follow'
-    });
+    }, isFollowing ? 'Unfollowed successfully.' : 'Followed successfully.');
 
   } catch (error) {
-    console.error("[TriNetra Connection Error]:", error);
-    res.status(500).json({ success: false, message: "Connection Routing Error." });
+    console.error('[TriNetra Connection Error]:', error);
+    sendError(res, 'Connection Routing Error.');
   }
 };
 
@@ -160,7 +148,7 @@ export const toggleBlockUser = async (req, res) => {
       const blocker = await User.findOne({ trinetraId: blockerId });
       const targetUser = await User.findOne({ trinetraId: targetUserId });
   
-      if (!blocker || !targetUser) return res.status(404).json({ success: false, message: "User not found." });
+      if (!blocker || !targetUser) return sendError(res, 'User not found.', 404);
   
       const isBlocked = blocker.blockedUsers.includes(targetUserId);
   
@@ -182,14 +170,12 @@ export const toggleBlockUser = async (req, res) => {
   
       await blocker.save();
   
-      res.status(200).json({ 
-          success: true, 
-          message: isBlocked ? "User Unblocked." : "User Blocked. Mutual Connection Destroyed.",
+      sendSuccess(res, {
           action: isBlocked ? 'unblock' : 'block'
-      });
+      }, isBlocked ? 'User Unblocked.' : 'User Blocked. Mutual Connection Destroyed.');
   
     } catch (error) {
-      console.error("[TriNetra Block Error]:", error);
-      res.status(500).json({ success: false, message: "Blocking System Error." });
+      console.error('[TriNetra Block Error]:', error);
+      sendError(res, 'Blocking System Error.');
     }
   };

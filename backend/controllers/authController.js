@@ -6,13 +6,8 @@
 
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-
-// ─── HELPER: PERMANENT TRINETRA ID GENERATOR ───
-// Math.random() हटाकर असली Crypto-grade ID जनरेटर लगाया गया है
-const generateTriNetraId = () => {
-  return `TRN-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-};
+import { generateTriNetraId } from '../utils/generateId.js';
+import { sendSuccess, sendError, findUserOrFail } from '../utils/apiResponse.js';
 
 // ==========================================
 // 1. THE GATEKEEPER (Strict Entry & GitHub Rule)
@@ -30,7 +25,7 @@ export const registerOrLogin = async (req, res) => {
 
     // Strict Entry: बिना फोन या ईमेल के कोई एंट्री नहीं
     if (query.length === 0) {
-        return res.status(400).json({ success: false, message: "Strict Entry: Phone or Email is mandatory." });
+        return sendError(res, 'Strict Entry: Phone or Email is mandatory.', 400);
     }
 
     let user = await User.findOne({ $or: query });
@@ -67,18 +62,16 @@ export const registerOrLogin = async (req, res) => {
         { expiresIn: '30d' }
     );
 
-    res.status(200).json({ 
-        success: true, 
-        token, 
-        user, 
-        isNewUser, 
-        accessLevel: sessionAccessLevel,
-        message: sessionAccessLevel === 'AI_ONLY' ? "GitHub Auth: Master AI Access Granted" : "TriNetra Global Access Granted"
-    });
+    sendSuccess(res, {
+        token,
+        user,
+        isNewUser,
+        accessLevel: sessionAccessLevel
+    }, sessionAccessLevel === 'AI_ONLY' ? 'GitHub Auth: Master AI Access Granted' : 'TriNetra Global Access Granted');
 
   } catch (error) {
-    console.error("[TriNetra Gatekeeper Error]:", error);
-    res.status(500).json({ success: false, message: "Strict Authentication System Failed" });
+    console.error('[TriNetra Gatekeeper Error]:', error);
+    sendError(res, 'Strict Authentication System Failed');
   }
 };
 
@@ -101,11 +94,11 @@ export const updateDeepSettings = async (req, res) => {
     ];
 
     if (!validCategories.includes(category)) {
-        return res.status(403).json({ success: false, message: "Invalid Settings Category. TriNetra Firewall Blocked Request." });
+        return sendError(res, 'Invalid Settings Category. TriNetra Firewall Blocked Request.', 403);
     }
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    const user = await findUserOrFail(User, userId, res);
+    if (!user) return;
 
     // Settings Object को इनिशियलाइज़ करना अगर न हो
     if (!user.settings) user.settings = {};
@@ -118,14 +111,10 @@ export const updateDeepSettings = async (req, res) => {
     
     await user.save();
     
-    res.status(200).json({ 
-        success: true, 
-        message: `TriNetra Point 12: [${category}] successfully synced and locked.`,
-        updatedData: user.settings[category]
-    });
+    sendSuccess(res, { updatedData: user.settings[category] }, `TriNetra Point 12: [${category}] successfully synced and locked.`);
 
   } catch (error) {
-    console.error("[TriNetra Settings Sync Error]:", error);
-    res.status(500).json({ success: false, message: "Settings Sync Error to AWS Database" });
+    console.error('[TriNetra Settings Sync Error]:', error);
+    sendError(res, 'Settings Sync Error to AWS Database');
   }
 };

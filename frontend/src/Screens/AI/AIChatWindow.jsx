@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 // 🔥 ASLI AWS IMPORTS (No Axios, No Render) 🔥
 import { post } from 'aws-amplify/api';
 import { uploadData, getUrl } from 'aws-amplify/storage';
+import { downloadMedia } from '../../utils/download';
+import { uploadToS3 } from '../../utils/upload';
 
 export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super Agentic AI', onBack }) {
   const { t } = useTranslation();
@@ -73,19 +75,7 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
     setIsUploading(true);
 
     try {
-      const fileExt = file.name.split('.').pop() || (type === 'audio' ? 'mp3' : 'file');
-      const fileName = `ai_inputs/${currentUser?.trinetraId}_${Date.now()}_input.${fileExt}`;
-      
-      // 🔥 Direct Upload to AWS S3
-      await uploadData({
-        path: `public/${fileName}`,
-        data: file,
-        options: { contentType: file.type || 'application/octet-stream', accessLevel: 'guest' }
-      }).result;
-
-      // 🔥 Get S3 CDN URL
-      const urlResult = await getUrl({ path: `public/${fileName}` });
-      const s3Url = urlResult.url.toString();
+      const s3Url = await uploadToS3(file, `ai_inputs/${currentUser?.trinetraId}`);
 
       setMessages(prev => [...prev, { 
         role: 'user', 
@@ -109,26 +99,7 @@ export default function AIChatWindow({ currentUser, activeMode = 'Mode C: Super 
   };
 
   // ─── 3. UNIVERSAL DOWNLOAD (Point 11 & 4) ─────────────────────────
-  const downloadAIOutput = async (url) => {
-    if (!url) return;
-    try {
-      // 🔥 Force Download using Blob (Like we did in HomeFeed)
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = `TriNetra_AI_Output_${Date.now()}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error("Download fallback");
-      window.open(url, '_blank'); // Fallback if CORS prevents blob fetch
-    }
-  };
+  const downloadAIOutput = (url) => downloadMedia(url, 'file', 'TriNetra_AI_Output');
 
   return (
     <div className="flex flex-col h-full bg-[#0a1014] text-white font-sans fixed inset-0 z-50 overflow-hidden">
