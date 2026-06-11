@@ -7,6 +7,7 @@ import Post from '../models/Post.js';
 import User from '../models/User.js';
 import AWS from 'aws-sdk';
 import axios from 'axios';
+import { sendSuccess, sendError, findUserOrFail } from '../utils/apiResponse.js';
 
 // ─── AWS SNS SETUP (For Real Official Alerts) ───
 const sns = new AWS.SNS({
@@ -33,19 +34,16 @@ export const triggerEscalation = async (req, res) => {
     const { postId, userId } = req.body;
 
     // 1. 🚨 STRICT PREMIUM TIER CHECK (₹30,000/month validation) 🚨
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    const user = await findUserOrFail(User, userId, res);
+    if (!user) return;
     
     if (user.escalationPlanStatus !== 'ACTIVE_PRO') {
-      return res.status(403).json({ 
-        success: false, 
-        message: "Access Denied. Justice Engine requires the ₹30,000/month Pro Auto-Boost & Escalation Plan." 
-      });
+      return sendError(res, 'Access Denied. Justice Engine requires the ₹30,000/month Pro Auto-Boost & Escalation Plan.', 403);
     }
 
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found in TriNetra DB" });
+      return sendError(res, 'Post not found in TriNetra DB', 404);
     }
 
     // 2. 🚨 AI SUMMARIZATION (Connecting to our GeminiService logic) 🚨
@@ -75,11 +73,7 @@ export const triggerEscalation = async (req, res) => {
       const currentIndex = CHAIN_OF_COMMAND.indexOf(post.escalationLevel);
       
       if (currentIndex >= CHAIN_OF_COMMAND.length - 1) {
-        return res.status(200).json({ 
-          success: true, 
-          message: "Maximum Escalation (International Level) reached. Awaiting global intervention.",
-          level: post.escalationLevel
-        });
+        return sendSuccess(res, { level: post.escalationLevel }, 'Maximum Escalation (International Level) reached. Awaiting global intervention.');
       }
 
       targetLevel = CHAIN_OF_COMMAND[currentIndex + 1];
@@ -114,15 +108,13 @@ export const triggerEscalation = async (req, res) => {
     // 5. 🚨 SAVE TO TRINETRA DB 🚨
     await post.save();
 
-    res.status(200).json({ 
-      success: true, 
-      message: `System Auto-Escalated issue to: ${targetLevel}. Official Notification Sent.`,
+    sendSuccess(res, {
       level: targetLevel,
       officialSummaryReport: officialSummary
-    });
+    }, `System Auto-Escalated issue to: ${targetLevel}. Official Notification Sent.`);
 
   } catch (error) {
     console.error(`[JUSTICE ENGINE CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Justice Engine offline." });
+    sendError(res, 'Justice Engine offline.');
   }
 };

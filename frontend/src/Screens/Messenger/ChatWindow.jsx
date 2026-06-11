@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 // 🔥 ASLI AWS IMPORTS (No Socket.io, No Render, No Axios Dummy Code) 🔥
 import { generateClient } from 'aws-amplify/api';
 import ChatAttachment from './ChatAttachment'; // असली 12-Option Drawer
+import { downloadMedia } from '../../utils/download';
 
 const client = generateClient();
 
@@ -109,27 +110,7 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
   };
 
   // ─── 4. TRUE UNIVERSAL DOWNLOAD (Point 4 - Blob Forced Download) ────
-  const downloadMedia = async (mediaUrl, type) => {
-    if (!mediaUrl) return;
-    try {
-      const response = await fetch(mediaUrl);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      const ext = type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : type === 'audio' ? 'mp3' : 'pdf';
-      link.download = `TriNetra_Chat_${Date.now()}.${ext}`;
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error("Download Error", err);
-      window.open(mediaUrl, '_blank'); // Fallback
-    }
-  };
+  const handleDownloadMedia = (mediaUrl, type) => downloadMedia(mediaUrl, type, 'TriNetra_Chat');
 
   return (
     <div className="flex flex-col h-full bg-[#0a1014] text-white fixed inset-0 z-[60] font-sans animate-fade-in">
@@ -215,7 +196,7 @@ export default function ChatWindow({ currentUser, friend, onBack, onStartCall })
                         {/* True Universal Download Button */}
                         {m.mediaType !== 'location' && (
                             <button 
-                                onClick={() => downloadMedia(m.mediaUrl, m.mediaType)} 
+                                onClick={() => handleDownloadMedia(m.mediaUrl, m.mediaType)} 
                                 className="absolute top-2 right-2 bg-black/80 p-2 rounded-lg border border-white/10 text-white hover:text-cyan-400 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                                 title={t("Download to Device")}
                             >

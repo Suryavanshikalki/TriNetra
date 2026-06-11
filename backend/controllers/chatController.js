@@ -5,7 +5,8 @@
 // ==========================================
 import Chat from '../models/Chat.js';
 import User from '../models/User.js';
-import crypto from 'crypto';
+import { generateGroupId } from '../utils/generateId.js';
+import { sendSuccess, sendError } from '../utils/apiResponse.js';
 
 // ─── 1. STRICT MUTUAL CONNECTION CHECK (Point 3 & 5) ───
 const checkMutualConnection = async (senderId, receiverId) => {
@@ -27,7 +28,7 @@ export const sendMessage = async (req, res) => {
 
     // 🚨 STRICT RULE: AI No-Entry in Messenger 🚨
     if (senderId === 'AI' || receiverId === 'AI') {
-      return res.status(403).json({ success: false, message: "System Block: AI is strictly prohibited in Messenger." });
+      return sendError(res, 'System Block: AI is strictly prohibited in Messenger.', 403);
     }
 
     // Mutual Connection Validator (सिर्फ पर्सनल चैट के लिए, ग्रुप्स के लिए बाईपास)
@@ -35,10 +36,7 @@ export const sendMessage = async (req, res) => {
     if (!isGroupChat) {
       const isMutual = await checkMutualConnection(senderId, receiverId);
       if (!isMutual) {
-        return res.status(403).json({ 
-          success: false, 
-          message: "TriNetra Rule: You can only message Mutual Followers. Connection blocked." 
-        });
+        return sendError(res, 'TriNetra Rule: You can only message Mutual Followers. Connection blocked.', 403);
       }
     }
 
@@ -56,15 +54,11 @@ export const sendMessage = async (req, res) => {
     await newChatMessage.save();
     console.log(`[WHATSAPP 2.0] Message saved in room ${roomId}. Format: ${mediaType || 'text'}`);
 
-    res.status(200).json({ 
-      success: true, 
-      message: "Message Delivered and Saved to AWS DB", 
-      data: newChatMessage 
-    });
+    sendSuccess(res, { data: newChatMessage }, 'Message Delivered and Saved to AWS DB');
 
   } catch (error) {
     console.error(`[MESSENGER CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Messenger Engine Error" });
+    sendError(res, 'Messenger Engine Error');
   }
 };
 
@@ -79,10 +73,10 @@ export const getChatHistory = async (req, res) => {
     // डेटाबेस से पुरानी चैट्स निकालना (Real AWS AppSync/Mongo Fetch)
     const messages = await Chat.find({ roomId }).sort({ timestamp: 1 });
     
-    res.status(200).json({ success: true, messages });
+    sendSuccess(res, { messages });
   } catch (error) {
     console.error(`[HISTORY CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Failed to load chat history" });
+    sendError(res, 'Failed to load chat history');
   }
 };
 
@@ -93,7 +87,7 @@ export const getMutualFriends = async (req, res) => {
     const currentUser = await User.findOne({ trinetraId: userId });
     
     if (!currentUser) {
-        return res.status(404).json({ success: false, message: "User not found" });
+        return sendError(res, 'User not found', 404);
     }
 
     // असली लॉजिक: वो लोग जो मेरी 'following' लिस्ट में हैं, और उनकी 'following' लिस्ट में मैं हूँ।
@@ -102,10 +96,10 @@ export const getMutualFriends = async (req, res) => {
       following: userId
     }).select('trinetraId name profilePic'); // सिर्फ ज़रूरी डेटा फ्रंटएंड को भेजना
 
-    res.status(200).json({ success: true, friends: mutualFriends });
+    sendSuccess(res, { friends: mutualFriends });
   } catch (error) {
     console.error(`[MUTUAL FRIENDS CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Failed to load secure connections" });
+    sendError(res, 'Failed to load secure connections');
   }
 };
 
@@ -115,25 +109,20 @@ export const createGroupChat = async (req, res) => {
     const { name, members, admin } = req.body;
 
     if (!name || !members || members.length === 0) {
-        return res.status(400).json({ success: false, message: "Group name and members required" });
+        return sendError(res, 'Group name and members required', 400);
     }
 
     // असली ग्रुप ID जनरेशन
-    const groupId = `GROUP-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+    const groupId = generateGroupId();
 
     // असली ऐप में यहाँ Group मॉडल में डेटा सेव होगा
     // await Group.create({ groupId, name, members, admin });
 
     console.log(`[WHATSAPP 2.0] New Group Created: ${name} (${groupId})`);
 
-    res.status(200).json({ 
-        success: true, 
-        message: "Group Launched Successfully", 
-        groupId,
-        groupData: { name, members, admin }
-    });
+    sendSuccess(res, { groupId, groupData: { name, members, admin } }, 'Group Launched Successfully');
   } catch (error) {
     console.error(`[GROUP CRASH] ${error.message}`);
-    res.status(500).json({ success: false, message: "Failed to launch group" });
+    sendError(res, 'Failed to launch group');
   }
 };

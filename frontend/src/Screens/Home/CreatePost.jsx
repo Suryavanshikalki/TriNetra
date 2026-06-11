@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 // 🔥 ASLI AWS IMPORTS (No Fake Alerts) 🔥
 import { generateClient } from 'aws-amplify/api';
 import { uploadData, getUrl } from 'aws-amplify/storage';
+import { uploadToS3 } from '../../utils/upload';
 
 const client = generateClient();
 
@@ -75,17 +76,7 @@ export default function CreatePost({ currentUser, onPostCreated }) {
     try {
       // Step A: Upload Media to AWS S3
       if (selectedFile) {
-        const fileExt = selectedFile.name.split('.').pop();
-        const fileName = `posts/${currentUser?.trinetraId}/${Date.now()}_trinetra.${fileExt}`;
-        
-        await uploadData({
-          path: `public/${fileName}`,
-          data: selectedFile,
-          options: { contentType: selectedFile.type, accessLevel: 'guest' }
-        }).result;
-
-        const urlResult = await getUrl({ path: `public/${fileName}` });
-        finalMediaUrl = urlResult.url.toString();
+        finalMediaUrl = await uploadToS3(selectedFile, `posts/${currentUser?.trinetraId}`);
       }
 
       // Step B: Save Post to AWS DynamoDB

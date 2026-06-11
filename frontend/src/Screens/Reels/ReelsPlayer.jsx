@@ -8,6 +8,9 @@ import { useTranslation } from 'react-i18next';
 
 // 🔥 ASLI AWS IMPORTS (No Axios, No Render Dummy) 🔥
 import { generateClient } from 'aws-amplify/api';
+import { downloadMedia } from '../../utils/download';
+import { triggerEscalation } from '../../utils/escalation';
+import { translateText } from '../../utils/translation';
 
 const client = generateClient();
 
@@ -49,23 +52,8 @@ export default function ReelsPlayer({ reels = [], currentUser, onOpenComments, o
   const handleDownload = async (url, reelId) => {
     if (!url) return;
     setIsActionLoading(prev => ({ ...prev, [reelId]: true }));
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = `TriNetra_Reel_${Date.now()}.mp4`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error("❌ Download Failed:", err);
-    } finally {
-      setIsActionLoading(prev => ({ ...prev, [reelId]: false }));
-    }
+    await downloadMedia(url, 'video', 'TriNetra_Reel');
+    setIsActionLoading(prev => ({ ...prev, [reelId]: false }));
   };
 
   // ─── 3. REAL AWS LIKE MUTATION ────────────────────────────────────
@@ -90,36 +78,15 @@ export default function ReelsPlayer({ reels = [], currentUser, onOpenComments, o
   const handleTranslateCaption = async (reelId, text) => {
     if (!text) return;
     setIsActionLoading(prev => ({ ...prev, [reelId + '_trans']: true }));
-    try {
-      const res = await client.graphql({
-        query: `mutation Translate($text: String!, $targetLang: String!) {
-          translateText(text: $text, targetLang: $targetLang) { translatedText }
-        }`,
-        variables: { text, targetLang: i18n.language }
-      });
-      setTranslatedCaptions(prev => ({ ...prev, [reelId]: res.data.translateText.translatedText }));
-    } catch (err) {
-      console.error("❌ Translation Failed:", err);
-    } finally {
-      setIsActionLoading(prev => ({ ...prev, [reelId + '_trans']: false }));
+    const translated = await translateText(text, i18n.language);
+    if (translated) {
+      setTranslatedCaptions(prev => ({ ...prev, [reelId]: translated }));
     }
+    setIsActionLoading(prev => ({ ...prev, [reelId + '_trans']: false }));
   };
 
   // ─── 5. REAL AUTO-ESCALATION (Point 4: 30,000/month System) ───────
-  const handleEscalateReel = async (reelId) => {
-    const confirm = window.confirm(t("Escalate this Reel to the Chain of Command (MLA -> CM -> PM)?"));
-    if (confirm) {
-      try {
-        await client.graphql({
-          query: `mutation TriggerEscalation($postId: ID!, $userId: ID!) {
-            triggerTriNetraEscalation(postId: $postId, userId: $userId) { status level }
-          }`,
-          variables: { postId: reelId, userId: currentUser?.trinetraId }
-        });
-        alert(t("Escalation Active. Case tracked by TriNetra Justice Engine."));
-      } catch (err) { alert(t("Escalation failed.")); }
-    }
-  };
+  const handleEscalateReel = (reelId) => triggerEscalation(reelId, currentUser?.trinetraId, t);
 
   // ─── 6. REAL AWS FOLLOW (Mutual Connection Start) ────────────────
   const handleFollow = async (targetUserId) => {
